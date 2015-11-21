@@ -1,13 +1,16 @@
 language: java
+sudo: false # faster builds
 
 jdk:
     - oraclejdk8
-
-after_success:
-    - bash <(curl -s https://codecov.io/bash)
 
 notifications:
     email:
         - builds@fitbur.com
     on-success: change
     on-failure: always
+
+before_install:
+    - pip install --user codecov
+after_success:
+    - codecov
