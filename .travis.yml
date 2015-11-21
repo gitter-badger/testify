@@ -1,15 +1,13 @@
-sudo: false
 language: java
 
 jdk:
     - oraclejdk8
 
 install:
-    - true
+    - pip install --user codecov
 
 before_install:
-    - pip install --upgrade pip
-    - pip install --user codecov
+    - pip install -U pip
     
 after_success:
     - codecov
