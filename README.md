@@ -4,23 +4,26 @@
 [![License](https://img.shields.io/github/license/FitburIO/testify.svg)]()
 
 ## Overview
-Testify is an annotation driven Java testing framework that is integrated with Mockito and provide uniform and seamless way to write unit tests, integration tests, and system tests using various DI Frameworks and Testing Frameworks.
+Testify is an annotation driven Java testing framework that is integrated with Mockito and provide uniform and seamless way to write unit tests, integration tests, and system tests using your prefered Dependency Injection Framework and Test Runner Framework.
 
 ### Completed Features
-* Write JUnit based unit tests
-* Write JUnit based Spring integration tests
+* JUnit
+  * Unit Testing
+  * Spring Integration Testing
 
-### Pending Features
-* Write JUnit based Spring system tests
-* Write JUnit based HK2 integration tests
-* Write JUnit based Jersey 2 system tests
-* Write JUnit based Guice integration tests
-* Write TestNG based unit tests
-* Write TestNG based Spring integration tests 
-* Write TestNG based Spring system tests
-* Write TestNG based HK2 integration tests
-* Write TestNG based Jersey 2 system tests
-* Write TestNG based Guice integration tests
+### Planned Features
+* JUnit
+  * Spring System Tests
+  * HK2 Integration Testing
+  * Jersey 2 System Testing
+  * Guice Integration Testing
+* TestNG based unit tests
+  * Unit Testing
+  * Spring Integration Testing
+  * Spring System Testing
+  * HK2 Integration Testing
+  * Jersey 2 System Testing
+  * Guice Integration Testing
 
 
 
