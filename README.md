@@ -73,13 +73,13 @@ or
 `mvn clean install`
 
 ## Contributing
-[Pull requests][] are welcome; see the [contributor guidelines][] for details.
+[Pull requests](http://help.github.com/send-pull-requests) are welcome.
 
 ## Staying in Touch
 TODO
 
 ## License
-The Testify is released under version 2.0 of the [Apache License][].
+The Testify is released under version 2.0 of the Apache License.
 
 
 
