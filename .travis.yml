@@ -8,6 +8,7 @@ install:
     - true
 
 before_install:
+    - pip install --upgrade pip
     - pip install --user codecov
     
 after_success:
