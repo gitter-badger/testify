@@ -15,8 +15,3 @@ notifications:
         - builds@fitbur.com
     on-success: change
     on-failure: always
-    
-before_install:
-  - pip install codecov
-after_success:
-  - codecov
