@@ -9,8 +9,8 @@
 Testify is an annotation driven Java testing framework that is integrated with Mockito to provide uniform and seamless way to write unit tests, integration tests, and system tests. 
 
 ### Completed Features
-* Write JUnit based unit tests (done)
-* Write JUnit based Spring integration tests (done)
+* Write JUnit based unit tests
+* Write JUnit based Spring integration tests
 
 ### Pending Features
 * Write JUnit based Spring system tests
