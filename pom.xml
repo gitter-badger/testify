@@ -61,6 +61,7 @@
         <plugin.javadoc>2.10.3</plugin.javadoc>
         <plugin.jacoco>0.7.5.201505241946</plugin.jacoco>
         <plugin.pit>1.1.6</plugin.pit>
+        <plugin.license>2.11</plugin.license>
 
         <!-- Dependency Versions -->
         <junit.version>4.12</junit.version>
@@ -75,19 +76,19 @@
         <guava.version>19.0-rc2</guava.version>
         <spring.version>4.2.1.RELEASE</spring.version>
     </properties>
-    
+
     <prerequisites>
         <maven>${maven.version}</maven>
     </prerequisites>
-    
-    
+
+
     <organization>
         <name>Sharmarke Aden</name>
         <url>https://github.com/FitburIO/testify</url>
     </organization>
-    
+
     <inceptionYear>2015</inceptionYear>
-    
+
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -95,24 +96,32 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-    
+
     <issueManagement>
         <system>Github</system>
         <url>https://github.com/FitburIO/testify/issues</url>
     </issueManagement>
-    
+
     <scm>
         <connection>scm:git:https://github.com/FitburIO/testify.git</connection>
         <developerConnection>scm:git:https://github.com/FitburIO/testify.git</developerConnection>
         <url>https://github.com/FitburIO/testify.git/tree/${project.scm.tag}</url>
         <tag>master</tag>
     </scm>
-    
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
             </plugin>
         </plugins>
         <pluginManagement>
@@ -133,7 +142,7 @@
                                         <version>[${maven.version},)</version>
                                     </requireMavenVersion>
                                     <requireJavaVersion>
-                                        <version>${java.target}</version>
+                                        <version>${maven.compiler.target}</version>
                                     </requireJavaVersion>
                                     <requireProperty>
                                         <property>project.build.sourceEncoding</property>
@@ -153,6 +162,8 @@
                             <!-- enable runtime discover of parameter names -->
                             <parameters />
                         </compilerArguments>
+                        <debug>true</debug>
+                        <debuglevel>vars,lines</debuglevel>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -189,7 +200,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.7.5.201505241946</version>
+                    <version>${plugin.jacoco}</version>
                     <executions>
                         <execution>
                             <goals>
@@ -237,7 +248,7 @@
                 <plugin>
                     <groupId>com.mycila</groupId>
                     <artifactId>license-maven-plugin</artifactId>
-                    <version>2.11</version>
+                    <version>${plugin.license}</version>
                     <executions>
                         <execution>
                             <goals>
@@ -306,6 +317,11 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
