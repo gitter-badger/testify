@@ -1,6 +1,4 @@
 # Testify
-
-## Current Status
 [![Travis](https://img.shields.io/travis/FitburIO/testify.svg)]()
 [![Codecov](https://img.shields.io/codecov/c/github/FitburIO/testify.svg)]()
 [![License](https://img.shields.io/github/license/FitburIO/testify.svg)]()
