@@ -30,9 +30,9 @@ import java.util.Map;
 
 /**
  * An integration test injector implementation that injects fields annotated
- * with {@link Real} that does some smart name/type based detection on the cut
- * class constructor and injects services found in the dependency injection
- * framework.
+ * with {@link com.fitbur.testify.Real} or {@link javax.inject.Inject} that
+ * performs name or type based detection on the class under test constructor and
+ * injects services found in the dependency injection framework.
  *
  * @author saden
  */

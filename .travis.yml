@@ -3,13 +3,13 @@ sudo: false
 language: java
 
 jdk:
-    - oraclejdk8
+- oraclejdk8
 
 notifications:
-    email:
-        - builds@fitbur.com
-    on-success: change
-    on-failure: always
+  email:
+  - builds@fitbur.com
+  on-success: change
+  on-failure: always
 
 before_install:
     - openssl aes-256-cbc -K $encrypted_2d3d77b456af_key -iv $encrypted_2d3d77b456af_iv -in secrets.tar.enc -out secrets.tar -d

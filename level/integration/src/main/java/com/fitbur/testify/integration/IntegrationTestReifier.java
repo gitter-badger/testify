@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import static org.mockito.AdditionalAnswers.delegatesTo;
+import static org.mockito.Answers.RETURNS_DEFAULTS;
 import org.mockito.MockSettings;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -78,12 +79,7 @@ public class IntegrationTestReifier implements TestReifier {
                     //that delegates to the value
                     if (instance == null) {
                         MockSettings settings = withSettings()
-                                .defaultAnswer(mock.answer());
-
-                        if (mock.extraInterfaces().length > 0) {
-                            settings.extraInterfaces(mock.extraInterfaces());
-
-                        }
+                                .defaultAnswer(RETURNS_DEFAULTS);
 
                         instance = mock(field.getType(), settings);
                     } else {

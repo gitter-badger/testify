@@ -20,15 +20,12 @@ import static java.lang.annotation.ElementType.FIELD;
 import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
-import org.mockito.Answers;
 
 /**
- * An annotation used on test class fields to inject mocks or spies of the class
- * under test's collaborators services. Note that that if the field is
- * initialized the value of the field will be used as a basis for creating a
- * spy.
+ * An annotation used on test class fields to inject mocks of the class under
+ * test's collaborators. Note that if the field is initialized the value of the
+ * field will be injected into the class under test.
  *
- * <p>
  * @author saden
  */
 @Documented
@@ -37,53 +34,37 @@ import org.mockito.Answers;
 public @interface Mock {
 
     /**
-     * This value represents index of the collaborator parameter on the class
-     * under test constructor that will be mocked and injected into the test
-     * class. By default this value is set to -1 to enable type based auto
+     * <p>
+     * This value represents the index of the collaborator parameter on the
+     * class under test constructor that will be mocked and injected into the
+     * test class. By default this value is set to -1 to enable type based auto
      * detection. If you wish to not rely on auto detection you can explicitly
      * specify the index of the collaborator on the class under test
      * constructor.
+     * </p>
      *
-     * <p>
      * @return the index of the collaborator parameter on the class under test
      *         constructor.
      */
     int index() default -1;
 
     /**
-     * This value represents name of the collaborator parameter on the class
+     * <p>
+     * This value represents the name of the collaborator parameter on the class
      * under test constructor that will be mocked and injected into the test
-     * class. By default this value is set to "" to enable type and name based
+     * class. By default this value is set to "" to enable type or name based
      * auto detection feature. If you do not wish to not rely on auto detection
      * you can explicitly specify the name of the collaborator on the class
      * under test constructor.
-     *
+     * </p>
      * <p>
      * Please note that name based auto detection will only work if your code is
      * compiled with debug information (javac -parameters).
+     * </p>
      *
-     * <p>
      * @return the name of the collaborator parameter on the class under test
      *         constructor.
      */
     String name() default "";
-
-    /**
-     * Specifies default answers for interacting with the mock.
-     *
-     * <p>
-     * @return default answer to be used by mock when not stubbed.
-     */
-    Answers answer() default Answers.RETURNS_DEFAULTS;
-
-    /**
-     * Specifies extra interfaces the mock should implement. Might be useful for
-     * legacy code or some corner cases. For background, see issue 51 <a
-     * href="http://code.google.com/p/mockito/issues/detail?id=51">here</a>
-     *
-     * <p>
-     * @return extra interfaces that should be implemented.
-     */
-    Class<?>[] extraInterfaces() default {};
 
 }

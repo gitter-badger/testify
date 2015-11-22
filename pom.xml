@@ -189,7 +189,6 @@
                     <executions>
                         <execution>
                             <id>attach-sources</id>
-                            <phase>verify</phase>
                             <goals>
                                 <goal>jar-no-fork</goal>
                             </goals>
@@ -202,7 +201,6 @@
                     <executions>
                         <execution>
                             <id>attach-javadocs</id>
-                            <phase>verify</phase>
                             <goals>
                                 <goal>jar</goal>
                             </goals>
@@ -335,9 +333,6 @@
                 <plugin>
                     <artifactId>maven-deploy-plugin</artifactId>
                     <version>${plugin.deploy}</version>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <artifactId>maven-gpg-plugin</artifactId>
@@ -447,12 +442,6 @@
         </profile>
         <profile>
             <id>release</id>
-            <activation>
-                <property>
-                    <name>release</name>
-                    <value>yes</value>
-                </property>
-            </activation>
             <build>
                 <plugins>
                     <plugin>
@@ -462,7 +451,7 @@
                         <artifactId>maven-javadoc-plugin</artifactId>
                     </plugin>
                     <plugin>
-                        <artifactId>maven-deploy-plugin</artifactId>
+                        <artifactId>maven-gpg-plugin</artifactId>
                     </plugin>
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>

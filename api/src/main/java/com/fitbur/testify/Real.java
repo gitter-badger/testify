@@ -28,7 +28,6 @@ import java.lang.annotation.Target;
  * under test's collaborators. Note that you can optionally enable spying on the
  * real instance by setting {@link  #value()} to true.
  *
- * <p>
  * @author saden
  */
 @Documented
@@ -37,17 +36,19 @@ import java.lang.annotation.Target;
 public @interface Real {
 
     /**
-     * Indicates whether the real instance should be delegated to. This is
-     * usefully if you wish to stub certain call to the real instance and/or
-     * verify calls to protected/private methods of the real instance. Be very
-     * careful how you use this since delegating to the real instance can have
-     * undesirable side effect.
+     * <p>
+     * Indicates whether mock that delegates to the real instance should be
+     * created. This is usefully if you wish to stub certain method call of the
+     * real instance and/or verify calls to protected/private methods of the
+     * real instance. Be very careful how you use this since delegating to the
+     * real instance can have undesirable side effect.
+     * </p>
      *
      * <p>
-     * By default delgating to the real instance is set to false.
+     * By default a delegating mock is not created.
+     * </p>
      *
-     * <p>
-     * @return true if real instance should be delegated to.
+     * @return true if a mock that delegates to real instance should be created.
      */
     boolean value() default false;
 }
