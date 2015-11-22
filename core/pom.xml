@@ -81,6 +81,7 @@
             <artifactId>javax.inject</artifactId>
             <version>${javax.inject.version}</version>
         </dependency>
+       
     </dependencies>
    
 </project>

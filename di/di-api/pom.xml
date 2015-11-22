@@ -23,7 +23,9 @@
         <artifactId>di</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
+
     <artifactId>di-api</artifactId>
+    
     <dependencies>
         <dependency>
             <groupId>javax.inject</groupId>

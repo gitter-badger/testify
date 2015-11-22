@@ -22,7 +22,7 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import com.fitbur.testify.di.TestServiceLocator;
+import com.fitbur.testify.di.ServiceLocator;
 import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
@@ -40,13 +40,13 @@ public class IntegrationTypeMockInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
-    private final TestServiceLocator appContext;
+    private final ServiceLocator appContext;
     private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
     public IntegrationTypeMockInjector(TestContext context,
             TestReifier testReifier,
-            TestServiceLocator appContext,
+            ServiceLocator appContext,
             FieldDescriptor fieldDescriptor,
             Object[] arguments) {
         this.context = context;

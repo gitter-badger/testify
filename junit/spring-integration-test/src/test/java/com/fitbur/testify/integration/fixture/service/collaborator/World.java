@@ -25,6 +25,6 @@ import org.springframework.stereotype.Component;
 public class World {
 
     public String greet() {
-        return null;
+        return "World";
     }
 }

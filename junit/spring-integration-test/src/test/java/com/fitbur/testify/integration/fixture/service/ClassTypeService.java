@@ -15,8 +15,7 @@
  */
 package com.fitbur.testify.integration.fixture.service;
 
-import com.zaxxer.hikari.HikariDataSource;
-import javax.sql.DataSource;
+import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,17 +24,21 @@ import org.springframework.stereotype.Component;
  * @author saden
  */
 @Component
-public class NeedDataSource {
+public class ClassTypeService {
 
-    private final HikariDataSource dataSource;
+    private final Hello hello;
 
     @Autowired
-    NeedDataSource(HikariDataSource dataSource) {
-        this.dataSource = dataSource;
+    ClassTypeService(Hello hello) {
+        this.hello = hello;
     }
 
-    public DataSource getDataSource() {
-        return dataSource;
+    public String greet() {
+        return hello.greet();
+    }
+
+    public Hello getHello() {
+        return hello;
     }
 
 }

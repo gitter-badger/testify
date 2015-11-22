@@ -21,7 +21,7 @@ package com.fitbur.testify.di;
  *
  * @author saden
  */
-public interface TestServiceLocator {
+public interface ServiceLocator {
 
     void init();
 

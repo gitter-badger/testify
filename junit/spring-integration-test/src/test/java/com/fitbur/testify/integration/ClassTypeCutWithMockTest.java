@@ -15,36 +15,40 @@
  */
 package com.fitbur.testify.integration;
 
+import com.fitbur.testify.Cut;
+import com.fitbur.testify.Mock;
 import com.fitbur.testify.Module;
-import com.fitbur.testify.hsql.InMemoryHSQL;
-import com.fitbur.testify.integration.fixture.NeedConfig;
-import com.fitbur.testify.need.Need;
-import com.zaxxer.hikari.HikariDataSource;
-import javax.inject.Inject;
+import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
+import com.fitbur.testify.integration.fixture.service.ClassTypeService;
+import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.internal.util.MockUtil;
 
 /**
  *
  * @author saden
  */
 @RunWith(SpringIntegrationTestRunner.class)
-@Module(NeedConfig.class)
-@Need(InMemoryHSQL.class)
-public class InjectInjectTest {
+@Module(SpringIntegrationConfig.class)
+public class ClassTypeCutWithMockTest {
 
-    @Inject
-    HikariDataSource dataSource;
+    @Cut
+    ClassTypeService cut;
 
-    @Test
-    public void testSomeMethod() {
-        assertThat(this.dataSource).isNotNull();
-    }
+    @Mock
+    Hello hello;
 
     @Test
-    public void testSomeMethod2() {
-        assertThat(this.dataSource).isNotNull();
+    public void verifyInjections() {
+        assertThat(cut).isNotNull();
+        assertThat(hello)
+                .isNotNull()
+                .isSameAs(cut.getHello());
+
+        MockUtil util = new MockUtil();
+        assertThat(util.isMock(hello)).isTrue();
     }
 
 }

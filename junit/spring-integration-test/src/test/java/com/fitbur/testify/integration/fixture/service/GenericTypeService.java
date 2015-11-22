@@ -13,20 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.integration.fixture;
+package com.fitbur.testify.integration.fixture.service;
 
-import com.fitbur.testify.integration.fixture.service.FixturePackage;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
+import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
+import javax.inject.Provider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author saden
  */
-@Lazy
-@Configuration
-@ComponentScan(basePackageClasses = FixturePackage.class, lazyInit = true)
-public class NeedConfig {
+@Component
+public class GenericTypeService {
+
+    private final Provider<Hello> hello;
+
+    @Autowired
+    GenericTypeService(Provider<Hello> hello) {
+        this.hello = hello;
+    }
+
+    public String greet() {
+        return hello.get().greet();
+    }
+
+    public Provider<Hello> getHello() {
+        return this.hello;
+    }
 
 }

@@ -15,7 +15,6 @@
  */
 package com.fitbur.testify.integration;
 
-import com.google.common.reflect.TypeToken;
 import com.fitbur.testify.Cut;
 import com.fitbur.testify.Mock;
 import com.fitbur.testify.Real;
@@ -25,8 +24,10 @@ import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
 import com.fitbur.testify.di.ServiceDescriptor;
 import com.fitbur.testify.di.ServiceDescriptorBuilder;
+import com.fitbur.testify.di.ServiceLocator;
+import com.fitbur.testify.di.ServiceProvider;
 import com.fitbur.testify.di.ServiceScope;
-import com.fitbur.testify.di.TestServiceLocator;
+import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -35,6 +36,7 @@ import java.security.PrivilegedAction;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
+import javax.inject.Inject;
 import javax.inject.Provider;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import org.mockito.MockSettings;
@@ -50,10 +52,10 @@ import static org.mockito.Mockito.withSettings;
  */
 public class IntegrationTestReifier implements TestReifier {
 
-    private final TestServiceLocator appContext;
+    private final ServiceLocator appContext;
     private final Object testInstance;
 
-    public IntegrationTestReifier(TestServiceLocator appContext, Object testInstance) {
+    public IntegrationTestReifier(ServiceLocator appContext, Object testInstance) {
         this.appContext = appContext;
         this.testInstance = testInstance;
     }
@@ -62,18 +64,19 @@ public class IntegrationTestReifier implements TestReifier {
     public Object reifyField(FieldDescriptor fieldDescriptor, ParameterDescriptor parameterDescriptor) {
         return AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
             try {
-                Object instance;
                 Field field = fieldDescriptor.getField();
-                Type fieldType = field.getGenericType();
+                Type genericFieldTYpe = field.getGenericType();
                 field.setAccessible(true);
+                Object instance = field.get(testInstance);
 
                 Optional<Mock> optMock = fieldDescriptor.getMock();
+                Optional<Real> optReal = fieldDescriptor.getAnnotation(Real.class);
+                Optional<Inject> optInject = fieldDescriptor.getAnnotation(Inject.class);
                 if (optMock.isPresent()) {
                     Mock mock = optMock.get();
-                    Object value = field.get(testInstance);
                     //if the field value is set then create a mock otherwise create a mock
                     //that delegates to the value
-                    if (value == null) {
+                    if (instance == null) {
                         MockSettings settings = withSettings()
                                 .defaultAnswer(mock.answer());
 
@@ -84,27 +87,23 @@ public class IntegrationTestReifier implements TestReifier {
 
                         instance = mock(field.getType(), settings);
                     } else {
-                        instance = mock(field.getType(), delegatesTo(value));
+                        instance = mock(field.getType(), delegatesTo(instance));
                     }
 
-                } else {
-
-                    TypeToken<?> token = TypeToken.of(fieldType);
+                } else if (optReal.isPresent() || optInject.isPresent()) {
+                    TypeToken<?> token = TypeToken.of(genericFieldTYpe);
                     Class rawType;
 
-                    if (token.isSupertypeOf(Provider.class) || token.isSupertypeOf(Optional.class)) {
-                        rawType = token.getRawType();
+                    if (token.isSubtypeOf(Provider.class)) {
+                        rawType = token.resolveType(Provider.class.getTypeParameters()[0]).getRawType();
+                        instance = new ServiceProvider(appContext, rawType);
                     } else {
-                        rawType = (Class) fieldType;
+                        rawType = (Class) genericFieldTYpe;
+                        instance = appContext.getService(rawType);
                     }
 
-                    instance = appContext.getService(rawType);
-                    Optional<Real> realOpt = fieldDescriptor.getAnnotation(Real.class);
-                    if (realOpt.isPresent()) {
-                        Real real = realOpt.get();
-                        if (real.value()) {
-                            instance = mock(rawType, delegatesTo(instance));
-                        }
+                    if (optReal.isPresent() && optReal.get().value()) {
+                        instance = mock(instance.getClass(), delegatesTo(instance));
                     }
                 }
 

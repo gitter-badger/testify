@@ -163,7 +163,7 @@
                             <parameters />
                         </compilerArguments>
                         <debug>true</debug>
-                        <debuglevel>vars,lines</debuglevel>
+                        <debuglevel>vars,lines,source</debuglevel>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -318,19 +318,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 
@@ -355,15 +348,16 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>[${spring.version},)</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
                 <version>[${assertj.version},)</version>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-context</artifactId>
-                <version>[${spring.version},)</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

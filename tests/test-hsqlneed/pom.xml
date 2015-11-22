@@ -26,11 +26,6 @@
     <artifactId>test-hsqlneed</artifactId>
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>com.fitbur.testify.junit</groupId>
             <artifactId>spring-integration-test</artifactId>
             <version>${project.version}</version>

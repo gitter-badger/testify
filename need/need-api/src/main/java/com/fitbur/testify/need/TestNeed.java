@@ -15,7 +15,7 @@
  */
 package com.fitbur.testify.need;
 
-import com.fitbur.testify.di.TestServiceLocator;
+import com.fitbur.testify.di.ServiceLocator;
 
 /**
  * A contract that defines methods must be implement by a test need so the
@@ -26,7 +26,7 @@ import com.fitbur.testify.di.TestServiceLocator;
  */
 public interface TestNeed<T> {
 
-    T init(Object testInstance, TestServiceLocator serviceLocator);
+    T init(Object testInstance, ServiceLocator serviceLocator);
 
     default void config(T context) {
     }

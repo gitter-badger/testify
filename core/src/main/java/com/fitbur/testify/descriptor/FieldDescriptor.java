@@ -62,10 +62,7 @@ public class FieldDescriptor {
     }
 
     public <T extends Annotation> Optional<T> getAnnotation(Class<T> type) {
-        return of(field.getDeclaredAnnotation(type))
-                .filter(p -> p.annotationType().equals(type))
-                .map(p -> (T) p)
-                .findFirst();
+        return ofNullable(field.getDeclaredAnnotation(type));
     }
 
     public Set<? extends Annotation> getAnnotations() {

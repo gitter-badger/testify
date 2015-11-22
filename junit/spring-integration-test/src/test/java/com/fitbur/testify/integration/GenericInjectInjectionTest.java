@@ -15,35 +15,34 @@
  */
 package com.fitbur.testify.integration;
 
-import com.fitbur.testify.Cut;
-import com.fitbur.testify.Mock;
 import com.fitbur.testify.Module;
-import com.fitbur.testify.integration.fixture.IntegrationConfig;
-import com.fitbur.testify.integration.fixture.service.ImplicitTypeService;
-import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
+import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
+import com.fitbur.testify.integration.fixture.service.GenericTypeService;
+import javax.inject.Inject;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.internal.util.MockUtil;
 
 /**
  *
  * @author saden
  */
 @RunWith(SpringIntegrationTestRunner.class)
-@Module(IntegrationConfig.class)
-public class ImplicitTypeMockTest {
+@Module(SpringIntegrationConfig.class)
+public class GenericInjectInjectionTest {
 
-    @Cut
-    public ImplicitTypeService cut;
-
-    @Mock
-    public Hello hello;
+    @Inject
+    GenericTypeService cut;
 
     @Test
-    public void testSomeMethod() {
-        assertThat(this.cut).isNotNull();
-        assertThat(this.hello).isNotNull();
-        assertThat(this.cut.getHello()).isSameAs(this.hello);
+    public void verifyInjections() {
+        assertThat(cut).isNotNull();
+        assertThat(cut.getHello())
+                .isNotNull();
+
+        MockUtil util = new MockUtil();
+        assertThat(util.isSpy(cut)).isFalse();
     }
 
 }

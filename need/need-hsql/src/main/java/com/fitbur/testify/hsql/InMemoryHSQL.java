@@ -18,8 +18,8 @@ package com.fitbur.testify.hsql;
 import com.fitbur.testify.Config;
 import com.fitbur.testify.di.ServiceDescriptor;
 import com.fitbur.testify.di.ServiceDescriptorBuilder;
+import com.fitbur.testify.di.ServiceLocator;
 import static com.fitbur.testify.di.ServiceScope.SINGLETON;
-import com.fitbur.testify.di.TestServiceLocator;
 import com.fitbur.testify.need.TestNeed;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -43,7 +43,7 @@ import static java.util.stream.Stream.of;
 public class InMemoryHSQL implements TestNeed<HSQLContext> {
 
     @Override
-    public HSQLContext init(Object testInstance, TestServiceLocator serviceLocator) {
+    public HSQLContext init(Object testInstance, ServiceLocator serviceLocator) {
         String dataSourceName = serviceLocator.getName() + "DataSource";
 
         HikariConfig config = new HikariConfig();

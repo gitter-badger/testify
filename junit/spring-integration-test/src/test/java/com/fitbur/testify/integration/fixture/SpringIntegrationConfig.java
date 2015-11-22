@@ -13,32 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.integration.fixture.service;
+package com.fitbur.testify.integration.fixture;
 
-import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 
 /**
  *
  * @author saden
  */
-@Component
-public class ImplicitTypeService {
-
-    public final Hello hello;
-
-    @Autowired
-    ImplicitTypeService(Hello hello) {
-        this.hello = hello;
-    }
-
-    public String greet() {
-        return null;
-    }
-
-    public Hello getHello() {
-        return this.hello;
-    }
+@Lazy
+@Configuration
+@ComponentScan(lazyInit = true)
+public class SpringIntegrationConfig {
 
 }

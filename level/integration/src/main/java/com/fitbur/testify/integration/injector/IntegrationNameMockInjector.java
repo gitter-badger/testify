@@ -15,7 +15,6 @@
  */
 package com.fitbur.testify.integration.injector;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import com.fitbur.testify.Mock;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestInjector;
@@ -23,7 +22,8 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import com.fitbur.testify.di.TestServiceLocator;
+import com.fitbur.testify.di.ServiceLocator;
+import static com.google.common.base.Preconditions.checkArgument;
 import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
@@ -40,13 +40,13 @@ public class IntegrationNameMockInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
-    private final TestServiceLocator appContext;
+    private final ServiceLocator appContext;
     private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
     public IntegrationNameMockInjector(TestContext context,
             TestReifier testReifier,
-            TestServiceLocator appContext,
+            ServiceLocator appContext,
             FieldDescriptor fieldDescriptor,
             Object[] arguments) {
         this.context = context;

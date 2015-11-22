@@ -37,17 +37,17 @@ import java.lang.annotation.Target;
 public @interface Real {
 
     /**
-     * Indicates whether the real instance should be spied upon. This is
-     * usefully if you wish to stub or verify calls to protected/private methods
-     * of the real instance. Be very careful how you use this since stubbing a
-     * spy object can lead to calls to the real object which often is not
-     * desirable.
+     * Indicates whether the real instance should be delegated to. This is
+     * usefully if you wish to stub certain call to the real instance and/or
+     * verify calls to protected/private methods of the real instance. Be very
+     * careful how you use this since delegating to the real instance can have
+     * undesirable side effect.
      *
      * <p>
-     * By default spying on a real instance is set to false.
+     * By default delgating to the real instance is set to false.
      *
      * <p>
-     * @return true if real instance should be spied on.
+     * @return true if real instance should be delegated to.
      */
     boolean value() default false;
 }
