@@ -1,6 +1,6 @@
 # Testify
-[![Travis](https://img.shields.io/travis/FitburIO/testify.svg)](https://travis-ci.org/FitburIO/testify?branch=develop)
-[![Codecov](https://img.shields.io/codecov/c/github/FitburIO/testify.svg)](https://codecov.io/github/FitburIO/testify/branch.svg?branch=develop)
+[![Build Status](https://travis-ci.org/FitburIO/testify.svg?branch=develop)](https://travis-ci.org/FitburIO/testify)
+[![codecov.io](https://codecov.io/github/FitburIO/testify/coverage.svg?branch=develop)](https://codecov.io/github/FitburIO/testify?branch=develop)
 [![License](https://img.shields.io/github/license/FitburIO/testify.svg)](LICENSE)
 
 ## Overview
