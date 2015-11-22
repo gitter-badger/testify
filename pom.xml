@@ -62,6 +62,10 @@
         <plugin.jacoco>0.7.5.201505241946</plugin.jacoco>
         <plugin.pit>1.1.6</plugin.pit>
         <plugin.license>2.11</plugin.license>
+        <plugin.sonatype>1.6.6</plugin.sonatype>
+        <plugin.versions>2.2</plugin.versions>
+        <plugin.deploy>2.8.2</plugin.deploy>
+        <plugin.gpg>1.6</plugin.gpg>
 
         <!-- Dependency Versions -->
         <junit.version>4.12</junit.version>
@@ -127,7 +131,6 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <version>${plugin.enforcer}</version>
                     <executions>
@@ -154,7 +157,6 @@
                     </executions>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${plugin.compiler}</version>
                     <configuration>
@@ -167,7 +169,6 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${plugin.surefire}</version>
                 </plugin>
@@ -283,7 +284,6 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
                     <version>${plugin.checkstyle}</version>
                     <executions>
@@ -312,6 +312,56 @@
                         <consoleOutput>true</consoleOutput>
                         <failsOnError>true</failsOnError>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>${plugin.versions}</version>
+                    <configuration>
+                        <generateBackupPoms>false</generateBackupPoms>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>${plugin.deploy}</version>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${plugin.gpg}</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>${plugin.sonatype}</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <serverId>oss.sonatype.org</serverId>
+                        <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                        <description>${project.version}</description>
+                        <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>deploy-to-sonatype</id>
+                            <phase>deploy</phase>
+                            <goals>
+                                <goal>deploy</goal>
+                                <goal>release</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -380,6 +430,32 @@
                     <plugin>
                         <groupId>com.mycila</groupId>
                         <artifactId>license-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>release</id>
+            <activation>
+                <property>
+                    <name>release</name>
+                    <value>yes</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>
