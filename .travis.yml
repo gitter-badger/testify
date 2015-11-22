@@ -12,7 +12,7 @@ notifications:
     on-failure: always
 
 before_install:
-    - openssl aes-256-cbc -K $encrypted_2d3d77b456af_key -iv $encrypted_2d3d77b456af_iv -in settings.xml.enc -out settings.xml -d
+    - openssl aes-256-cbc -K $encrypted_2d3d77b456af_key -iv $encrypted_2d3d77b456af_iv -in secrets.tar.enc -out secrets.tar -d
     - pip install --user codecov
 
 install:
