@@ -13,6 +13,7 @@ notifications:
 
 before_install:
     - openssl aes-256-cbc -K $encrypted_2d3d77b456af_key -iv $encrypted_2d3d77b456af_iv -in secrets.tar.enc -out secrets.tar -d
+    - tar xvf secrets.tar
     - pip install --user codecov
 
 install:
