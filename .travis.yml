@@ -21,4 +21,7 @@ install:
     - mvn test --settings settings.xml -B
 
 after_success:
-- codecov
+    - codecov
+    - "[[ $TRAVIS_BRANCH == \"develop\" ]] && { sh ./develop.sh ; };"
+    - "[[ $TRAVIS_BRANCH == \"master\" ]] && { sh ./master.sh ; };"
+
