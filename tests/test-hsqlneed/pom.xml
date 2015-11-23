@@ -23,7 +23,9 @@
         <artifactId>tests</artifactId>
         <version>0.0.1</version>
     </parent>
+
     <artifactId>test-hsqlneed</artifactId>
+
     <dependencies>
         <dependency>
             <groupId>com.fitbur.testify.junit</groupId>
