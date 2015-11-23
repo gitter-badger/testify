@@ -62,7 +62,7 @@
         <plugin.jacoco>0.7.5.201505241946</plugin.jacoco>
         <plugin.pit>1.1.6</plugin.pit>
         <plugin.license>2.11</plugin.license>
-        <plugin.sonatype>1.6.3</plugin.sonatype>
+        <plugin.sonatype>1.6.6</plugin.sonatype>
         <plugin.versions>2.2</plugin.versions>
         <plugin.gpg>1.6</plugin.gpg>
 
