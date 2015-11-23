@@ -32,4 +32,4 @@ install:
 
 after_success:
     - codecov
-    - ./develop.sh
+    - deploy.sh
