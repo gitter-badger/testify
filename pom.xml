@@ -85,14 +85,24 @@
         <maven>${maven.version}</maven>
     </prerequisites>
 
+    <inceptionYear>2015</inceptionYear>
 
     <organization>
         <name>Sharmarke Aden</name>
         <url>https://github.com/FitburIO/testify</url>
     </organization>
 
-    <inceptionYear>2015</inceptionYear>
-
+    <developers>
+        <developer>
+            <id>saden1</id>
+            <name>Sharmarke Aden</name>
+            <timezone>-8</timezone>
+            <roles>
+                <role>Lead</role>
+            </roles>
+        </developer>
+    </developers>
+    
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
