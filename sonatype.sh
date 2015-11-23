@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if ["${TRAVIS_PULL_REQUEST}" = "false"]; then
+  echo "Pull Request on $TRAVIS_BRANCH' branch. Artifacts not deployed."
+  exit 0
+fi
+
 if [ "$TRAVIS_BRANCH" = "master" ]; then
   echo "Releasing $TRAVIS_BRANCH' branch."
   mvn nexus-staging-maven-plugin:release --settings settings.xml -Prelease -Dmaven.test.skip -B -T 1C
