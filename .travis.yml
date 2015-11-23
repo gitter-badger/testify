@@ -26,10 +26,6 @@ before_install:
     - tar xvf secrets.tar
     - pip install --user codecov
 
-install:
-    - mvn install --settings settings.xml -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-    - mvn test --settings settings.xml -B
-
 after_success:
     - codecov
-    - deploy.sh
+    - ./sonatype.sh
