@@ -1,4 +1,4 @@
-sudo: true
+sudo: false
 
 language: java
 
@@ -16,10 +16,14 @@ cache:
     directories:
         - $HOME/.m2
 
+addons:
+    apt:
+        packages:
+            - gnupg2
+
 before_install:
     - openssl aes-256-cbc -K $encrypted_2d3d77b456af_key -iv $encrypted_2d3d77b456af_iv -in secrets.tar.enc -out secrets.tar -d
     - tar xvf secrets.tar
-    - sudo apt-get install -y gnupg2
     - pip install --user codecov
 
 install:
