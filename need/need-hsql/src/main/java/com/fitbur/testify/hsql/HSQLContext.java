@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,7 @@
 package com.fitbur.testify.hsql;
 
 import com.fitbur.testify.di.ServiceDescriptor;
-import com.fitbur.testify.di.TestServiceLocator;
+import com.fitbur.testify.di.ServiceLocator;
 import java.util.Objects;
 
 /**
@@ -29,11 +29,11 @@ public class HSQLContext {
     private final Object testInstance;
 
     private final ServiceDescriptor descriptor;
-    private final TestServiceLocator serviceLocator;
+    private final ServiceLocator serviceLocator;
 
     HSQLContext(Object testInstance,
             ServiceDescriptor descriptor,
-            TestServiceLocator serviceLocator) {
+            ServiceLocator serviceLocator) {
         this.testInstance = testInstance;
         this.descriptor = descriptor;
         this.serviceLocator = serviceLocator;
@@ -47,7 +47,7 @@ public class HSQLContext {
         return testInstance;
     }
 
-    public TestServiceLocator getServiceLocator() {
+    public ServiceLocator getServiceLocator() {
         return serviceLocator;
     }
 

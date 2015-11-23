@@ -13,52 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.junit;
+package com.fitbur.testify.integration;
 
-import com.fitbur.testify.junit.fixture.ImplicitType;
-import com.fitbur.testify.junit.fixture.collaborator.Hello;
 import com.fitbur.testify.Cut;
 import com.fitbur.testify.Mock;
+import com.fitbur.testify.Module;
+import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
+import com.fitbur.testify.integration.fixture.service.GenericTypeService;
+import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
+import javax.inject.Provider;
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import org.mockito.internal.util.MockUtil;
 
 /**
  *
  * @author saden
  */
-@RunWith(UnitTestRunner.class)
-public class ImplicitTypeInitializationTest {
+@RunWith(SpringIntegrationTestRunner.class)
+@Module(SpringIntegrationConfig.class)
+public class GenericTypeCutWithMockTest {
 
     @Cut
-    ImplicitType cut;
+    GenericTypeService cut;
 
     @Mock
-    Hello hello = new Hello();
-
-    @Before
-    public void verifyInjections() {
-        assertThat(cut).isNotNull();
-        assertThat(hello).isNotNull();
-        assertThat(cut.getHello()).isSameAs(hello);
-        assertThat(new MockUtil().isMock(hello)).isTrue();
-    }
+    Provider<Hello> hello;
 
     @Test
-    public void givenNothingClassToExecuteShouldReturnHello() {
-        String helloGreeting = "Hello";
-        given(hello.greet()).willReturn(helloGreeting);
+    public void verifyInjections() {
+        assertThat(cut).isNotNull();
+        assertThat(hello)
+                .isNotNull()
+                .isSameAs(cut.getHello());
 
-        String result = cut.execute();
-
-        assertThat(result).isEqualTo(helloGreeting);
-        verify(hello).greet();
-        verifyNoMoreInteractions(hello);
+        MockUtil util = new MockUtil();
+        assertThat(util.isMock(hello)).isTrue();
     }
 
 }

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,7 @@
 package com.fitbur.testify.integration;
 
 import com.fitbur.testify.TestContext;
-import com.fitbur.testify.di.TestServiceLocator;
+import com.fitbur.testify.di.ServiceLocator;
 import com.fitbur.testify.need.NeedDescriptor;
 import static java.util.Collections.EMPTY_LIST;
 import java.util.List;
@@ -35,12 +35,12 @@ public class SpringIntegrationTestRunListener extends RunListener {
 
     public final String name;
     public final Map<Class, TestContext> testClassContexts;
-    public final Map<Class, TestServiceLocator> applicationContexts;
+    public final Map<Class, ServiceLocator> applicationContexts;
     private final Map<Class, List<NeedDescriptor>> testNeedDescriptors;
 
     SpringIntegrationTestRunListener(String name,
             Map<Class, TestContext> testClassContexts,
-            Map<Class, TestServiceLocator> applicationContexts,
+            Map<Class, ServiceLocator> applicationContexts,
             Map<Class, List<NeedDescriptor>> testNeedDescriptors) {
         this.name = name;
         this.testClassContexts = testClassContexts;

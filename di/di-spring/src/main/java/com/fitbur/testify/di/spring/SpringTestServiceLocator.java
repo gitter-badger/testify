@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,12 +17,12 @@ package com.fitbur.testify.di.spring;
 
 import com.fitbur.testify.di.ServiceDescriptor;
 import com.fitbur.testify.di.ServiceScope;
-import com.fitbur.testify.di.TestServiceLocator;
 import static org.springframework.beans.factory.config.BeanDefinition.ROLE_APPLICATION;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import static org.springframework.beans.factory.support.AbstractBeanDefinition.AUTOWIRE_BY_TYPE;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import com.fitbur.testify.di.ServiceLocator;
 
 /**
  * A spring implementation of test service locator. It provides the ability to
@@ -31,7 +31,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  *
  * @author saden
  */
-public class SpringTestServiceLocator implements TestServiceLocator {
+public class SpringTestServiceLocator implements ServiceLocator {
 
     public final AnnotationConfigApplicationContext context;
 

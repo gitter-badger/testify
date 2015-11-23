@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,8 +18,8 @@ package com.fitbur.testify.hsql;
 import com.fitbur.testify.Config;
 import com.fitbur.testify.di.ServiceDescriptor;
 import com.fitbur.testify.di.ServiceDescriptorBuilder;
+import com.fitbur.testify.di.ServiceLocator;
 import static com.fitbur.testify.di.ServiceScope.SINGLETON;
-import com.fitbur.testify.di.TestServiceLocator;
 import com.fitbur.testify.need.TestNeed;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -43,7 +43,7 @@ import static java.util.stream.Stream.of;
 public class InMemoryHSQL implements TestNeed<HSQLContext> {
 
     @Override
-    public HSQLContext init(Object testInstance, TestServiceLocator serviceLocator) {
+    public HSQLContext init(Object testInstance, ServiceLocator serviceLocator) {
         String dataSourceName = serviceLocator.getName() + "DataSource";
 
         HikariConfig config = new HikariConfig();

@@ -7,7 +7,7 @@
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
 
-        http://www.apache.org/licenses/LICENSE-2.0
+         http://www.apache.org/licenses/LICENSE-2.0
 
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS,
@@ -61,6 +61,11 @@
         <plugin.javadoc>2.10.3</plugin.javadoc>
         <plugin.jacoco>0.7.5.201505241946</plugin.jacoco>
         <plugin.pit>1.1.6</plugin.pit>
+        <plugin.license>2.11</plugin.license>
+        <plugin.sonatype>1.6.6</plugin.sonatype>
+        <plugin.versions>2.2</plugin.versions>
+        <plugin.deploy>2.8.2</plugin.deploy>
+        <plugin.gpg>1.6</plugin.gpg>
 
         <!-- Dependency Versions -->
         <junit.version>4.12</junit.version>
@@ -75,19 +80,19 @@
         <guava.version>19.0-rc2</guava.version>
         <spring.version>4.2.1.RELEASE</spring.version>
     </properties>
-    
+
     <prerequisites>
         <maven>${maven.version}</maven>
     </prerequisites>
-    
-    
+
+
     <organization>
         <name>Sharmarke Aden</name>
         <url>https://github.com/FitburIO/testify</url>
     </organization>
-    
+
     <inceptionYear>2015</inceptionYear>
-    
+
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -95,24 +100,48 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-    
+
     <issueManagement>
         <system>Github</system>
         <url>https://github.com/FitburIO/testify/issues</url>
     </issueManagement>
-    
+
     <scm>
         <connection>scm:git:https://github.com/FitburIO/testify.git</connection>
         <developerConnection>scm:git:https://github.com/FitburIO/testify.git</developerConnection>
         <url>https://github.com/FitburIO/testify.git/tree/${project.scm.tag}</url>
         <tag>master</tag>
     </scm>
-    
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
     <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+            </plugin>
+        </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <version>${plugin.enforcer}</version>
                     <executions>
@@ -127,7 +156,7 @@
                                         <version>[${maven.version},)</version>
                                     </requireMavenVersion>
                                     <requireJavaVersion>
-                                        <version>${java.target}</version>
+                                        <version>${maven.compiler.target}</version>
                                     </requireJavaVersion>
                                     <requireProperty>
                                         <property>project.build.sourceEncoding</property>
@@ -139,7 +168,6 @@
                     </executions>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${plugin.compiler}</version>
                     <configuration>
@@ -147,10 +175,11 @@
                             <!-- enable runtime discover of parameter names -->
                             <parameters />
                         </compilerArguments>
+                        <debug>true</debug>
+                        <debuglevel>vars,lines,source</debuglevel>
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${plugin.surefire}</version>
                 </plugin>
@@ -160,7 +189,6 @@
                     <executions>
                         <execution>
                             <id>attach-sources</id>
-                            <phase>verify</phase>
                             <goals>
                                 <goal>jar-no-fork</goal>
                             </goals>
@@ -173,7 +201,6 @@
                     <executions>
                         <execution>
                             <id>attach-javadocs</id>
-                            <phase>verify</phase>
                             <goals>
                                 <goal>jar</goal>
                             </goals>
@@ -186,47 +213,18 @@
                     <version>${plugin.jacoco}</version>
                     <executions>
                         <execution>
-                            <id>prepare-agent</id>
                             <goals>
                                 <goal>prepare-agent</goal>
                             </goals>
                         </execution>
                         <execution>
-                            <id>jacoco-report</id>
-                            <phase>prepare-package</phase>
+                            <id>report</id>
+                            <phase>test</phase>
                             <goals>
                                 <goal>report</goal>
                             </goals>
                         </execution>
-                        <execution>
-                            <id>check</id>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                            <configuration>
-                                <rules>
-                                    <rule>
-                                        <element>BUNDLE</element>
-                                        <limits>
-                                            <limit>
-                                                <counter>INSTRUCTION</counter>
-                                                <value>COVEREDRATIO</value>
-                                                <minimum>0.80</minimum>
-                                            </limit>
-                                            <limit>
-                                                <counter>CLASS</counter>
-                                                <value>MISSEDCOUNT</value>
-                                                <maximum>0</maximum>
-                                            </limit>
-                                        </limits>
-                                    </rule>
-                                </rules>
-                            </configuration>
-                        </execution>
                     </executions>
-                    <configuration>
-                        <haltOnFailure>false</haltOnFailure>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.pitest</groupId>
@@ -242,6 +240,8 @@
                     </executions>
                     <configuration>
                         <failWhenNoMutations>false</failWhenNoMutations>
+                        <skip>${skipTests}</skip>
+                        <skipTests>${skipTests}</skipTests>
                         <threads>4</threads>
                         <historyInputLocation>${project.build.directory/pit.history</historyInputLocation>
                         <historyOutputLocation>${project.build.directory/pit.history</historyOutputLocation>
@@ -260,7 +260,7 @@
                 <plugin>
                     <groupId>com.mycila</groupId>
                     <artifactId>license-maven-plugin</artifactId>
-                    <version>2.11</version>
+                    <version>${plugin.license}</version>
                     <executions>
                         <execution>
                             <goals>
@@ -285,6 +285,7 @@
                             <headerDefinition>java_header_style.xml</headerDefinition>
                         </headerDefinitions>
                         <excludes>
+                            <exclude>**/.*</exclude>
                             <exclude>**/*.md</exclude>
                             <exclude>**/*.txt</exclude>
                             <exclude>**/nbactions.xml</exclude>
@@ -294,7 +295,6 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
                     <version>${plugin.checkstyle}</version>
                     <executions>
@@ -324,20 +324,55 @@
                         <failsOnError>true</failsOnError>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>${plugin.versions}</version>
+                    <configuration>
+                        <generateBackupPoms>false</generateBackupPoms>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>${plugin.deploy}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${plugin.gpg}</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>${plugin.sonatype}</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <serverId>ossrh</serverId>
+                        <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                        <description>${project.version}</description>
+                        <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
 
     <dependencies>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 
@@ -346,31 +381,32 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
+                <version>[${junit.version},)</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
-                <version>${testng.version}</version>
+                <version>[${testng.version},)</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>${mockito.verson}</version>
+                <version>[${mockito.verson},)</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>[${spring.version},)</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>${assertj.version}</version>
+                <version>[${assertj.version},)</version>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-context</artifactId>
-                <version>${spring.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -392,6 +428,26 @@
                     <plugin>
                         <groupId>com.mycila</groupId>
                         <artifactId>license-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>

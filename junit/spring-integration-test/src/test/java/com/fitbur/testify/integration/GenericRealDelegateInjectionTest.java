@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,35 +15,34 @@
  */
 package com.fitbur.testify.integration;
 
-import com.fitbur.testify.Cut;
-import com.fitbur.testify.Mock;
 import com.fitbur.testify.Module;
-import com.fitbur.testify.integration.fixture.IntegrationConfig;
-import com.fitbur.testify.integration.fixture.service.ImplicitTypeService;
-import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
+import com.fitbur.testify.Real;
+import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
+import com.fitbur.testify.integration.fixture.service.GenericTypeService;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.internal.util.MockUtil;
 
 /**
  *
  * @author saden
  */
 @RunWith(SpringIntegrationTestRunner.class)
-@Module(IntegrationConfig.class)
-public class ImplicitTypeMockTest {
+@Module(SpringIntegrationConfig.class)
+public class GenericRealDelegateInjectionTest {
 
-    @Cut
-    public ImplicitTypeService cut;
-
-    @Mock
-    public Hello hello;
+    @Real(true)
+    GenericTypeService cut;
 
     @Test
-    public void testSomeMethod() {
-        assertThat(this.cut).isNotNull();
-        assertThat(this.hello).isNotNull();
-        assertThat(this.cut.getHello()).isSameAs(this.hello);
+    public void verifyInjections() {
+        assertThat(cut).isNotNull();
+        assertThat(cut.getHello())
+                .isNotNull();
+
+        MockUtil util = new MockUtil();
+        assertThat(util.isMock(cut)).isTrue();
     }
 
 }

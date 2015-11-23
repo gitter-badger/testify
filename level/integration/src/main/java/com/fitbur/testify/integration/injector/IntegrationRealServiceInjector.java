@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,7 +21,7 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import com.fitbur.testify.di.TestServiceLocator;
+import com.fitbur.testify.di.ServiceLocator;
 import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
@@ -30,9 +30,9 @@ import java.util.Map;
 
 /**
  * An integration test injector implementation that injects fields annotated
- * with {@link Real} that does some smart name/type based detection on the cut
- * class constructor and injects services found in the dependency injection
- * framework.
+ * with {@link com.fitbur.testify.Real} or {@link javax.inject.Inject} that
+ * performs name or type based detection on the class under test constructor and
+ * injects services found in the dependency injection framework.
  *
  * @author saden
  */
@@ -40,13 +40,13 @@ public class IntegrationRealServiceInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
-    private final TestServiceLocator appContext;
+    private final ServiceLocator appContext;
     private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
     public IntegrationRealServiceInjector(TestContext context,
             TestReifier testReifier,
-            TestServiceLocator appContext,
+            ServiceLocator appContext,
             FieldDescriptor fieldDescriptor,
             Object[] arguments) {
         this.context = context;

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,7 @@
  */
 package com.fitbur.testify.integration;
 
+import com.fitbur.testify.Mock;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
@@ -22,7 +23,7 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import com.fitbur.testify.di.TestServiceLocator;
+import com.fitbur.testify.di.ServiceLocator;
 import com.fitbur.testify.integration.injector.IntegrationIndexMockInjector;
 import com.fitbur.testify.integration.injector.IntegrationNameMockInjector;
 import com.fitbur.testify.integration.injector.IntegrationRealServiceInjector;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
+import javax.inject.Inject;
 
 /**
  * A spring integration test creator which looks at the test descriptors,
@@ -44,11 +46,11 @@ public class IntegrationTestCreator {
 
     private final TestContext context;
     private final TestReifier testReifier;
-    private final TestServiceLocator appContext;
+    private final ServiceLocator appContext;
 
     public IntegrationTestCreator(TestContext context,
             TestReifier testReifier,
-            TestServiceLocator appContext) {
+            ServiceLocator appContext) {
         this.context = context;
         this.testReifier = testReifier;
         this.appContext = appContext;
@@ -93,8 +95,8 @@ public class IntegrationTestCreator {
         appContext.reload();
 
         descriptors.parallelStream()
-                .filter(p -> !p.getMock().isPresent()
-                        && (p.getAnnotation(Real.class).isPresent()))
+                .filter(p -> !p.hasAnyAnnotation(Mock.class))
+                .filter(p -> p.hasAnyAnnotation(Real.class, Inject.class))
                 .map(p -> new IntegrationRealServiceInjector(context, testReifier, appContext, p, arguments))
                 .forEach(IntegrationRealServiceInjector::inject);
 

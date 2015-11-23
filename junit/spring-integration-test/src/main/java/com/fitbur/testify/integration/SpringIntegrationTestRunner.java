@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,18 +15,18 @@
  */
 package com.fitbur.testify.integration;
 
-import static com.google.common.base.Preconditions.checkState;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestException;
 import com.fitbur.testify.analyzer.CutClassAnalyzer;
 import com.fitbur.testify.analyzer.TestClassAnalyzer;
 import com.fitbur.testify.descriptor.FieldDescriptor;
-import com.fitbur.testify.di.TestServiceLocator;
+import com.fitbur.testify.di.ServiceLocator;
 import com.fitbur.testify.di.spring.SpringTestServiceLocator;
 import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.NeedDescriptor;
 import com.fitbur.testify.need.TestNeed;
+import static com.google.common.base.Preconditions.checkState;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,7 +61,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class SpringIntegrationTestRunner extends BlockJUnit4ClassRunner {
 
     protected Map<Class, TestContext> testClassContexts = new ConcurrentHashMap<>();
-    public Map<Class, TestServiceLocator> applicationContexts = new ConcurrentHashMap<>();
+    public Map<Class, ServiceLocator> applicationContexts = new ConcurrentHashMap<>();
     public Map<Class, List<NeedDescriptor>> testNeedDescriptors = new ConcurrentHashMap<>();
 
     public RunNotifier notifier;
@@ -120,7 +120,7 @@ public class SpringIntegrationTestRunner extends BlockJUnit4ClassRunner {
 
                     return context;
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    throw new TestException(e);
                 }
             });
 
@@ -128,15 +128,16 @@ public class SpringIntegrationTestRunner extends BlockJUnit4ClassRunner {
             appContext.setAllowBeanDefinitionOverriding(true);
             appContext.setId(name);
 
-            TestServiceLocator serviceLocator
+            ServiceLocator serviceLocator
                     = new SpringTestServiceLocator(appContext);
             Object testInstance = testContext.getTestInstance();
             Need[] needs = testInstance.getClass().getDeclaredAnnotationsByType(Need.class);
 
+            @SuppressWarnings("UseSpecificCatch")
             List<NeedDescriptor> needDescriptors = of(needs)
                     .map(p -> {
                         try {
-                            TestNeed testNeed = (TestNeed) p.value().newInstance();
+                            TestNeed testNeed = p.value().newInstance();
                             Object needContext = testNeed.init(testInstance, serviceLocator);
                             return new NeedDescriptor(p, needContext, testNeed);
                         } catch (Exception e) {

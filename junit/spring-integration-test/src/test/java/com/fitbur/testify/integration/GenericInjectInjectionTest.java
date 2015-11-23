@@ -13,36 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.junit;
+package com.fitbur.testify.integration;
 
-import com.fitbur.testify.Cut;
-import com.fitbur.testify.junit.fixture.NoConstructorType;
+import com.fitbur.testify.Module;
+import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
+import com.fitbur.testify.integration.fixture.service.GenericTypeService;
+import javax.inject.Inject;
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.internal.util.MockUtil;
 
 /**
  *
  * @author saden
  */
-@RunWith(UnitTestRunner.class)
-public class NoConstructorTest {
+@RunWith(SpringIntegrationTestRunner.class)
+@Module(SpringIntegrationConfig.class)
+public class GenericInjectInjectionTest {
 
-    @Cut
-    NoConstructorType cut;
-
-    @Before
-    public void verifyInjections() {
-        assertThat(cut).isNotNull();
-    }
+    @Inject
+    GenericTypeService cut;
 
     @Test
-    public void givenNothingClassToExecuteShouldReturnHello() {
-        String greeting = "Hello!";
-        String result = cut.execute();
+    public void verifyInjections() {
+        assertThat(cut).isNotNull();
+        assertThat(cut.getHello())
+                .isNotNull();
 
-        assertThat(result).isEqualTo(greeting);
+        MockUtil util = new MockUtil();
+        assertThat(util.isSpy(cut)).isFalse();
     }
 
 }

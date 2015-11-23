@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,42 +18,37 @@ package com.fitbur.testify.integration;
 import com.fitbur.testify.Cut;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.Real;
-import com.fitbur.testify.hsql.InMemoryHSQL;
-import com.fitbur.testify.integration.fixture.NeedConfig;
-import com.fitbur.testify.integration.fixture.service.NeedDataSource;
-import com.fitbur.testify.need.Need;
-import com.zaxxer.hikari.HikariDataSource;
+import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
+import com.fitbur.testify.integration.fixture.service.ClassTypeService;
+import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.internal.util.MockUtil;
 
 /**
  *
  * @author saden
  */
 @RunWith(SpringIntegrationTestRunner.class)
-@Module(NeedConfig.class)
-@Need(InMemoryHSQL.class)
-public class InjectRealCollaboratorTest {
+@Module(SpringIntegrationConfig.class)
+public class CLassTypeCutWithRealTest {
 
     @Cut
-    NeedDataSource cut;
+    ClassTypeService cut;
 
     @Real
-    HikariDataSource dataSource;
+    Hello hello;
 
     @Test
-    public void testSomeMethod() {
-        assertThat(this.cut).isNotNull();
-        assertThat(this.dataSource).isNotNull();
-        assertThat(cut.getDataSource()).isSameAs(dataSource);
-    }
+    public void verifyInjections() {
+        assertThat(cut).isNotNull();
+        assertThat(hello)
+                .isNotNull()
+                .isSameAs(cut.getHello());
 
-    @Test
-    public void testSomeMethod2() {
-        assertThat(this.cut).isNotNull();
-        assertThat(this.dataSource).isNotNull();
-        assertThat(cut.getDataSource()).isSameAs(dataSource);
+        MockUtil util = new MockUtil();
+        assertThat(util.isSpy(hello)).isFalse();
     }
 
 }

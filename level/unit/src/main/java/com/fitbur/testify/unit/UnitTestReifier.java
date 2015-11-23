@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,6 +28,7 @@ import static java.security.AccessController.doPrivileged;
 import java.security.PrivilegedAction;
 import java.util.Optional;
 import static org.mockito.AdditionalAnswers.delegatesTo;
+import static org.mockito.Answers.RETURNS_DEFAULTS;
 import org.mockito.MockSettings;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -64,12 +65,7 @@ public class UnitTestReifier implements TestReifier {
                     //if the field value is null create a new mock
                     if (value == null || MOCK_UTIL.isMock(value) || MOCK_UTIL.isSpy(value)) {
                         MockSettings settings = withSettings()
-                                .defaultAnswer(mock.answer());
-
-                        if (mock.extraInterfaces().length > 0) {
-                            settings.extraInterfaces(mock.extraInterfaces());
-
-                        }
+                                .defaultAnswer(RETURNS_DEFAULTS);
 
                         instance = mock(field.getType(), settings);
                     } else {
