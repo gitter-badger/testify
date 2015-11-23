@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if ["${TRAVIS_PULL_REQUEST}" = "false"]; then
+if [ "$TRAVIS_PULL_REQUEST" = "true" ]; then
   echo "Pull Request on $TRAVIS_BRANCH' branch. Artifacts not deployed."
   exit 0
 fi
