@@ -15,18 +15,21 @@
 # limitations under the License.
 #
 
+SKIP_TESTS="-DskipTests=true -Dmaven.test.skip=true"
+MAVEN_SETTINGS="--settings settings.xml"
+RELEASE="-Prelease"
+
 if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-    SKIP_TESTS="-DskipTests=true -Dmaven.test.skip=true"
-    MAVEN_SETTINGS="--settings settings.xml"
-    RELEASE="-Prelease"
+    echo "Deploying '$TRAVIS_BRANCH' branch"
     if [ "$TRAVIS_BRANCH" = "master" ]; then
-        echo "Deploying release artifacts of '$TRAVIS_BRANCH' branch"
-        echo "Staging '$TRAVIS_BRANCH' branch"
-        mvn clean deploy $MVN_SETTINGS $RELEASE $SKIP_TESTS -B
-        echo "Releasing '$TRAVIS_BRANCH' branch"
-        mvn nexus-staging:release MVN_SETTINGS $SKIP_TESTS -B
-        PROJECT_VERSION=$(mvn -q org.codehaus.mojo:exec-maven-plugin:1.4.0:exec -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive)
+        echo "Staging release artifacts on maven-central"
+        mvn clean deploy $MAVEN_SETTINGS $RELEASE $SKIP_TESTS -B
+
+        echo "Releasing artifacts to maven central"
+        mvn nexus-staging:release $MAVEN_SETTINGS $SKIP_TESTS -B
+
         echo "Creating GitHub 'testify-$PROJECT_VERSION' Release"
+        PROJECT_VERSION=$(mvn -q org.codehaus.mojo:exec-maven-plugin:1.4.0:exec -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive)
         curl -H "Content-Type: application/json" -X POST \
         -d '{
           "tag_name": "'"testify-$PROJECT_VERSION"'",
@@ -39,12 +42,13 @@ if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
         https://api.github.com/repos/FitburIO/testify/releases?access_token=$RELEASE_TOKEN
 
     elif [ "$TRAVIS_BRANCH" = "develop" ]; then
-        echo "Deploying snapshot artifacts of '$TRAVIS_BRANCH' branch"
-        mvn clean deploy $MVN_SETTINGS $RELEASE $SKIP_TESTS -B
+        echo "Deploying snapshot artifacts to maven central"
+        mvn clean deploy $MAVEN_SETTINGS $RELEASE $SKIP_TESTS -B
 
     else
         echo "Unknown '$TRAVIS_BRANCH' branch. Artifacts not deployed."
     fi
+
 fi
 
 echo "All Done! Keep on Testifying!"
