@@ -22,7 +22,7 @@
 
     <groupId>com.fitbur.testify</groupId>
     <artifactId>parent</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.1</version>
     <packaging>pom</packaging>
     
     <name>Testify</name>
@@ -64,7 +64,6 @@
         <plugin.license>2.11</plugin.license>
         <plugin.sonatype>1.6.6</plugin.sonatype>
         <plugin.versions>2.2</plugin.versions>
-        <plugin.deploy>2.8.2</plugin.deploy>
         <plugin.gpg>1.6</plugin.gpg>
 
         <!-- Dependency Versions -->
@@ -85,14 +84,24 @@
         <maven>${maven.version}</maven>
     </prerequisites>
 
+    <inceptionYear>2015</inceptionYear>
 
     <organization>
         <name>Sharmarke Aden</name>
         <url>https://github.com/FitburIO/testify</url>
     </organization>
 
-    <inceptionYear>2015</inceptionYear>
-
+    <developers>
+        <developer>
+            <id>saden1</id>
+            <name>Sharmarke Aden</name>
+            <timezone>-8</timezone>
+            <roles>
+                <role>Lead</role>
+            </roles>
+        </developer>
+    </developers>
+    
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -186,10 +195,6 @@
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${plugin.surefire}</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>${plugin.deploy}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
@@ -410,6 +415,35 @@
             </snapshots>
         </repository>
     </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>sonatype-nexus-plugin-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>sonatype-nexus-plugin-releases</id>
+            <name>Sonatype Nexus Releases</name>
+            <url>https://oss.sonatype.org/content/repositories/releases</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
     
     <profiles>
         <profile>

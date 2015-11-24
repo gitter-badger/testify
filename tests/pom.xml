@@ -21,8 +21,10 @@
     <parent>
         <groupId>com.fitbur.testify</groupId>
         <artifactId>parent</artifactId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>0.0.1</version>
     </parent>
+
+    <groupId>com.fitbur.testify.tests</groupId>
     <artifactId>tests</artifactId>
     <name>Tests</name>
     <packaging>pom</packaging>
@@ -30,19 +32,6 @@
     <modules>
         <module>test-hsqlneed</module>
     </modules>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>${plugin.deploy}</version>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
     <dependencies>
         <dependency>
