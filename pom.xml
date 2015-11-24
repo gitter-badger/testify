@@ -38,6 +38,7 @@
         <module>level</module>
         <module>junit</module>
         <module>tests</module>
+        <module>examples</module>
     </modules>
     
     <properties>
