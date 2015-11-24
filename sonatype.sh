@@ -40,7 +40,7 @@ if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
 
     elif [ "$TRAVIS_BRANCH" = "develop" ]; then
         echo "Deploying snapshot artifacts of '$TRAVIS_BRANCH' branch"
-        mvn clean deploy  $MVN_SETTINGS $RELEASE $SKIP_TESTS -B
+        mvn clean deploy $MVN_SETTINGS $RELEASE $SKIP_TESTS -B
 
     else
         echo "Unknown '$TRAVIS_BRANCH' branch. Artifacts not deployed."
