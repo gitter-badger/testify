@@ -17,8 +17,11 @@ package com.fitbur.testify.descriptor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
 import java.util.Objects;
 import java.util.Optional;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
@@ -33,7 +36,7 @@ public class ParameterDescriptor {
 
     private final Parameter parameter;
     private final Integer index;
-    private Object instance;
+    private Optional<Object> instance = empty();
 
     public ParameterDescriptor(Parameter parameter, Integer index) {
         this.parameter = parameter;
@@ -44,8 +47,32 @@ public class ParameterDescriptor {
         return parameter;
     }
 
+    public String getName() {
+        return parameter.getName();
+    }
+
     public Integer getIndex() {
         return index;
+    }
+
+    public Class<?> getType() {
+        return parameter.getType();
+    }
+
+    public Type getGenericType() {
+        return parameter.getParameterizedType();
+    }
+
+    public String getTypeName() {
+        return parameter.getType().getSimpleName();
+    }
+
+    public Optional<Object> getInstance() {
+        return instance;
+    }
+
+    public void setInstance(Object instance) {
+        this.instance = ofNullable(instance);
     }
 
     public <T extends Annotation> Optional<T> getAnnotation(Class<T> type) {
@@ -66,12 +93,12 @@ public class ParameterDescriptor {
                 .collect(toSet());
     }
 
-    public Object getInstance() {
-        return instance;
+    public <T extends Annotation> boolean hasAnnotation(Class<T> type) {
+        return parameter.isAnnotationPresent(type);
     }
 
-    public void setInstance(Object instance) {
-        this.instance = instance;
+    public boolean hasAnyAnnotation(Class<? extends Annotation>... type) {
+        return of(type).anyMatch(parameter::isAnnotationPresent);
     }
 
     @Override

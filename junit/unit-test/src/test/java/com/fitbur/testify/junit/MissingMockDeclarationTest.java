@@ -17,46 +17,27 @@ package com.fitbur.testify.junit;
 
 import com.fitbur.testify.Cut;
 import com.fitbur.testify.Mock;
-import com.fitbur.testify.junit.fixture.ImplicitType;
+import com.fitbur.testify.junit.fixture.ImplicitTypeDistinctTypes;
 import com.fitbur.testify.junit.fixture.collaborator.Hello;
-import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /**
  *
  * @author saden
  */
 @RunWith(UnitTestRunner.class)
-public class ImplicitTypeTest {
+public class MissingMockDeclarationTest {
 
     @Cut
-    ImplicitType cut;
+    ImplicitTypeDistinctTypes cut;
 
     @Mock
-    Hello collaborator;
+    Hello hello;
 
-    @Before
-    public void verifyInjections() {
-        assertThat(cut).isNotNull();
-        assertThat(collaborator).isNotNull();
-        assertThat(cut.getHello()).isSameAs(collaborator);
-    }
-
-    @Test
-    public void givenNothingClassToExecuteShouldReturnHello() {
-        String greeting = "Hello!";
-        given(collaborator.greet()).willReturn(greeting);
-
-        String result = cut.execute();
-
-        assertThat(result).isEqualTo(greeting);
-        verify(collaborator).greet();
-        verifyNoMoreInteractions(collaborator);
+    @Test(expected = NullPointerException.class)
+    public void givenMissingMockShouldThrowException() {
+        cut.execute();
     }
 
 }

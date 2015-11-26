@@ -54,7 +54,7 @@ public class TestException extends RuntimeException {
      * specified detail message and cause.
      *
      * @param message the detail message.
-     * @param cause the root cause of the exception.
+     * @param cause   the root cause of the exception.
      */
     public TestException(String message, Throwable cause) {
         super(message, cause);

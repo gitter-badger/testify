@@ -62,17 +62,17 @@ public class IntegrationTestReifier implements TestReifier {
     }
 
     @Override
-    public Object reifyField(FieldDescriptor fieldDescriptor, ParameterDescriptor parameterDescriptor) {
+    public Object reifyField(FieldDescriptor descriptor, ParameterDescriptor parameterDescriptor) {
         return AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
             try {
-                Field field = fieldDescriptor.getField();
+                Field field = descriptor.getField();
                 Type genericFieldTYpe = field.getGenericType();
                 field.setAccessible(true);
                 Object instance = field.get(testInstance);
 
-                Optional<Mock> optMock = fieldDescriptor.getMock();
-                Optional<Real> optReal = fieldDescriptor.getAnnotation(Real.class);
-                Optional<Inject> optInject = fieldDescriptor.getAnnotation(Inject.class);
+                Optional<Mock> optMock = descriptor.getMock();
+                Optional<Real> optReal = descriptor.getAnnotation(Real.class);
+                Optional<Inject> optInject = descriptor.getAnnotation(Inject.class);
                 if (optMock.isPresent()) {
                     Mock mock = optMock.get();
                     //if the field value is set then create a mock otherwise create a mock
@@ -104,7 +104,7 @@ public class IntegrationTestReifier implements TestReifier {
                 }
 
                 field.set(testInstance, instance);
-                fieldDescriptor.setInstance(instance);
+                descriptor.setInstance(instance);
                 parameterDescriptor.setInstance(instance);
 
                 return instance;
@@ -116,17 +116,17 @@ public class IntegrationTestReifier implements TestReifier {
     }
 
     @Override
-    public Object reifyCut(CutDescriptor cutDescriptor, Object[] arguments) {
+    public Object reifyCut(CutDescriptor descriptor, Object[] arguments) {
         return AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
             try {
-                Cut cut = cutDescriptor.getCut();
-                Field field = cutDescriptor.getField();
+                Cut cut = descriptor.getCut().get();
+                Field field = descriptor.getField();
                 Type fieldType = field.getGenericType();
                 String fieldName = field.getName();
 
                 field.setAccessible(true);
 
-                Constructor<?> constructor = cutDescriptor.getConstructor();
+                Constructor<?> constructor = descriptor.getConstructor();
                 constructor.setAccessible(true);
 
                 TypeToken<?> token = TypeToken.of(fieldType);
@@ -138,7 +138,7 @@ public class IntegrationTestReifier implements TestReifier {
                     rawType = (Class) fieldType;
                 }
 
-                ServiceDescriptor descriptor = new ServiceDescriptorBuilder()
+                ServiceDescriptor serviceDescriptor = new ServiceDescriptorBuilder()
                         .name(fieldName)
                         .type(rawType)
                         .injectable(false)
@@ -147,7 +147,7 @@ public class IntegrationTestReifier implements TestReifier {
                         .lazy(true)
                         .build();
 
-                appContext.addService(descriptor);
+                appContext.addService(serviceDescriptor);
 
                 Object instance = appContext.getServiceWith(rawType, arguments);
 
@@ -156,6 +156,8 @@ public class IntegrationTestReifier implements TestReifier {
                 }
 
                 field.set(testInstance, instance);
+                descriptor.setInstance(instance);
+                descriptor.setArguments(arguments);
 
                 return instance;
             } catch (SecurityException |

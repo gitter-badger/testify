@@ -185,12 +185,12 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${plugin.compiler}</version>
                     <configuration>
+                        <debug>true</debug>
+                        <debuglevel>lines,vars,source</debuglevel>
                         <compilerArguments>
                             <!-- enable runtime discover of parameter names -->
                             <parameters />
                         </compilerArguments>
-                        <debug>true</debug>
-                        <debuglevel>vars,lines,source</debuglevel>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -281,6 +281,7 @@
                             <exclude>**/*.gpg</exclude>
                             <exclude>**/*.enc</exclude>
                             <exclude>**/*.tar</exclude>
+                            <exclude>**/*.sh</exclude>
                             <exclude>**/nbactions.xml</exclude>
                             <exclude>LICENSE</exclude>
                             <exclude>src/test/resources/**</exclude>
@@ -428,7 +429,7 @@
             </releases>
             <snapshots>
                 <enabled>true</enabled>
-                <updatePolicy>daily</updatePolicy>
+                <updatePolicy>always</updatePolicy>
             </snapshots>
         </pluginRepository>
         <pluginRepository>
@@ -437,7 +438,7 @@
             <url>https://oss.sonatype.org/content/repositories/releases</url>
             <releases>
                 <enabled>true</enabled>
-                <updatePolicy>daily</updatePolicy>
+                <updatePolicy>always</updatePolicy>
             </releases>
             <snapshots>
                 <enabled>false</enabled>
@@ -454,6 +455,9 @@
                     <name>validation</name>
                 </property>
             </activation>
+            <properties>
+                <skipTests>true</skipTests>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -471,6 +475,20 @@
             <id>release</id>
             <build>
                 <plugins>
+                    <plugin>
+                       
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <!--
+                                Don't include debug information in released
+                                builds but do include parameter names.
+                            -->
+                            <debug>false</debug>
+                            <compilerArguments>
+                                <parameters />
+                            </compilerArguments>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <artifactId>maven-source-plugin</artifactId>
                         <version>${plugin.source}</version>

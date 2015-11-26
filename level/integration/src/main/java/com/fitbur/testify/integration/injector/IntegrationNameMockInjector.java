@@ -22,9 +22,7 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import com.fitbur.testify.di.ServiceLocator;
 import static com.google.common.base.Preconditions.checkArgument;
-import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -40,18 +38,15 @@ public class IntegrationNameMockInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
-    private final ServiceLocator appContext;
     private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
     public IntegrationNameMockInjector(TestContext context,
             TestReifier testReifier,
-            ServiceLocator appContext,
             FieldDescriptor fieldDescriptor,
             Object[] arguments) {
         this.context = context;
         this.testReifier = testReifier;
-        this.appContext = appContext;
         this.fieldDescriptor = fieldDescriptor;
         this.arguments = arguments;
     }
@@ -59,37 +54,43 @@ public class IntegrationNameMockInjector implements TestInjector {
     @Override
     public void inject() {
         Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = context.getParamaterDescriptors();
-        Field field = fieldDescriptor.getField();
-        Type fieldType = field.getGenericType();
+        String testClassName = context.getTestClassName();
+        Type fieldType = fieldDescriptor.getGenericType();
+        String fieldTypeName = fieldDescriptor.getTypeName();
+        String fieldName = fieldDescriptor.getName();
+        String cutTypeName = context.getCutDescriptor().getTypeName();
 
         Mock mock = fieldDescriptor.getMock().get();
         String mockName = mock.name();
         DescriptorKey descriptorKey = new DescriptorKey(fieldType, mockName);
 
-        ParameterDescriptor parameterDescriptor = parameterDescriptors.get(descriptorKey);
+        ParameterDescriptor paramDescriptor = parameterDescriptors.get(descriptorKey);
 
-        checkArgument(parameterDescriptor != null,
-                "Can not mock field '%s'. Could not find class under test constructor "
-                + "argument with the name '%s'.",
-                field.getName(), mockName);
+        checkArgument(paramDescriptor != null,
+                "Can not mock field '%s#%s'. Could not find constructor argument "
+                + "with the name '%s' in the '%s'. Please note that name based auto "
+                + "detection will only work if your code is compiled with debug "
+                + "information (javac -parameters or javac -g:vars).",
+                testClassName, fieldName, mockName, cutTypeName);
 
-        Parameter parameter = parameterDescriptor.getParameter();
-        Integer index = parameterDescriptor.getIndex();
-        Type parameterType = parameter.getParameterizedType();
+        Parameter parameter = paramDescriptor.getParameter();
+        Integer paramIndex = paramDescriptor.getIndex();
+        Type paramType = parameter.getParameterizedType();
 
-        checkArgument(fieldType.equals(parameterType),
-                "Can not mock field '%s'. Test class field type '%s' and class under test "
-                + "constructor parameter type '%s' with name '%s' do not match.",
-                field.getName(), field.getGenericType(), parameterType, mockName
+        checkArgument(fieldType.equals(paramType),
+                "Can not mock field '%s#%s'. The test clas field and the class "
+                + "under test constructor argument have the name '%s' but are "
+                + "not the same type. Please insure that the field type (%s) "
+                + "and paramater type (%s) are the same.",
+                testClassName, fieldName, mockName, fieldTypeName, paramType
         );
 
-        checkArgument(arguments[index] == null,
-                "Can not mock field '%s'. Multipe test class fields have the same index of '%d'",
-                field.getName(), index);
+        checkArgument(arguments[paramIndex] == null,
+                "Can not mock field '%s#%s'. Multipe test class fields have the "
+                + "same name of '%s'",
+                testClassName, fieldName, mockName);
 
-        Object instance = testReifier.reifyField(fieldDescriptor, parameterDescriptor);
-
-        arguments[index] = instance;
+        arguments[paramIndex] = testReifier.reifyField(fieldDescriptor, paramDescriptor);
     }
 
 }

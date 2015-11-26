@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import static java.util.Optional.ofNullable;
 import java.util.Set;
+import org.slf4j.Logger;
 
 /**
  * A small context class that contains metadata about the class under test.
@@ -48,15 +49,21 @@ public class TestContext {
     private int cutCount;
     private int methodCount;
     private int fieldCount;
+    private final Logger log;
 
-    public TestContext(String name, Class<?> testClass, Object testInstance) {
+    public TestContext(String name, Class<?> testClass, Object testInstance, Logger log) {
         this.name = name;
         this.testClass = testClass;
         this.testInstance = testInstance;
+        this.log = log;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getTestClassName() {
+        return testClass.getSimpleName();
     }
 
     public Class<?> getTestClass() {
@@ -129,6 +136,10 @@ public class TestContext {
 
     public void setFieldCount(int fieldCount) {
         this.fieldCount = fieldCount;
+    }
+
+    public Logger getLog() {
+        return log;
     }
 
 }

@@ -36,7 +36,7 @@ public class MethodDescriptor {
 
     private final Method method;
     private final Integer order;
-    private Object instance;
+    private Optional<Object> instance;
 
     public MethodDescriptor(Method method, Integer order) {
         this.method = method;
@@ -47,6 +47,10 @@ public class MethodDescriptor {
         return method;
     }
 
+    public String getName() {
+        return method.getName();
+    }
+
     public Optional<Mock> getMock() {
         return ofNullable(method.getDeclaredAnnotation(Mock.class));
     }
@@ -55,12 +59,12 @@ public class MethodDescriptor {
         return order;
     }
 
-    public Object getInstance() {
+    public Optional<Object> getInstance() {
         return instance;
     }
 
     public void setInstance(Object instance) {
-        this.instance = instance;
+        this.instance = ofNullable(instance);
     }
 
     public <T extends Annotation> Optional<T> getAnnotation(Class<T> type) {

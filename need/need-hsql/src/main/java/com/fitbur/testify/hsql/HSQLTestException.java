@@ -54,7 +54,7 @@ public class HSQLTestException extends RuntimeException {
      * specified detail message and cause.
      *
      * @param message the detail message.
-     * @param cause the root cause of the exception.
+     * @param cause   the root cause of the exception.
      */
     public HSQLTestException(String message, Throwable cause) {
         super(message, cause);
