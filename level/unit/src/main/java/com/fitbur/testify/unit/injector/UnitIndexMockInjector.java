@@ -15,7 +15,6 @@
  */
 package com.fitbur.testify.unit.injector;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import com.fitbur.testify.Mock;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestInjector;
@@ -23,7 +22,7 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import java.lang.reflect.Field;
+import static com.google.common.base.Preconditions.checkState;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -36,14 +35,14 @@ import java.util.Optional;
  *
  * @author saden
  */
-public class IndexMockInjector implements TestInjector {
+public class UnitIndexMockInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
     private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
-    public IndexMockInjector(TestContext context,
+    public UnitIndexMockInjector(TestContext context,
             TestReifier testReifier,
             FieldDescriptor fieldDescriptor,
             Object[] arguments) {
@@ -56,33 +55,38 @@ public class IndexMockInjector implements TestInjector {
     @Override
     public void inject() {
         Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = context.getParamaterDescriptors();
-        Field field = fieldDescriptor.getField();
 
         Mock mock = fieldDescriptor.getMock().get();
-        Integer index = mock.index();
-
-        checkArgument(arguments[index] == null,
-                "Can not mock field '%s'. Multipe test class fields have the same index of '%d'",
-                field.getName(), index);
-
+        Integer mockIndex = mock.index();
         Optional<ParameterDescriptor> optional = parameterDescriptors.values()
                 .parallelStream()
-                .filter(p -> index.equals(p.getIndex()))
+                .filter(p -> mockIndex.equals(p.getIndex()))
                 .findFirst();
 
-        ParameterDescriptor parameterDescriptor = optional.get();
-        Parameter parameter = parameterDescriptor.getParameter();
+        ParameterDescriptor paramDescriptor = optional.get();
+        Parameter parameter = paramDescriptor.getParameter();
 
-        Type fieldType = field.getGenericType();
+        String testClassName = context.getTestClassName();
+        Type fieldType = fieldDescriptor.getGenericType();
+        String fieldTypeName = fieldDescriptor.getTypeName();
+        String fieldName = fieldDescriptor.getName();
         Type parameterType = parameter.getParameterizedType();
 
-        checkArgument(fieldType.equals(parameterType),
-                "Can not mock field '%s'. Test class field type '%s' and class under test "
-                + "constructor parameter type '%s' at '%d' index do not match.",
-                field.getName(), field.getGenericType(), parameterType, index
+        checkState(fieldType.equals(parameterType),
+                "Can not mock field '%s#%s'. Test class field type '%s' and class "
+                + "under test constructor parameter type '%s' at index '%d' do "
+                + "not match.",
+                testClassName, fieldName, fieldTypeName, parameterType, mockIndex
         );
 
-        arguments[index] = testReifier.reifyField(fieldDescriptor, parameterDescriptor);
+        checkState(arguments[mockIndex] == null,
+                "Can not mock field '%s#%s'. Multipe test class fields are "
+                + "annotated with @Mock(index=%d). Please insure the @Mock "
+                + "annotations have unqiue indexes.",
+                testClassName, fieldName, mockIndex
+        );
+
+        arguments[mockIndex] = testReifier.reifyField(fieldDescriptor, paramDescriptor);
     }
 
 }

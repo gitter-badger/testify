@@ -19,8 +19,11 @@ import com.fitbur.testify.Cut;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.Objects;
 import java.util.Optional;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
@@ -33,8 +36,9 @@ import static java.util.stream.Stream.of;
 public class CutDescriptor {
 
     private final Field field;
-    private Object instance;
     private Constructor<?> constructor;
+    private Object[] arguments;
+    private Optional<Object> instance = empty();
 
     public CutDescriptor(Field field) {
         this.field = field;
@@ -44,16 +48,36 @@ public class CutDescriptor {
         return field;
     }
 
-    public Cut getCut() {
-        return field.getDeclaredAnnotation(Cut.class);
+    public String getName() {
+        return field.getName();
     }
 
-    public Object getInstance() {
+    public Class<?> getType() {
+        return field.getType();
+    }
+
+    public Type getGenericType() {
+        return field.getGenericType();
+    }
+
+    public String getTypeName() {
+        return field.getType().getSimpleName();
+    }
+
+    public Optional<Cut> getCut() {
+        return ofNullable(field.getDeclaredAnnotation(Cut.class));
+    }
+
+    public boolean hasCut() {
+        return field.getDeclaredAnnotation(Cut.class) != null;
+    }
+
+    public Optional<Object> getInstance() {
         return instance;
     }
 
     public void setInstance(Object instance) {
-        this.instance = instance;
+        this.instance = ofNullable(instance);
     }
 
     public Constructor<?> getConstructor() {
@@ -78,8 +102,20 @@ public class CutDescriptor {
                 .collect(toSet());
     }
 
+    public boolean hasAnyAnnotation(Class<? extends Annotation>... type) {
+        return of(type).anyMatch(field::isAnnotationPresent);
+    }
+
     public void setConstructor(Constructor<?> constructor) {
         this.constructor = constructor;
+    }
+
+    public Object[] getArguments() {
+        return arguments;
+    }
+
+    public void setArguments(Object[] arguments) {
+        this.arguments = arguments;
     }
 
     @Override

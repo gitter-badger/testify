@@ -47,6 +47,8 @@ import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.objectweb.asm.ClassReader;
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -60,6 +62,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  */
 public class SpringIntegrationTestRunner extends BlockJUnit4ClassRunner {
 
+    static final Logger LOG = LoggerFactory.getLogger("testify");
     protected Map<Class, TestContext> testClassContexts = new ConcurrentHashMap<>();
     public Map<Class, ServiceLocator> applicationContexts = new ConcurrentHashMap<>();
     public Map<Class, List<NeedDescriptor>> testNeedDescriptors = new ConcurrentHashMap<>();
@@ -102,7 +105,7 @@ public class SpringIntegrationTestRunner extends BlockJUnit4ClassRunner {
                 Object instance;
                 try {
                     instance = super.createTest();
-                    TestContext context = new TestContext(name, javaClass, instance);
+                    TestContext context = new TestContext(name, javaClass, instance, LOG);
 
                     ClassReader testReader = new ClassReader(javaClass.getName());
                     testReader.accept(new TestClassAnalyzer(context), EXPAND_FRAMES);
@@ -147,22 +150,29 @@ public class SpringIntegrationTestRunner extends BlockJUnit4ClassRunner {
                     .collect(toList());
             this.testNeedDescriptors.put(javaClass, needDescriptors);
 
+            IntegrationTestVerifier verifier = new IntegrationTestVerifier(testContext, LOG);
             IntegrationTestReifier reifier = new IntegrationTestReifier(serviceLocator, testInstance);
-            IntegrationTestCreator integrationTestCreator = new IntegrationTestCreator(testContext, reifier, serviceLocator);
+            IntegrationTestCreator creator = new IntegrationTestCreator(testContext, reifier, serviceLocator);
+            verifier.dependency();
+            verifier.configuration();
+
             if (testContext.getCutDescriptor() == null) {
                 Set<FieldDescriptor> real = testContext.getFieldDescriptors()
                         .values()
                         .parallelStream()
                         .filter(p -> p.hasAnyAnnotation(Inject.class, Autowired.class, Real.class))
                         .collect(toSet());
-                integrationTestCreator.real(real);
+                creator.real(real);
             } else {
-                integrationTestCreator.cut();
+                creator.cut();
             }
+
+            verifier.wiring();
 
             this.applicationContexts.put(javaClass, serviceLocator);
             return testInstance;
         } catch (IllegalStateException e) {
+            LOG.error(e.getMessage());
             this.notifier.pleaseStop();
             throw e;
         }

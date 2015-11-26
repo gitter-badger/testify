@@ -21,6 +21,7 @@ import com.fitbur.testify.analyzer.CutClassAnalyzer;
 import com.fitbur.testify.analyzer.TestClassAnalyzer;
 import com.fitbur.testify.unit.UnitTestCreator;
 import com.fitbur.testify.unit.UnitTestReifier;
+import com.fitbur.testify.unit.UnitTestVerifier;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +39,8 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.objectweb.asm.ClassReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
@@ -50,6 +53,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
  */
 public class UnitTestRunner extends BlockJUnit4ClassRunner {
 
+    static final Logger LOGGER = LoggerFactory.getLogger("testify");
     Map<Class, TestContext> testClassContexts = new HashMap<>();
     private RunNotifier notifier;
 
@@ -89,7 +93,7 @@ public class UnitTestRunner extends BlockJUnit4ClassRunner {
                 Object instance;
                 try {
                     instance = super.createTest();
-                    TestContext context = new TestContext(name, javaClass, instance);
+                    TestContext context = new TestContext(name, javaClass, instance, LOGGER);
                     Set<Field> candidatesFields = of(javaClass.getDeclaredFields())
                             .parallel()
                             .filter(f -> f.isAnnotationPresent(Cut.class))
@@ -107,11 +111,15 @@ public class UnitTestRunner extends BlockJUnit4ClassRunner {
                     throw new RuntimeException(e);
                 }
             });
-            Object instance = testContext.getTestInstance();
 
-            UnitTestReifier testReifier = new UnitTestReifier(instance);
-            UnitTestCreator unitTestCreator = new UnitTestCreator(testContext, testReifier);
-            unitTestCreator.create();
+            Object instance = testContext.getTestInstance();
+            UnitTestVerifier verifier = new UnitTestVerifier(testContext, LOGGER);
+            verifier.dependency();
+            verifier.configuration();
+            UnitTestReifier reifier = new UnitTestReifier(instance);
+            UnitTestCreator creator = new UnitTestCreator(testContext, reifier);
+            creator.create();
+            verifier.wiring();
 
             return instance;
         } catch (IllegalStateException e) {

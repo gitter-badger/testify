@@ -1,6 +1,8 @@
 # Testify
 [![Build Status](https://travis-ci.org/FitburIO/testify.svg?branch=develop)](https://travis-ci.org/FitburIO/testify)
-[![codecov.io](https://codecov.io/github/FitburIO/testify/coverage.svg?branch=develop)](https://codecov.io/github/FitburIO/testify?branch=develop)
+[![CodecovIO](https://codecov.io/github/FitburIO/testify/coverage.svg?branch=develop)](https://codecov.io/github/FitburIO/testify?branch=develop)
+[![Github Releases](https://img.shields.io/github/downloads/FitburIO/testify/latest/total.svg)]()
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fitbur.testify/parent/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.fitbur.testify)
 [![License](https://img.shields.io/github/license/FitburIO/testify.svg)](LICENSE)
 
 ## Overview

@@ -18,8 +18,10 @@ package com.fitbur.testify.descriptor;
 import com.fitbur.testify.Mock;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.Objects;
 import java.util.Optional;
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
@@ -34,7 +36,7 @@ public class FieldDescriptor {
 
     private final Field field;
     private final Integer order;
-    private Object instance;
+    private Optional<Object> instance = empty();
 
     public FieldDescriptor(Field field, Integer order) {
         this.field = field;
@@ -45,20 +47,40 @@ public class FieldDescriptor {
         return field;
     }
 
+    public String getName() {
+        return field.getName();
+    }
+
+    public Class<?> getType() {
+        return field.getType();
+    }
+
+    public Type getGenericType() {
+        return field.getGenericType();
+    }
+
+    public String getTypeName() {
+        return field.getType().getSimpleName();
+    }
+
     public Optional<Mock> getMock() {
         return ofNullable(field.getDeclaredAnnotation(Mock.class));
+    }
+
+    public boolean hasMock() {
+        return field.getDeclaredAnnotation(Mock.class) != null;
     }
 
     public Integer getOrder() {
         return order;
     }
 
-    public Object getInstance() {
+    public Optional<Object> getInstance() {
         return instance;
     }
 
     public void setInstance(Object instance) {
-        this.instance = instance;
+        this.instance = ofNullable(instance);
     }
 
     public <T extends Annotation> Optional<T> getAnnotation(Class<T> type) {

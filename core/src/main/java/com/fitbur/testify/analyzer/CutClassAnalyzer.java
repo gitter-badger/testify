@@ -15,11 +15,11 @@
  */
 package com.fitbur.testify.analyzer;
 
-import static com.google.common.base.Preconditions.checkState;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestException;
 import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
+import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Class.forName;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;

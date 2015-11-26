@@ -20,9 +20,9 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import com.fitbur.testify.unit.injector.IndexMockInjector;
-import com.fitbur.testify.unit.injector.NameMockInjector;
-import com.fitbur.testify.unit.injector.TypeMockInjector;
+import com.fitbur.testify.unit.injector.UnitIndexMockInjector;
+import com.fitbur.testify.unit.injector.UnitNameMockInjector;
+import com.fitbur.testify.unit.injector.UnitTypeMockInjector;
 import java.util.Collection;
 import java.util.Map;
 
@@ -52,15 +52,15 @@ public class UnitTestCreator {
         descriptors.parallelStream()
                 .filter(p -> p.getMock().isPresent())
                 .filter(p -> p.getMock().get().index() != -1)
-                .map(p -> new IndexMockInjector(context, testReifier, p, arguments))
-                .forEach(IndexMockInjector::inject);
+                .map(p -> new UnitIndexMockInjector(context, testReifier, p, arguments))
+                .forEach(UnitIndexMockInjector::inject);
 
         //process fields with custom names second
         descriptors.parallelStream()
                 .filter(p -> p.getMock().isPresent())
                 .filter(p -> !p.getMock().get().name().isEmpty())
-                .map(p -> new NameMockInjector(context, testReifier, p, arguments))
-                .forEach(NameMockInjector::inject);
+                .map(p -> new UnitNameMockInjector(context, testReifier, p, arguments))
+                .forEach(UnitNameMockInjector::inject);
 
         //finally try to do type based injection
         descriptors.parallelStream()
@@ -68,8 +68,8 @@ public class UnitTestCreator {
                 .filter(p -> p.getMock().get().index() == -1
                         && p.getMock().get().name().isEmpty()
                 )
-                .map(p -> new TypeMockInjector(context, testReifier, p, arguments))
-                .forEach(TypeMockInjector::inject);
+                .map(p -> new UnitTypeMockInjector(context, testReifier, p, arguments))
+                .forEach(UnitTypeMockInjector::inject);
 
         testReifier.reifyCut(context.getCutDescriptor(), arguments);
     }

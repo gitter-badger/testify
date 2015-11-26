@@ -69,13 +69,13 @@ public class IntegrationTestCreator {
         //process fields with a custom index first
         mockDescriptors.parallelStream()
                 .filter(p -> p.getMock().get().index() != -1)
-                .map(p -> new IntegrationIndexMockInjector(context, testReifier, appContext, p, arguments))
+                .map(p -> new IntegrationIndexMockInjector(context, testReifier, p, arguments))
                 .forEach(IntegrationIndexMockInjector::inject);
 
         //process fields with custom names second
         mockDescriptors.parallelStream()
                 .filter(p -> !p.getMock().get().name().isEmpty())
-                .map(p -> new IntegrationNameMockInjector(context, testReifier, appContext, p, arguments))
+                .map(p -> new IntegrationNameMockInjector(context, testReifier, p, arguments))
                 .forEach(IntegrationNameMockInjector::inject);
 
         //process fields with type based injection
@@ -83,7 +83,7 @@ public class IntegrationTestCreator {
                 .filter(p -> p.getMock().get().index() == -1
                         && p.getMock().get().name().isEmpty()
                 )
-                .map(p -> new IntegrationTypeMockInjector(context, testReifier, appContext, p, arguments))
+                .map(p -> new IntegrationTypeMockInjector(context, testReifier, p, arguments))
                 .forEach(IntegrationTypeMockInjector::inject);
 
         Class<?> testClass = context.getTestClass();
@@ -97,7 +97,7 @@ public class IntegrationTestCreator {
         descriptors.parallelStream()
                 .filter(p -> !p.hasAnyAnnotation(Mock.class))
                 .filter(p -> p.hasAnyAnnotation(Real.class, Inject.class))
-                .map(p -> new IntegrationRealServiceInjector(context, testReifier, appContext, p, arguments))
+                .map(p -> new IntegrationRealServiceInjector(context, testReifier, p, arguments))
                 .forEach(IntegrationRealServiceInjector::inject);
 
         testReifier.reifyCut(context.getCutDescriptor(), arguments);

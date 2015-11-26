@@ -22,9 +22,7 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import com.fitbur.testify.di.ServiceLocator;
-import static com.google.common.base.Preconditions.checkArgument;
-import java.lang.reflect.Field;
+import static com.google.common.base.Preconditions.checkState;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -32,8 +30,8 @@ import java.util.Optional;
 
 /**
  * An integration test injector implementation that injects fields annotated
- * with {@link Mock} which specify the index of the mock on the class under
- * test constructor.
+ * with {@link Mock} which specify the index of the mock on the class under test
+ * constructor.
  *
  * @author saden
  */
@@ -41,18 +39,15 @@ public class IntegrationIndexMockInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
-    private final ServiceLocator appContext;
     private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
     public IntegrationIndexMockInjector(TestContext context,
             TestReifier testReifier,
-            ServiceLocator appContext,
             FieldDescriptor fieldDescriptor,
             Object[] arguments) {
         this.context = context;
         this.testReifier = testReifier;
-        this.appContext = appContext;
         this.fieldDescriptor = fieldDescriptor;
         this.arguments = arguments;
     }
@@ -60,33 +55,38 @@ public class IntegrationIndexMockInjector implements TestInjector {
     @Override
     public void inject() {
         Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = context.getParamaterDescriptors();
-        Field field = fieldDescriptor.getField();
 
         Mock mock = fieldDescriptor.getMock().get();
-        Integer index = mock.index();
+        Integer mockIndex = mock.index();
         Optional<ParameterDescriptor> optional = parameterDescriptors.values()
                 .parallelStream()
-                .filter(p -> index.equals(p.getIndex()))
+                .filter(p -> mockIndex.equals(p.getIndex()))
                 .findFirst();
 
-        ParameterDescriptor parameterDescriptor = optional.get();
-        Parameter parameter = parameterDescriptor.getParameter();
+        ParameterDescriptor paramDescriptor = optional.get();
+        Parameter parameter = paramDescriptor.getParameter();
 
-        Type fieldType = field.getGenericType();
+        String testClassName = context.getTestClassName();
+        Type fieldType = fieldDescriptor.getGenericType();
+        String fieldTypeName = fieldDescriptor.getTypeName();
+        String fieldName = fieldDescriptor.getName();
         Type parameterType = parameter.getParameterizedType();
 
-        checkArgument(fieldType.equals(parameterType),
-                "Can not mock field '%s'. Test class field type '%s' and class under test "
-                + "constructor parameter type '%s' at '%d' index do not match.",
-                field.getName(), field.getGenericType(), parameterType, index
+        checkState(fieldType.equals(parameterType),
+                "Can not mock field '%s#%s'. Test class field type '%s' and class "
+                + "under test constructor parameter type '%s' at index '%d' do "
+                + "not match.",
+                testClassName, fieldName, fieldTypeName, parameterType, mockIndex
         );
 
-        checkArgument(arguments[index] == null,
-                "Can not mock field '%s'. Multipe test class fields have the same index of '%d'",
-                field.getName(), index);
+        checkState(arguments[mockIndex] == null,
+                "Can not mock field '%s#%s'. Multipe test class fields are "
+                + "annotated with @Mock(index=%d). Please insure the @Mock "
+                + "annotations have unqiue indexes.",
+                testClassName, fieldName, mockIndex
+        );
 
-        Object instance = testReifier.reifyField(fieldDescriptor, parameterDescriptor);
-        arguments[index] = instance;
+        arguments[mockIndex] = testReifier.reifyField(fieldDescriptor, paramDescriptor);
     }
 
 }

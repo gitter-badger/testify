@@ -15,10 +15,10 @@
  */
 package com.fitbur.testify.junit;
 
-import com.fitbur.testify.junit.fixture.ImplicitNameIndistinctGenericType;
-import com.fitbur.testify.junit.fixture.collaborator.Hello;
 import com.fitbur.testify.Cut;
 import com.fitbur.testify.Mock;
+import com.fitbur.testify.junit.fixture.ImplicitNameIndistinctGenericType;
+import com.fitbur.testify.junit.fixture.collaborator.Hello;
 import javax.inject.Provider;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;

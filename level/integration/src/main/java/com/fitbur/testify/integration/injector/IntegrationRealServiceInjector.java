@@ -21,8 +21,6 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import com.fitbur.testify.di.ServiceLocator;
-import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -40,18 +38,15 @@ public class IntegrationRealServiceInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
-    private final ServiceLocator appContext;
     private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
     public IntegrationRealServiceInjector(TestContext context,
             TestReifier testReifier,
-            ServiceLocator appContext,
             FieldDescriptor fieldDescriptor,
             Object[] arguments) {
         this.context = context;
         this.testReifier = testReifier;
-        this.appContext = appContext;
         this.fieldDescriptor = fieldDescriptor;
         this.arguments = arguments;
     }
@@ -59,9 +54,8 @@ public class IntegrationRealServiceInjector implements TestInjector {
     @Override
     public void inject() {
         Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = context.getParamaterDescriptors();
-        Field field = fieldDescriptor.getField();
-        Type fieldType = field.getGenericType();
-        String fieldName = field.getName();
+        Type fieldType = fieldDescriptor.getGenericType();
+        String fieldName = fieldDescriptor.getName();
         DescriptorKey descriptorKey = new DescriptorKey(fieldType, fieldName);
 
         //if there is a parameter descriptor that matches the field then lets use that
@@ -74,17 +68,17 @@ public class IntegrationRealServiceInjector implements TestInjector {
         } else {
             //otherwise find the right parameter based on the type of the field
             Collection<ParameterDescriptor> descriptors = parameterDescriptors.values();
-            for (ParameterDescriptor descriptor : descriptors) {
-                Parameter parameter = descriptor.getParameter();
+            for (ParameterDescriptor paramDescriptor : descriptors) {
+                Parameter parameter = paramDescriptor.getParameter();
                 Type parameterType = parameter.getParameterizedType();
-                Integer index = descriptor.getIndex();
+                Integer index = paramDescriptor.getIndex();
 
                 if (arguments[index] != null) {
                     continue;
                 }
 
                 if (parameterType.equals(fieldType)) {
-                    Object instance = testReifier.reifyField(fieldDescriptor, descriptor);
+                    Object instance = testReifier.reifyField(fieldDescriptor, paramDescriptor);
                     arguments[index] = instance;
                     break;
                 }

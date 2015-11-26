@@ -32,7 +32,7 @@ import org.mockito.internal.util.MockUtil;
  */
 @RunWith(SpringIntegrationTestRunner.class)
 @Module(SpringIntegrationConfig.class)
-public class CLassTypeCutWithRealTest {
+public class ClassTypeCutWithRealTest {
 
     @Cut
     ClassTypeService cut;

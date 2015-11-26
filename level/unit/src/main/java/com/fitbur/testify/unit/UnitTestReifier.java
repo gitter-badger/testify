@@ -51,15 +51,15 @@ public class UnitTestReifier implements TestReifier {
     }
 
     @Override
-    public Object reifyField(FieldDescriptor fieldDescriptor, ParameterDescriptor parameterDescriptor) {
+    public Object reifyField(FieldDescriptor fieldDescriptor, ParameterDescriptor paramDescriptor) {
         return doPrivileged((PrivilegedAction) () -> {
             try {
                 Object instance = null;
-                Optional<Mock> optMock = fieldDescriptor.getMock();
+                Optional<Mock> mock = fieldDescriptor.getMock();
 
-                if (optMock.isPresent()) {
-                    Mock mock = optMock.get();
+                if (mock.isPresent()) {
                     Field field = fieldDescriptor.getField();
+
                     field.setAccessible(true);
                     Object value = field.get(testInstance);
                     //if the field value is null create a new mock
@@ -75,7 +75,7 @@ public class UnitTestReifier implements TestReifier {
 
                     field.set(testInstance, instance);
                     fieldDescriptor.setInstance(instance);
-                    parameterDescriptor.setInstance(instance);
+                    paramDescriptor.setInstance(instance);
                 }
 
                 return instance;
@@ -87,13 +87,13 @@ public class UnitTestReifier implements TestReifier {
     }
 
     @Override
-    public Object reifyCut(CutDescriptor cutDescriptor, Object[] arguments) {
+    public Object reifyCut(CutDescriptor descriptor, Object[] arguments) {
         return doPrivileged((PrivilegedAction) () -> {
             try {
-                Cut cut = cutDescriptor.getCut();
-                Field field = cutDescriptor.getField();
+                Cut cut = descriptor.getCut().get();
+                Field field = descriptor.getField();
                 field.setAccessible(true);
-                Constructor<?> constructor = cutDescriptor.getConstructor();
+                Constructor<?> constructor = descriptor.getConstructor();
                 constructor.setAccessible(true);
 
                 Object instance = constructor.newInstance(arguments);
@@ -103,6 +103,8 @@ public class UnitTestReifier implements TestReifier {
                 }
 
                 field.set(testInstance, instance);
+                descriptor.setInstance(instance);
+                descriptor.setArguments(arguments);
 
                 return instance;
             } catch (SecurityException |
