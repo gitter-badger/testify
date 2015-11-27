@@ -30,7 +30,6 @@
     <url>https://github.com/FitburIO/testify</url>
 
     <modules>
-        <module>build-tools</module>
         <module>api</module>
         <module>core</module>
         <module>di</module>
@@ -52,6 +51,10 @@
         <netbeans.compile.on.save>none</netbeans.compile.on.save>
         <netbeans.checkstyle.format>true</netbeans.checkstyle.format>
         <netbeans.hint.license>apache20</netbeans.hint.license>
+
+        <!-- Fitbur Dependency Versions -->
+        <fitbur.buildtools.version>0.0.1</fitbur.buildtools.version>
+
         
         <!-- Plugin Versions -->
         <plugin.compiler>3.3</plugin.compiler>
@@ -102,7 +105,7 @@
             </roles>
         </developer>
     </developers>
-    
+
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -151,6 +154,14 @@
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
             </plugin>
         </plugins>
         <pluginManagement>
@@ -262,7 +273,7 @@
                         <dependency>
                             <groupId>com.fitbur</groupId>
                             <artifactId>build-tools</artifactId>
-                            <version>${project.version}</version>
+                            <version>${fitbur.buildtools.version}</version>
                         </dependency>
                     </dependencies>
                     <configuration>
@@ -305,7 +316,7 @@
                         <dependency>
                             <groupId>com.fitbur</groupId>
                             <artifactId>build-tools</artifactId>
-                            <version>${project.version}</version>
+                            <version>${fitbur.buildtools.version}</version>
                         </dependency>
                         <dependency>
                             <groupId>com.puppycrawl.tools</groupId>
