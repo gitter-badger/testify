@@ -50,30 +50,66 @@ public class ServiceDescriptor {
         this.primary = primary;
     }
 
+    /**
+     * Get the type of the service.
+     *
+     * @param <T> the type of the service
+     * @return get the service class
+     */
     public <T> Class<T> getType() {
         return (Class<T>) type;
     }
 
+    /**
+     * Get the name of the service.
+     *
+     * @return the service name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Get the constructor arguments used to instantiate the service.
+     *
+     * @return an array constructor arguments instances
+     */
     public Object[] getArguments() {
         return arguments;
     }
 
+    /**
+     * Get the scope of the service.
+     *
+     * @return the scope of the service
+     */
     public ServiceScope getScope() {
         return scope;
     }
 
+    /**
+     * Determine whether the service is lazy-loaded service.
+     *
+     * @return true if the service is lazy-loaded, false otherwise
+     */
     public boolean getLazy() {
         return lazy;
     }
 
+    /**
+     * Determine whether the service is an injectable service.
+     *
+     * @return true if the service is an injectable service, false otherwise
+     */
     public boolean getInjectable() {
         return injectable;
     }
 
+    /**
+     * Determine whether the service is a primary service.
+     *
+     * @return true if the service is a primary service, false otherwise
+     */
     public boolean getPrimary() {
         return primary;
     }

@@ -19,6 +19,7 @@ package com.fitbur.testify.di;
  * A class that facilitates the construction of a {@link ServiceDescriptor}.
  *
  * @author saden
+ * @see ServiceDescriptor
  */
 public class ServiceDescriptorBuilder {
 
@@ -68,6 +69,11 @@ public class ServiceDescriptorBuilder {
         return this;
     }
 
+    /**
+     * Build and return an instance of the service descriptor.
+     *
+     * @return a service descriptor instance.
+     */
     public ServiceDescriptor build() {
         return new ServiceDescriptor(type,
                 name,

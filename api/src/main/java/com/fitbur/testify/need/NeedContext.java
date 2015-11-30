@@ -18,7 +18,9 @@ package com.fitbur.testify.need;
 import java.util.Objects;
 
 /**
- * A small context object that contains need contextual information.
+ * A small context object that contains need contextual information. This
+ * context is used in conjunction with {@link NeedProvider} to manage the
+ * life-cycle of a need.
  *
  * @author saden
  */
@@ -34,14 +36,29 @@ public class NeedContext {
         this.config = config;
     }
 
+    /**
+     * Get the need provider.
+     *
+     * @return the need provider
+     */
     public NeedProvider getProvider() {
         return provider;
     }
 
+    /**
+     * Get the need descriptor.
+     *
+     * @return the need descriptor.
+     */
     public NeedDescriptor getDescriptor() {
         return descriptor;
     }
 
+    /**
+     * Get the need configuration object.
+     *
+     * @return the need configuration.
+     */
     public Object getConfig() {
         return config;
     }

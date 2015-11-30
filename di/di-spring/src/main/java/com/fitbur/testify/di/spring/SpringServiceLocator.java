@@ -153,6 +153,11 @@ public class SpringServiceLocator implements ServiceLocator {
     }
 
     @Override
+    public void removeService(String name) {
+        context.removeBeanDefinition(name);
+    }
+
+    @Override
     public void addModule(Class<?> type) {
         context.register(type);
     }

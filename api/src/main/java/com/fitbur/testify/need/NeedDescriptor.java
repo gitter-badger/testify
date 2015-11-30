@@ -20,22 +20,55 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 /**
- * A descriptor class passed to {@link NeedListener} to instantiate a need
+ * A descriptor class passed to {@link NeedProvider} to instantiate a need
  * instance.
  *
  * @author saden
  */
 public interface NeedDescriptor {
 
+    /**
+     * Get the need annotation itself.
+     *
+     * @return the need annotation.
+     */
     Need getNeed();
 
+    /**
+     * Get the test instance the need is for.
+     *
+     * @return an instance of the test class
+     */
     Object getTestInstance();
 
+    /**
+     * Get the test class.
+     *
+     * @return the test class
+     */
     Class<?> getTestClass();
 
+    /**
+     * Get the name of the test class the need is for.
+     *
+     * @return the test class name
+     */
     String getTestClassName();
 
+    /**
+     * Get an optional service locator associated with the need.
+     *
+     * @return an optional containing the service locator, an empty otherwise
+     */
     Optional<? extends ServiceLocator> getServiceLocator();
 
+    /**
+     * Get an optional configuration method on the test class with the given
+     * parameter types used to configure the need.
+     *
+     * @param parameterTypes the configuration method parameter types
+     * @return optional containing the configuration method, an empty otherwise
+     *
+     */
     Optional<Method> getConfigMethod(Class... parameterTypes);
 }

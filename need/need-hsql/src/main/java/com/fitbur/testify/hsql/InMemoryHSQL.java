@@ -41,19 +41,10 @@ import java.util.Optional;
  */
 public class InMemoryHSQL implements NeedProvider<HikariConfig> {
 
-    private String dataSourceName;
-    private HikariConfig hikariConfig;
-    private ServiceDescriptor serviceDescriptor;
-    private NeedDescriptor needDescriptor;
-    private HikariDataSource dataSource;
-
     @Override
     public HikariConfig configure(NeedDescriptor descriptor) {
-        this.needDescriptor = descriptor;
-        this.dataSourceName = descriptor.getTestClassName() + "DataSource";
-        this.hikariConfig = new HikariConfig();
-
-        hikariConfig.setJdbcUrl(format("jdbc:hsqldb:mem:%s", dataSourceName));
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl(format("jdbc:hsqldb:mem:%s", descriptor.getTestClassName()));
         hikariConfig.setDriverClassName("org.hsqldb.jdbc.JDBCDriver");
         hikariConfig.setUsername("sa");
         hikariConfig.setPassword("");
@@ -74,18 +65,12 @@ public class InMemoryHSQL implements NeedProvider<HikariConfig> {
             });
         }
 
-        return hikariConfig;
-    }
-
-    @Override
-    public void init(NeedDescriptor descriptor, HikariConfig config) {
-        Optional<? extends ServiceLocator> locator = needDescriptor.getServiceLocator();
-
+        Optional<? extends ServiceLocator> locator = descriptor.getServiceLocator();
         if (locator.isPresent()) {
             ServiceLocator serviceLocator = locator.get();
 
-            this.serviceDescriptor = new ServiceDescriptorBuilder()
-                    .name(dataSourceName)
+            ServiceDescriptor serviceDescriptor = new ServiceDescriptorBuilder()
+                    .name(descriptor.getTestClassName())
                     .type(HikariDataSource.class)
                     .scope(SINGLETON)
                     .arguments(hikariConfig)
@@ -95,10 +80,14 @@ public class InMemoryHSQL implements NeedProvider<HikariConfig> {
                     .build();
 
             serviceLocator.addService(serviceDescriptor);
-
         }
 
-        dataSource = new HikariDataSource(hikariConfig);
+        return hikariConfig;
+    }
+
+    @Override
+    public void init(NeedDescriptor descriptor, HikariConfig config) {
+        HikariDataSource dataSource = new HikariDataSource(config);
 
         try {
             try (Connection connection = dataSource.getConnection()) {
@@ -116,6 +105,7 @@ public class InMemoryHSQL implements NeedProvider<HikariConfig> {
 
     @Override
     public void destroy(NeedDescriptor descriptor, HikariConfig config) {
+        HikariDataSource dataSource = new HikariDataSource(config);
         try {
             try (Connection connection = dataSource.getConnection()) {
                 Statement statement = connection.createStatement();
@@ -129,12 +119,12 @@ public class InMemoryHSQL implements NeedProvider<HikariConfig> {
                     this.getClass().getSimpleName(), e.getMessage());
         }
 
-        Optional<? extends ServiceLocator> serviceLocator = needDescriptor.getServiceLocator();
+        Optional<? extends ServiceLocator> serviceLocator = descriptor.getServiceLocator();
 
         if (serviceLocator.isPresent()) {
             ServiceLocator locator = serviceLocator.get();
             if (locator.isActive()) {
-                locator.removeService(serviceDescriptor);
+                locator.removeService(descriptor.getTestClassName());
             }
         }
     }
