@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify;
+package com.fitbur.testify.need;
 
 import java.lang.annotation.Documented;
 import static java.lang.annotation.ElementType.TYPE;
@@ -23,32 +23,23 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
 
 /**
- * An annotation for specifying a module class that should be loaded by the test
- * class. This is useful for integration and system tests which utilize a
- * dependency injection framework to load modules (i.e. Spring JavaConfig, and
- * HK2's Binder and Guice's Module).
+ * An annotation for specifying a need class that should be loaded for a test
+ * class. This is useful for integration and system tests which require an
+ * external resource to be loaded (i.e. an in-memory database).
  *
  * @author saden
  */
 @Documented
 @Retention(RUNTIME)
 @Target({TYPE})
-@Repeatable(Modules.class)
-public @interface Module {
+@Repeatable(Needs.class)
+public @interface Need {
 
     /**
-     * <p>
-     * A value that represents a module class that will be loaded.
-     * </p>
-     * <p>
-     * Please note that to encourage simplicity and modular design loading of
-     * modules is limited to a single module class. If you absolutely need to
-     * load multiple modules Module annotation is repeatable and you may
-     * additional @Module annotation to your test class.
-     * </p>
+     * Specifies a need implementation class that should be loaded.
      *
-     * @return a module class.
+     * @return a need class.
      */
-    Class<?> value();
+    Class<? extends NeedProvider> value();
 
 }

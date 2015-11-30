@@ -24,6 +24,8 @@ import com.fitbur.testify.descriptor.ParameterDescriptor;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.reflect.Modifier.isFinal;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
 import org.slf4j.Logger;
@@ -47,22 +49,33 @@ public class UnitTestVerifier implements TestVerifier {
 
     @Override
     public void dependency() {
-        String mockito = "org.mockito.Mockito";
+        Map<String, String> dependencies = new HashMap<String, String>() {
+            {
+                put("org.mockito.Mockito", "Mockito");
+            }
+        };
 
-        try {
-            Class.forName(mockito);
-        } catch (ClassNotFoundException ex) {
-            checkState(false,
-                    "'%s' not found in the classpath. Please add mockito to your "
-                    + "classpath.",
-                    mockito);
-        }
+        dependencies.entrySet().parallelStream().forEach(p -> {
+            try {
+                Class.forName(p.getKey());
+            } catch (ClassNotFoundException e) {
+                checkState(false,
+                        "'%s' not found. Please insure '%s' dependency is in the classpath.",
+                        p.getKey(), p.getValue());
+            }
+        });
     }
 
     @Override
     public void configuration() {
         String testClassName = context.getTestClassName();
         Collection<FieldDescriptor> fieldDescriptors = context.getFieldDescriptors().values();
+        CutDescriptor cutDescriptor = context.getCutDescriptor();
+
+        checkState(context.getConstructorCount() == 1,
+                "Class under test '%s' has '%d' constructors. Please insure that "
+                + "the class under test has one and only one constructor.",
+                cutDescriptor.getTypeName(), context.getConstructorCount());
 
         fieldDescriptors.parallelStream().forEach(p -> {
 
@@ -96,7 +109,7 @@ public class UnitTestVerifier implements TestVerifier {
             Optional instance = p.getInstance();
             if (!instance.isPresent()) {
                 String paramTypeName = p.getTypeName();
-                logger.warn("Improper wiring in detected. Class under test '{}' defined "
+                logger.warn("Improper wiring detected. Class under test '{}' defined "
                         + "in '{}' declars constructor argument of type '{}' but '{}' "
                         + "does not define a field of type '{}' annotated with @Mock.",
                         cutClassName, testClassName, paramTypeName, testClassName, paramTypeName);

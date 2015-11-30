@@ -18,6 +18,7 @@ package com.fitbur.testify.descriptor;
 import com.fitbur.testify.Mock;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,11 +36,13 @@ import static java.util.stream.Stream.of;
 public class MethodDescriptor {
 
     private final Method method;
+    private final Class[] parameterTypes;
     private final Integer order;
     private Optional<Object> instance;
 
-    public MethodDescriptor(Method method, Integer order) {
+    public MethodDescriptor(Method method, Class[] parameterTypes, Integer order) {
         this.method = method;
+        this.parameterTypes = parameterTypes;
         this.order = order;
     }
 
@@ -91,6 +94,14 @@ public class MethodDescriptor {
 
     public boolean hasAnyAnnotation(Class<? extends Annotation>... type) {
         return of(type).anyMatch(method::isAnnotationPresent);
+    }
+
+    public List<Class> getParameterTypes() {
+        return of(parameterTypes).collect(toList());
+    }
+
+    public boolean hasParameterTypes(Class... parameterTypes) {
+        return Arrays.equals(this.parameterTypes, parameterTypes);
     }
 
     @Override

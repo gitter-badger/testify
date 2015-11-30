@@ -15,18 +15,64 @@
  */
 package com.fitbur.testify.hsql;
 
-import java.sql.SQLException;
+import com.fitbur.testify.Config;
+import com.fitbur.testify.Module;
+import com.fitbur.testify.Real;
+import com.fitbur.testify.hsql.fixture.DatabaseConfig;
+import com.fitbur.testify.hsql.fixture.entity.UserEntity;
+import com.fitbur.testify.integration.SpringIntegrationTestRunner;
+import com.fitbur.testify.need.Need;
+import com.zaxxer.hikari.HikariConfig;
+import java.io.Serializable;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  *
  * @author saden
  */
+@Module(DatabaseConfig.class)
+@Need(InMemoryHSQL.class)
+@RunWith(SpringIntegrationTestRunner.class)
 public class InMemoryHSQLTest {
 
-    @Test
-    public void testInit() throws SQLException {
+    @Real
+    SessionFactory factory;
 
+    @Config
+    public void configure(HikariConfig hikariConfig) {
+        System.out.println("");
     }
 
+    @Test
+    public void test() {
+        try (Session session = factory.openSession()) {
+            Transaction tx = session.beginTransaction();
+            UserEntity entity = new UserEntity(null, "saden", "test", "test");
+            Serializable id = session.save(entity);
+            tx.commit();
+            assertThat(id).isNotNull();
+
+            entity = session.get(UserEntity.class, id);
+            assertThat(entity).isNotNull();
+        }
+    }
+
+    @Test
+    public void test2() {
+        try (Session session = factory.openSession()) {
+            Transaction tx = session.beginTransaction();
+            UserEntity entity = new UserEntity(null, "saden", "test", "test");
+            Serializable id = session.save(entity);
+            tx.commit();
+            assertThat(id).isNotNull();
+
+            entity = session.get(UserEntity.class, id);
+            assertThat(entity).isNotNull();
+        }
+    }
 }

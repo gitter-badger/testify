@@ -17,21 +17,26 @@ package com.fitbur.testify.analyzer;
 
 import com.fitbur.testify.Cut;
 import com.fitbur.testify.TestContext;
-import com.fitbur.testify.TestException;
 import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.MethodDescriptor;
+import com.fitbur.testify.need.Need;
+import com.fitbur.testify.need.Needs;
+import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Class.forName;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import static java.util.stream.Stream.of;
+import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import static org.objectweb.asm.Opcodes.ASM5;
 import org.objectweb.asm.Type;
 import static org.objectweb.asm.Type.getMethodType;
+import static org.objectweb.asm.Type.getType;
 
 /**
  * A class visitor implementation that performs analysis on the test class.
@@ -45,8 +50,6 @@ public class TestClassAnalyzer extends ClassVisitor {
     private int fieldOrder = 0;
     private int methodOrder = 0;
     private int cutCount = 0;
-    private int mockCount = 0;
-    private int methodCount = 0;
 
     public TestClassAnalyzer(TestContext context) {
         super(ASM5);
@@ -54,13 +57,35 @@ public class TestClassAnalyzer extends ClassVisitor {
     }
 
     @Override
+    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+        Type type = getType(desc);
+        String typeClassName = type.getClassName();
+        Class<?> testClass = context.getTestClass();
+
+        if (typeClassName.equals(Need.class.getName())) {
+            Need need = testClass.getDeclaredAnnotation(Need.class);
+            context.addNeed(need);
+        }
+
+        if (type.getClassName().equals(Needs.class.getName())) {
+            Needs needs = testClass.getDeclaredAnnotation(Needs.class);
+            for (Need needVal : needs.value()) {
+                context.addNeed(needVal);
+            }
+        }
+
+        return null;
+    }
+
+    @Override
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
         try {
-            Field field = context.getTestClass().getDeclaredField(name);
+            Class<?> testClass = context.getTestClass();
+            Field field = testClass.getDeclaredField(name);
             Cut cut = field.getDeclaredAnnotation(Cut.class);
 
             if (cut != null) {
-                context.setCutField(new CutDescriptor(field));
+                context.setCutDescriptor(new CutDescriptor(field));
                 cutCount++;
             } else {
                 DescriptorKey key = new DescriptorKey(field.getGenericType(), field.getName());
@@ -79,21 +104,26 @@ public class TestClassAnalyzer extends ClassVisitor {
         if (CONSTRUCTOR_NAME.equals(name)) {
             return null;
         }
+        Class<?> testClass = context.getTestClass();
+
+        Type type = getMethodType(desc);
+        Class[] parameterTypes = of(type.getArgumentTypes())
+                .sequential()
+                .map(Type::getClassName)
+                .map(this::getClass)
+                .toArray(Class[]::new);
 
         try {
-            Type type = getMethodType(desc);
-            Class[] parameterTypes = of(type.getArgumentTypes())
-                    .sequential()
-                    .map(Type::getClassName)
-                    .map(this::getClass)
-                    .toArray(Class[]::new);
 
-            Method method = context.getTestClass().getDeclaredMethod(name, parameterTypes);
-            MethodDescriptor methodDescriptor = new MethodDescriptor(method, methodOrder++);
+            Method method = testClass.getDeclaredMethod(name, parameterTypes);
+            MethodDescriptor methodDescriptor
+                    = new MethodDescriptor(method, parameterTypes, methodOrder++);
             context.addMethodDescriptor(methodDescriptor);
 
         } catch (NoSuchMethodException | SecurityException e) {
-            throw new TestException(e);
+            checkState(false,
+                    "Method with '%s' parameters not accessible in '%s' class.",
+                    Arrays.toString(parameterTypes), context.getTestClassName());
         }
 
         return null;
@@ -104,20 +134,15 @@ public class TestClassAnalyzer extends ClassVisitor {
         context.setFieldCount(fieldOrder);
         context.setMethodCount(methodOrder);
         context.setCutCount(cutCount);
-//        checkState(cutCount == 1,
-//                "Class under test not defined or multiple class under test in "
-//                + "'%s'. Please insure that a single field on the test "
-//                + "class is annotated with @Cut.",
-//                context.getTestClass().getName());
-
     }
 
-    private Class<?> getClass(String p) throws TestException {
+    private Class<?> getClass(String className) {
         try {
-            return forName(p);
+            return forName(className);
         } catch (ClassNotFoundException e) {
-            throw new TestException(e);
-
+            checkState(false, "Class '%s' not found in the classpath.", className);
+            //not reachable;
+            throw new IllegalStateException(e);
         }
     }
 

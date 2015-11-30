@@ -15,30 +15,20 @@
  */
 package com.fitbur.testify.integration;
 
-import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
-import com.fitbur.testify.TestException;
 import com.fitbur.testify.analyzer.CutClassAnalyzer;
 import com.fitbur.testify.analyzer.TestClassAnalyzer;
-import com.fitbur.testify.descriptor.FieldDescriptor;
-import com.fitbur.testify.di.ServiceLocator;
-import com.fitbur.testify.di.spring.SpringTestServiceLocator;
-import com.fitbur.testify.need.Need;
-import com.fitbur.testify.need.NeedDescriptor;
-import com.fitbur.testify.need.TestNeed;
+import com.fitbur.testify.descriptor.CutDescriptor;
+import com.fitbur.testify.di.spring.SpringServiceLocator;
+import com.fitbur.testify.need.NeedProvider;
 import static com.google.common.base.Preconditions.checkState;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
-import static java.util.stream.Stream.of;
-import javax.inject.Inject;
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.internal.runners.model.EachTestNotifier;
 import org.junit.runner.Description;
-import static org.junit.runner.Description.createTestDescription;
+import org.junit.runner.Result;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runner.notification.StoppedByUserException;
 import org.junit.runners.BlockJUnit4ClassRunner;
@@ -49,8 +39,7 @@ import org.objectweb.asm.ClassReader;
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
  * A JUnit spring integration test runner. This class is the main entry point
@@ -62,10 +51,10 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  */
 public class SpringIntegrationTestRunner extends BlockJUnit4ClassRunner {
 
-    static final Logger LOG = LoggerFactory.getLogger("testify");
+    static final Logger LOGGER = LoggerFactory.getLogger("testify");
     protected Map<Class, TestContext> testClassContexts = new ConcurrentHashMap<>();
-    public Map<Class, ServiceLocator> applicationContexts = new ConcurrentHashMap<>();
-    public Map<Class, List<NeedDescriptor>> testNeedDescriptors = new ConcurrentHashMap<>();
+    public Map<Class, SpringServiceLocator> applicationContexts = new ConcurrentHashMap<>();
+    public Map<Class, List<NeedProvider>> needProvider = new ConcurrentHashMap<>();
 
     public RunNotifier notifier;
 
@@ -80,102 +69,40 @@ public class SpringIntegrationTestRunner extends BlockJUnit4ClassRunner {
         super(testClass);
     }
 
-    /**
-     * Describe the test class.
-     *
-     * @return
-     */
     @Override
-    public Description getDescription() {
-        TestClass testClass = this.getTestClass();
-        Class<?> javaClass = testClass.getJavaClass();
-        String name = javaClass.getSimpleName();
+    protected Object createTest() throws Exception {
+        Object testInstance = super.createTest();
 
-        return createTestDescription(javaClass, name, testClass.getAnnotations());
+        TestContext testContext = testClassContexts.get(testInstance.getClass());
+        testContext.setTestInstance(testInstance);
+
+        return testInstance;
     }
 
-    @Override
-    public Object createTest() throws Exception {
-        try {
-            TestClass testClass = this.getTestClass();
-            Class<?> javaClass = testClass.getJavaClass();
-            String name = javaClass.getSimpleName();
+    public TestContext analyzeTest(Class<?> javaClass, String name) {
+        TestContext testContext = testClassContexts.computeIfAbsent(javaClass, p -> {
+            try {
+                TestContext context = new TestContext(name, javaClass, LOGGER);
 
-            TestContext testContext = this.testClassContexts.computeIfAbsent(javaClass, p -> {
-                Object instance;
-                try {
-                    instance = super.createTest();
-                    TestContext context = new TestContext(name, javaClass, instance, LOG);
+                ClassReader testReader = new ClassReader(javaClass.getName());
+                testReader.accept(new TestClassAnalyzer(context), EXPAND_FRAMES);
 
-                    ClassReader testReader = new ClassReader(javaClass.getName());
-                    testReader.accept(new TestClassAnalyzer(context), EXPAND_FRAMES);
+                CutDescriptor cutDescriptor = context.getCutDescriptor();
 
-                    int cutCount = context.getCutCount();
-
-                    if (cutCount == 1) {
-                        ClassReader cutReader = new ClassReader(context.getCutDescriptor().getField().getType().getName());
-                        cutReader.accept(new CutClassAnalyzer(context), EXPAND_FRAMES);
-                    } else if (cutCount > 1) {
-                        checkState(false,
-                                "Found more than one class under test in %s. "
-                                + "Please annotated only a single field with @Cut.", name);
-                    }
-
-                    return context;
-                } catch (Exception e) {
-                    throw new TestException(e);
+                if (cutDescriptor != null) {
+                    ClassReader cutReader = new ClassReader(context.getCutDescriptor().getField().getType().getName());
+                    cutReader.accept(new CutClassAnalyzer(context), EXPAND_FRAMES);
                 }
-            });
 
-            AnnotationConfigApplicationContext appContext = new AnnotationConfigApplicationContext();
-            appContext.setAllowBeanDefinitionOverriding(true);
-            appContext.setId(name);
-
-            ServiceLocator serviceLocator
-                    = new SpringTestServiceLocator(appContext);
-            Object testInstance = testContext.getTestInstance();
-            Need[] needs = testInstance.getClass().getDeclaredAnnotationsByType(Need.class);
-
-            @SuppressWarnings("UseSpecificCatch")
-            List<NeedDescriptor> needDescriptors = of(needs)
-                    .map(p -> {
-                        try {
-                            TestNeed testNeed = p.value().newInstance();
-                            Object needContext = testNeed.init(testInstance, serviceLocator);
-                            return new NeedDescriptor(p, needContext, testNeed);
-                        } catch (Exception e) {
-                            throw new TestException(e);
-                        }
-                    })
-                    .collect(toList());
-            this.testNeedDescriptors.put(javaClass, needDescriptors);
-
-            IntegrationTestVerifier verifier = new IntegrationTestVerifier(testContext, LOG);
-            IntegrationTestReifier reifier = new IntegrationTestReifier(serviceLocator, testInstance);
-            IntegrationTestCreator creator = new IntegrationTestCreator(testContext, reifier, serviceLocator);
-            verifier.dependency();
-            verifier.configuration();
-
-            if (testContext.getCutDescriptor() == null) {
-                Set<FieldDescriptor> real = testContext.getFieldDescriptors()
-                        .values()
-                        .parallelStream()
-                        .filter(p -> p.hasAnyAnnotation(Inject.class, Autowired.class, Real.class))
-                        .collect(toSet());
-                creator.real(real);
-            } else {
-                creator.cut();
+                return context;
+            } catch (Exception e) {
+                checkState(false, "Analysis of test class '%s' failed.\n'%s'", name, e.getMessage());
+                //not reachable
+                throw new IllegalStateException(e);
             }
+        });
 
-            verifier.wiring();
-
-            this.applicationContexts.put(javaClass, serviceLocator);
-            return testInstance;
-        } catch (IllegalStateException e) {
-            LOG.error(e.getMessage());
-            this.notifier.pleaseStop();
-            throw e;
-        }
+        return testContext;
     }
 
     @Override
@@ -185,24 +112,51 @@ public class SpringIntegrationTestRunner extends BlockJUnit4ClassRunner {
         TestClass testClass = this.getTestClass();
         Class<?> javaClass = testClass.getJavaClass();
         String name = javaClass.getSimpleName();
-        SpringIntegrationTestRunListener listener = new SpringIntegrationTestRunListener(name,
-                testClassContexts,
-                applicationContexts,
-                testNeedDescriptors);
+
+        TestContext testContext = analyzeTest(javaClass, name);
+        IntegrationTestVerifier verifier = new IntegrationTestVerifier(testContext, LOGGER);
+        verifier.dependency();
+        verifier.configuration();
+
+        //register slf4j bridge
+        if (!SLF4JBridgeHandler.isInstalled()) {
+            SLF4JBridgeHandler.removeHandlersForRootLogger();
+            SLF4JBridgeHandler.install();
+        }
+
+        SpringIntegrationTestRunListener listener
+                = new SpringIntegrationTestRunListener(testContext, LOGGER);
+
         notifier.addListener(listener);
         EachTestNotifier testNotifier = new EachTestNotifier(notifier, description);
+
         try {
+            notifier.fireTestRunStarted(description);
             Statement statement = this.classBlock(notifier);
             statement.evaluate();
-
-            // invoke here the run started method
-            notifier.fireTestRunStarted(description);
         } catch (AssumptionViolatedException e) {
+            LOGGER.error(e.getMessage());
             testNotifier.fireTestIgnored();
+        } catch (IllegalStateException e) {
+            LOGGER.error("{}", e.getMessage());
+            testNotifier.addFailure(e);
+            notifier.pleaseStop();
         } catch (StoppedByUserException e) {
+            LOGGER.error(e.getMessage());
             throw e;
         } catch (Throwable e) {
+            LOGGER.error(e.getMessage());
             testNotifier.addFailure(e);
+        } finally {
+            notifier.fireTestRunFinished(new Result());
+            //XXX: notifier is a singleton so we have to remove it or otherwise
+            //the listener will keep getting added to it and will be called
+            //multiple times
+            notifier.removeListener(listener);
+
+            if (SLF4JBridgeHandler.isInstalled()) {
+                SLF4JBridgeHandler.uninstall();
+            }
         }
     }
 

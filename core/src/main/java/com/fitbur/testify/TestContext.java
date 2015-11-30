@@ -20,6 +20,7 @@ import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.MethodDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
+import com.fitbur.testify.need.Need;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import static java.util.Collections.unmodifiableMap;
@@ -30,6 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 import static java.util.Optional.ofNullable;
 import java.util.Set;
+import static java.util.stream.Collectors.toSet;
 import org.slf4j.Logger;
 
 /**
@@ -41,21 +43,26 @@ public class TestContext {
 
     private final String name;
     private final Class<?> testClass;
-    private final Object testInstance;
     private final Map<DescriptorKey, FieldDescriptor> fieldDescriptors = new LinkedHashMap<>();
     private final Set<MethodDescriptor> methodDescriptors = new LinkedHashSet<>();
+    private final Set<Need> needs = new LinkedHashSet<>();
     private final Map<DescriptorKey, ParameterDescriptor> paramaterDescriptors = new LinkedHashMap<>();
+    private Object testInstance;
     private CutDescriptor cutDescriptor;
     private int cutCount;
     private int methodCount;
     private int fieldCount;
-    private final Logger log;
+    private final Logger logger;
+    private int constructorCount;
 
-    public TestContext(String name, Class<?> testClass, Object testInstance, Logger log) {
+    public TestContext(String name, Class<?> testClass, Logger logger) {
         this.name = name;
         this.testClass = testClass;
-        this.testInstance = testInstance;
-        this.log = log;
+        this.logger = logger;
+    }
+
+    public Logger getLogger() {
+        return logger;
     }
 
     public String getName() {
@@ -72,6 +79,10 @@ public class TestContext {
 
     public Object getTestInstance() {
         return testInstance;
+    }
+
+    public void setTestInstance(Object testInstance) {
+        this.testInstance = testInstance;
     }
 
     public void addParameterDescriptor(ParameterDescriptor descriptor) {
@@ -106,7 +117,28 @@ public class TestContext {
         return unmodifiableSet(methodDescriptors);
     }
 
-    public void setCutField(CutDescriptor descriptor) {
+    public Set<MethodDescriptor> getConfigMethods() {
+        return methodDescriptors.stream()
+                .filter(p -> p.hasAnnotation(Config.class))
+                .collect(toSet());
+    }
+
+    public Optional<MethodDescriptor> getConfigMethod(Class... parameterTypes) {
+        return methodDescriptors.stream()
+                .filter(p -> p.hasAnnotation(Config.class))
+                .filter(p -> p.hasParameterTypes(parameterTypes))
+                .findFirst();
+    }
+
+    public void addNeed(Need need) {
+        needs.add(need);
+    }
+
+    public Set<Need> getNeeds() {
+        return needs;
+    }
+
+    public void setCutDescriptor(CutDescriptor descriptor) {
         this.cutDescriptor = descriptor;
     }
 
@@ -138,8 +170,12 @@ public class TestContext {
         this.fieldCount = fieldCount;
     }
 
-    public Logger getLog() {
-        return log;
+    public void setConstructorCount(int constructorCount) {
+        this.constructorCount = constructorCount;
+    }
+
+    public int getConstructorCount() {
+        return constructorCount;
     }
 
 }

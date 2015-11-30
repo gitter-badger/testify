@@ -35,35 +35,37 @@ public @interface Mock {
 
     /**
      * <p>
-     * This value represents the index of the collaborator parameter on the
-     * class under test constructor that will be mocked and injected into the
-     * test class. By default this value is set to -1 to enable type based auto
-     * detection. If you wish to not rely on auto detection you can explicitly
-     * specify the index of the collaborator on the class under test
-     * constructor.
+     * This value represents the collaborator's class under test constructor
+     * parameter index that will be mocked and injected into the test class and
+     * the class under test.
+     * </p>
+     * <p>
+     * By default this value is set to -1 to enable auto detection. If you wish
+     * to not rely on auto detection you can explicitly specify the
+     * collaborator's class under test constructor parameter index.
      * </p>
      *
-     * @return the index of the collaborator parameter on the class under test
-     *         constructor.
+     * @return the collaborator's class under test constructor parameter index.
      */
     int index() default -1;
 
     /**
      * <p>
-     * This value represents the name of the collaborator parameter on the class
-     * under test constructor that will be mocked and injected into the test
-     * class. By default this value is set to "" to enable type or name based
-     * auto detection feature. If you do not wish to not rely on auto detection
-     * you can explicitly specify the name of the collaborator on the class
-     * under test constructor.
+     * This value represents the collaborator's class under test constructor
+     * parameter name that will be mocked and injected into both the test class
+     * and the class under test.
      * </p>
      * <p>
-     * Please note that name based auto detection will only work if your code is
-     * compiled with debug information (javac -parameters).
+     * By default this value is set to "" to enable auto detection. If you wish
+     * to not rely on auto detection you can explicitly specify the
+     * collaborator's class under test constructor parameter name.
+     * </p>
+     * <p>
+     * Please note that name based auto detection works if your code is compiled
+     * with debug information (javac -parameters or javac -g:vars).
      * </p>
      *
-     * @return the name of the collaborator parameter on the class under test
-     *         constructor.
+     * @return the collaborator's class under test constructor parameter name.
      */
     String name() default "";
 

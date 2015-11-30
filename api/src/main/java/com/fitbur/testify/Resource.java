@@ -23,31 +23,22 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
 
 /**
- * An annotation for specifying a module class that should be loaded by the test
- * class. This is useful for integration and system tests which utilize a
- * dependency injection framework to load modules (i.e. Spring JavaConfig, and
- * HK2's Binder and Guice's Module).
+ * An annotation for loading and initialize a web resource class. This is useful
+ * for system tests which utilize a web framework to load web resources (i.e.
+ * Spring Controller and Jersey Resource).
  *
  * @author saden
  */
 @Documented
 @Retention(RUNTIME)
 @Target({TYPE})
-@Repeatable(Modules.class)
-public @interface Module {
+@Repeatable(Resources.class)
+public @interface Resource {
 
     /**
-     * <p>
-     * A value that represents a module class that will be loaded.
-     * </p>
-     * <p>
-     * Please note that to encourage simplicity and modular design loading of
-     * modules is limited to a single module class. If you absolutely need to
-     * load multiple modules Module annotation is repeatable and you may
-     * additional @Module annotation to your test class.
-     * </p>
+     * A resource class that will be initialized and loaded.
      *
-     * @return a module class.
+     * @return the resource class.
      */
     Class<?> value();
 

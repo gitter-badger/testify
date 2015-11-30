@@ -32,6 +32,11 @@
     <dependencies>
         <dependency>
             <groupId>com.fitbur.testify</groupId>
+            <artifactId>api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fitbur.testify</groupId>
             <artifactId>core</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -43,11 +48,6 @@
         <dependency>
             <groupId>com.fitbur.testify</groupId>
             <artifactId>integration</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fitbur.testify.need</groupId>
-            <artifactId>need-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

@@ -13,7 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.fitbur.testify.need;
+
 /**
- * A package that contains test annotations and api classes.
+ * A contract that defines methods for creating and destroying a need.
+ *
+ * @author saden
+ * @param <T> need configuration type
+ *
  */
-package com.fitbur.testify;
+public interface NeedProvider<T> {
+
+    T configure(NeedDescriptor descriptor);
+
+    void init(NeedDescriptor descriptor, T config);
+
+    default void destroy(NeedDescriptor descriptor, T config) {
+    }
+
+}

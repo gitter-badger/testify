@@ -28,7 +28,6 @@
     <name>Need</name>
     <packaging>pom</packaging>
     <modules>
-        <module>need-api</module>
         <module>need-hsql</module>
         <module>need-docker</module>
     </modules>
