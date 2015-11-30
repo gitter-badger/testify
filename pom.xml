@@ -36,9 +36,9 @@
         <module>api</module>
         <module>core</module>
         <module>di</module>
-        <module>need</module>
         <module>level</module>
         <module>junit</module>
+        <module>need</module>
         <module>examples</module>
     </modules>
     
