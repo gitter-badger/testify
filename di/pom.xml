@@ -25,9 +25,11 @@
     </parent>
     <artifactId>di</artifactId>
     <packaging>pom</packaging>
+
     <name>DI</name>
+
     <modules>
-        <module>di-api</module>
         <module>di-spring</module>
     </modules>
+
 </project>

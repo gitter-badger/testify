@@ -15,140 +15,127 @@
  */
 package com.fitbur.testify.hsql;
 
-import com.fitbur.testify.Config;
 import com.fitbur.testify.di.ServiceDescriptor;
 import com.fitbur.testify.di.ServiceDescriptorBuilder;
 import com.fitbur.testify.di.ServiceLocator;
 import static com.fitbur.testify.di.ServiceScope.SINGLETON;
-import com.fitbur.testify.need.TestNeed;
+import com.fitbur.testify.need.NeedDescriptor;
+import com.fitbur.testify.need.NeedProvider;
+import static com.google.common.base.Preconditions.checkState;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import static java.lang.String.format;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import static java.security.AccessController.doPrivileged;
+import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Set;
-import static java.util.stream.Collectors.toSet;
-import static java.util.stream.Stream.of;
+import java.util.Optional;
 
 /**
- * An in memory implementation of a HSQL test need.
+ * An in memory implementation of a HSQL test need provider.
  *
  * @author saden
  */
-public class InMemoryHSQL implements TestNeed<HSQLContext> {
+public class InMemoryHSQL implements NeedProvider<HikariConfig> {
+
+    private String dataSourceName;
+    private HikariConfig hikariConfig;
+    private ServiceDescriptor serviceDescriptor;
+    private NeedDescriptor needDescriptor;
+    private HikariDataSource dataSource;
 
     @Override
-    public HSQLContext init(Object testInstance, ServiceLocator serviceLocator) {
-        String dataSourceName = serviceLocator.getName() + "DataSource";
+    public HikariConfig configure(NeedDescriptor descriptor) {
+        this.needDescriptor = descriptor;
+        this.dataSourceName = descriptor.getTestClassName() + "DataSource";
+        this.hikariConfig = new HikariConfig();
 
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(format("jdbc:hsqldb:mem:test-%s", serviceLocator.getName()));
-        config.setDriverClassName("org.hsqldb.jdbc.JDBCDriver");
-        config.setUsername("sa");
-        config.setPassword("");
+        hikariConfig.setJdbcUrl(format("jdbc:hsqldb:mem:%s", dataSourceName));
+        hikariConfig.setDriverClassName("org.hsqldb.jdbc.JDBCDriver");
+        hikariConfig.setUsername("sa");
+        hikariConfig.setPassword("");
 
-//        config.addDataSourceProperty("cachePrepStmts", "true");
-//        config.addDataSourceProperty("prepStmtCacheSize", "250");
-//        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-        ServiceDescriptor descriptor = new ServiceDescriptorBuilder()
-                .name(dataSourceName)
-                .type(HikariDataSource.class)
-                .scope(SINGLETON)
-                .arguments(config)
-                .lazy(false)
-                .injectable(true)
-                .primary(true)
-                .build();
+        Optional<Method> configMethod = descriptor.getConfigMethod(HikariConfig.class);
+        if (configMethod.isPresent()) {
+            AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                Method method = configMethod.get();
 
-        HSQLContext context = new HSQLContext(testInstance, descriptor, serviceLocator);
-
-        config(context);
-
-        serviceLocator.addService(descriptor);
-        return context;
-    }
-
-    @Override
-    public void config(HSQLContext context) {
-        Object[] arguments = context.getDescriptor().getArguments();
-        Object testInstance = context.getTestInstance();
-        Class<? extends Object> testClass = testInstance.getClass();
-        Set<Method> methods = of(testClass.getDeclaredMethods())
-                .filter(p -> p.isAnnotationPresent(Config.class))
-                .collect(toSet());
-
-        methods.forEach(p -> {
-            Class<?>[] paramTypes = p.getParameterTypes();
-            Object[] methodArgs = new Object[paramTypes.length];
-
-            for (int i = 0; i < paramTypes.length; i++) {
-                Class<?> paramType = paramTypes[i];
-                for (Object argument : arguments) {
-                    if (argument.getClass().equals(paramType)) {
-                        methodArgs[i] = argument;
-                    }
-                }
-            }
-
-            doPrivileged((PrivilegedAction<Object>) () -> {
                 try {
-                    p.setAccessible(true);
-                    p.invoke(testInstance, methodArgs);
-                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    throw new RuntimeException(e);
+                    method.setAccessible(true);
+                    method.invoke(descriptor.getTestInstance(), hikariConfig);
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    checkState(false, "Call to config method '%s' in test class '%s' failed.",
+                            method.getName(), descriptor.getTestClassName());
                 }
                 return null;
             });
-        });
+        }
 
+        return hikariConfig;
     }
 
     @Override
+    public void init(NeedDescriptor descriptor, HikariConfig config) {
+        Optional<? extends ServiceLocator> locator = needDescriptor.getServiceLocator();
 
-    public void destroy(HSQLContext context) {
-        ServiceDescriptor descriptor = context.getDescriptor();
-        try (HikariDataSource dataSource = context.getServiceLocator()
-                .getServiceWith(descriptor.getType())) {
-            Connection connection = dataSource.getConnection();
-            Statement statement = connection.createStatement();
-            statement.execute("SHUTDOWN");
-            try {
-                connection.commit();
+        if (locator.isPresent()) {
+            ServiceLocator serviceLocator = locator.get();
+
+            this.serviceDescriptor = new ServiceDescriptorBuilder()
+                    .name(dataSourceName)
+                    .type(HikariDataSource.class)
+                    .scope(SINGLETON)
+                    .arguments(hikariConfig)
+                    .lazy(true)
+                    .injectable(true)
+                    .primary(true)
+                    .build();
+
+            serviceLocator.addService(serviceDescriptor);
+
+        }
+
+        dataSource = new HikariDataSource(hikariConfig);
+
+        try {
+            try (Connection connection = dataSource.getConnection()) {
+                Statement statement = connection.createStatement();
+                statement.execute("TRUNCATE SCHEMA PUBLIC RESTART IDENTITY AND COMMIT NO CHECK");
             } catch (SQLException e) {
-                connection.rollback();
-                throw new HSQLTestException(e);
-            } finally {
-                connection.close();
+                throw e;
             }
+
         } catch (SQLException e) {
-            throw new HSQLTestException(e);
+            checkState(false, "Need provider '%s' 'init' failed.\n%s",
+                    this.getClass().getSimpleName(), e.getMessage());
         }
     }
 
     @Override
-    public void before(HSQLContext context) {
+    public void destroy(NeedDescriptor descriptor, HikariConfig config) {
         try {
-            ServiceDescriptor descriptor = context.getDescriptor();
-            HikariDataSource dataSource = context.getServiceLocator()
-                    .getServiceWith(descriptor.getType());
-            Connection connection = dataSource.getConnection();
-            Statement statement = connection.createStatement();
-            statement.execute("TRUNCATE SCHEMA PUBLIC RESTART IDENTITY AND COMMIT NO CHECK");
-            try {
-                connection.commit();
+            try (Connection connection = dataSource.getConnection()) {
+                Statement statement = connection.createStatement();
+                statement.execute("SHUTDOWN");
             } catch (SQLException e) {
-                connection.rollback();
-                throw new HSQLTestException(e);
-            } finally {
-                connection.close();
+                throw e;
             }
+
         } catch (SQLException e) {
-            throw new HSQLTestException(e);
+            checkState(false, "Need provider '%' failed shutdown the database.\n%s",
+                    this.getClass().getSimpleName(), e.getMessage());
+        }
+
+        Optional<? extends ServiceLocator> serviceLocator = needDescriptor.getServiceLocator();
+
+        if (serviceLocator.isPresent()) {
+            ServiceLocator locator = serviceLocator.get();
+            if (locator.isActive()) {
+                locator.removeService(serviceDescriptor);
+            }
         }
     }
 

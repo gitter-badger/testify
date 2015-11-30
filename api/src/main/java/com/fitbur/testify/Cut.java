@@ -25,8 +25,8 @@ import java.lang.annotation.Target;
 
 /**
  * An annotation used on single field of a test class to denote the field as the
- * class under test and to instruct the framework to inject mock instances of
- * the class under test's collaborators.
+ * class under test and to instruct the framework to wire up the class under
+ * test with its collaborators.
  *
  * @author saden
  */
@@ -38,16 +38,14 @@ public @interface Cut {
     /**
      * <p>
      * Indicates whether a mock that delegates to the class under test instance
-     * is created. This is usefully if you wish to stub certain method call of
-     * the CUT instance and/or verify calls to protected/private methods of the
-     * CUT instance.
+     * is created. This is useful if you wish to stub or verify c package
+     * private methods of the class under test instance.
      * </p>
      * <p>
      * By default a delegating mock is not created.
      * </p>
      *
-     * @return true if a mock that delegates to class under test instance should
-     *         be created.
+     * @return true if a delegating mock is create, false otherwise.
      */
     boolean value() default false;
 }

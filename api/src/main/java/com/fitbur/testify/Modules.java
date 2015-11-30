@@ -22,10 +22,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
 
 /**
- * An annotation for specifying a list of modules that should be loaded for a
+ * An annotation for specifying a list of modules that will be loaded by the
  * test class. This is useful for integration and system tests which utilize a
- * dependency injection framework to load modules (i.e. Spring AppConfig, and
- * HK2/Guice modules).
+ * dependency injection framework to load modules (i.e. Spring JavaConfig, and
+ * HK2's Binder and Guice's Module).
  *
  * @author saden
  */
@@ -35,9 +35,9 @@ import java.lang.annotation.Target;
 public @interface Modules {
 
     /**
-     * Specifies a list of module classes that should be loaded.
+     * Specifies a list of modules that will be loaded.
      *
-     * @return an array of module classes.
+     * @return an array of modules.
      */
     Module[] value();
 

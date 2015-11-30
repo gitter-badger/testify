@@ -55,7 +55,7 @@ public class ExplicitIndexIndistinctGenericTypeTest {
     }
 
     @Test
-    public void givenNothingClassToExecuteShouldReturnHello() {
+    public void callToExecuteShouldReturnHelloHola() {
         String englishGreeting = "Hello";
         String spanishGreeting = "Hola";
         Hello englishInstance = mock(Hello.class);
@@ -77,7 +77,7 @@ public class ExplicitIndexIndistinctGenericTypeTest {
     }
 
     @Test
-    public void givenNothingClassToExecuteShouldReturnHello2() {
+    public void callToExecuteShouldReturnHelloHola2() {
         String englishGreeting = "Hello";
         String spanishGreeting = "Hola";
         Hello englishInstance = mock(Hello.class);

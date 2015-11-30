@@ -37,13 +37,36 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.fitbur.testify</groupId>
-            <artifactId>di-api</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.fitbur.testify.need</groupId>
-            <artifactId>need-api</artifactId>
+            <groupId>com.fitbur.testify.junit</groupId>
+            <artifactId>spring-integration-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>5.0.1.Final</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>${spring.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fitbur.testify</groupId>
+            <artifactId>api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -56,12 +79,7 @@
             <artifactId>HikariCP</artifactId>
             <version>${hikari.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.fitbur.testify</groupId>
-            <artifactId>api</artifactId>
-            <version>0.0.3-SNAPSHOT</version>
-            <type>jar</type>
-        </dependency>
+        
     </dependencies>
 
 </project>

@@ -13,7 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.fitbur.testify.need;
+
+import com.fitbur.testify.di.ServiceLocator;
+import java.lang.reflect.Method;
+import java.util.Optional;
+
 /**
- * A package that contains test annotations and api classes.
+ * A descriptor class passed to {@link NeedListener} to instantiate a need
+ * instance.
+ *
+ * @author saden
  */
-package com.fitbur.testify;
+public interface NeedDescriptor {
+
+    Need getNeed();
+
+    Object getTestInstance();
+
+    Class<?> getTestClass();
+
+    String getTestClassName();
+
+    Optional<? extends ServiceLocator> getServiceLocator();
+
+    Optional<Method> getConfigMethod(Class... parameterTypes);
+}

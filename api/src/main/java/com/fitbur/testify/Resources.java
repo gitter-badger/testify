@@ -17,38 +17,25 @@ package com.fitbur.testify;
 
 import java.lang.annotation.Documented;
 import static java.lang.annotation.ElementType.TYPE;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
 
 /**
- * An annotation for specifying a module class that should be loaded by the test
- * class. This is useful for integration and system tests which utilize a
- * dependency injection framework to load modules (i.e. Spring JavaConfig, and
- * HK2's Binder and Guice's Module).
+ * An annotation for loading and initialize a web resources.
  *
  * @author saden
  */
 @Documented
 @Retention(RUNTIME)
 @Target({TYPE})
-@Repeatable(Modules.class)
-public @interface Module {
+public @interface Resources {
 
     /**
-     * <p>
-     * A value that represents a module class that will be loaded.
-     * </p>
-     * <p>
-     * Please note that to encourage simplicity and modular design loading of
-     * modules is limited to a single module class. If you absolutely need to
-     * load multiple modules Module annotation is repeatable and you may
-     * additional @Module annotation to your test class.
-     * </p>
+     * Specifies a list of resource that will be loaded.
      *
-     * @return a module class.
+     * @return an array of resources.
      */
-    Class<?> value();
+    Resource[] value();
 
 }
