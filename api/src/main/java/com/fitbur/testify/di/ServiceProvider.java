@@ -26,11 +26,17 @@ import javax.inject.Provider;
 public class ServiceProvider implements Provider {
 
     private final ServiceLocator locator;
-    private final Class<?> serviceType;
+    private final String name;
+    private final Class<?> type;
 
-    public ServiceProvider(ServiceLocator locator, Class<?> serviceType) {
+    public ServiceProvider(ServiceLocator locator, Class<?> type) {
+        this(locator, null, type);
+    }
+
+    public ServiceProvider(ServiceLocator locator, String name, Class<?> type) {
         this.locator = locator;
-        this.serviceType = serviceType;
+        this.name = name;
+        this.type = type;
     }
 
     /**
@@ -41,7 +47,9 @@ public class ServiceProvider implements Provider {
      */
     @Override
     public Object get() {
-        return locator.getService(serviceType);
+        return name == null
+                ? locator.getService(type)
+                : locator.getService(type, name);
     }
 
 }

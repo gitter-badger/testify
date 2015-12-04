@@ -17,11 +17,26 @@ package com.fitbur.testify.di.spring;
 
 import com.fitbur.testify.di.ServiceDescriptor;
 import com.fitbur.testify.di.ServiceLocator;
+import com.fitbur.testify.di.ServiceProvider;
 import com.fitbur.testify.di.ServiceScope;
 import static com.fitbur.testify.di.ServiceScope.REQUEST;
 import static com.fitbur.testify.di.ServiceScope.SESSION;
 import static com.fitbur.testify.di.ServiceScope.SINGLETON;
 import static com.google.common.base.Preconditions.checkState;
+import com.google.common.reflect.TypeToken;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import static java.util.Optional.empty;
+import java.util.Set;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+import javax.inject.Named;
+import javax.inject.Provider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import static org.springframework.beans.factory.config.BeanDefinition.ROLE_APPLICATION;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import static org.springframework.beans.factory.support.AbstractBeanDefinition.AUTOWIRE_BY_TYPE;
@@ -77,17 +92,92 @@ public class SpringServiceLocator implements ServiceLocator {
     }
 
     @Override
-    public <T> T getService(Class<T> type) {
-        return context.getBean(type);
+    public <T> T getService(String name) {
+        return (T) context.getBean(name);
     }
 
     @Override
-    public <T> T getService(Class<T> type, String name) {
-        return context.getBean(name, type);
+    public <T> T getService(Type type) {
+        TypeToken<?> token = TypeToken.of(type);
+        Class<?> rawType = token.getRawType();
+        Class<Provider> providerType = Provider.class;
+        Object instance;
+
+        if (token.isSubtypeOf(providerType)) {
+            TypeVariable<Class<Provider>> paramType = providerType.getTypeParameters()[0];
+            rawType = token.resolveType(paramType).getRawType();
+            instance = new ServiceProvider(this, rawType);
+        } else {
+            instance = context.getBean(rawType);
+        }
+
+        return (T) instance;
     }
 
     @Override
-    public <T> T getServiceWith(Class<T> type, Object... arguments) {
+    public <T> T getService(Type type, String name) {
+        TypeToken<?> token = TypeToken.of(type);
+
+        return (T) context.getBean(name, token.getRawType());
+    }
+
+    @Override
+    public <T> T getService(Type type, Set<? extends Annotation> annotations) {
+        TypeToken<?> token = TypeToken.of(type);
+
+        Object instance;
+        Optional<String> beanName = empty();
+        Class rawType = token.getRawType();
+        Class<Provider> providerClass = Provider.class;
+
+        Optional<Qualifier> qualifier = annotations.parallelStream()
+                .filter(p -> p.annotationType().equals(Qualifier.class))
+                .map(Qualifier.class::cast)
+                .findFirst();
+
+        Optional<Named> named = annotations.parallelStream()
+                .filter(p -> p.annotationType().equals(Named.class))
+                .map(Named.class::cast)
+                .findFirst();
+
+        if (named.isPresent()) {
+            beanName = Optional.of(named.get().value());
+        }
+
+        if (qualifier.isPresent()) {
+            beanName = Optional.of(qualifier.get().value());
+        }
+
+        if (beanName.isPresent()) {
+            String name = beanName.get();
+            if (token.isSubtypeOf(providerClass)) {
+                TypeVariable<Class<Provider>> providerParamType = providerClass.getTypeParameters()[0];
+                Class paramType = token.resolveType(providerParamType).getRawType();
+                instance = new ServiceProvider(this, name, paramType);
+            } else {
+                instance = context.getBean(name, rawType);
+            }
+        } else if (token.isSubtypeOf(providerClass)) {
+            TypeVariable<Class<Provider>> providerParamType = providerClass.getTypeParameters()[0];
+            Class paramType = token.resolveType(providerParamType).getRawType();
+            instance = new ServiceProvider(this, paramType);
+        } else if (Map.class.isAssignableFrom(rawType)) {
+            instance = context.getBeansOfType(rawType);
+        } else if (Set.class.isAssignableFrom(rawType)) {
+            instance = context.getBeansOfType(rawType).values().stream()
+                    .collect(toSet());
+        } else if (List.class.isAssignableFrom(rawType)) {
+            instance = context.getBeansOfType(rawType).values().stream()
+                    .collect(toList());
+        } else {
+            instance = context.getBean(rawType);
+        }
+
+        return (T) instance;
+    }
+
+    @Override
+    public <T> T getServiceWith(Class< T> type, Object... arguments) {
         return context.getBean(type, arguments);
     }
 
@@ -140,7 +230,7 @@ public class SpringServiceLocator implements ServiceLocator {
                 bean.setScope("application");
                 break;
             default:
-                checkState(false, "Service scope '{}' is not supported by Spring IoC.", scope.name());
+                checkState(false, "Scope '{}' is not supported by Spring IoC.", scope.name());
 
         }
 
