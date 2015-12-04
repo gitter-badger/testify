@@ -64,14 +64,14 @@ public class SpringServiceLocator implements ServiceLocator {
 
     @Override
     public void destroy() {
-        if (context.isActive()) {
+        if (isActive() && context.isRunning()) {
             context.close();
         }
     }
 
     @Override
     public void reload() {
-        if (!context.isActive()) {
+        if (!isActive()) {
             context.refresh();
         }
     }
