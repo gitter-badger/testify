@@ -27,6 +27,7 @@ import com.fitbur.testify.di.ServiceDescriptorBuilder;
 import com.fitbur.testify.di.ServiceLocator;
 import com.fitbur.testify.di.ServiceScope;
 import com.google.common.reflect.TypeToken;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -167,16 +168,18 @@ public class IntegrationTestReifier implements TestReifier {
                     .forEach(p -> {
                         try {
                             Field field = p.getField();
-                            Optional<Real> real = p.getAnnotation(Real.class);
-                            Optional<Inject> inject = p.getAnnotation(Inject.class);
+                            Type fieldType = p.getGenericType();
+                            Set<? extends Annotation> fieldAnnotations = p.getAnnotations();
 
-                            Object instance = null;
+                            Optional<Real> real = p.getAnnotation(Real.class);
+                            Object instance = locator.getService(fieldType, fieldAnnotations);
+
+                            if (instance == null) {
+                                return;
+                            }
 
                             if (real.isPresent() && real.get().value()) {
-                                Object service = locator.getService(p.getType());
-                                instance = mock(p.getType(), delegatesTo(service));
-                            } else if (real.isPresent() || inject.isPresent()) {
-                                instance = locator.getService(p.getType());
+                                instance = mock(p.getType(), delegatesTo(instance));
                             }
 
                             field.setAccessible(true);
