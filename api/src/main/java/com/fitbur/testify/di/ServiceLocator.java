@@ -75,25 +75,6 @@ public interface ServiceLocator {
     <T> T getService(String name);
 
     /**
-     * Get a service with the given name.
-     *
-     * @param <T>
-     * @param type the service type
-     * @param annotations the service annotations
-     * @return an instance of the service
-     */
-    <T> T getService(Type type, Set<? extends Annotation> annotations);
-
-    /**
-     * Get a service with the given type.
-     *
-     * @param <T> the service type
-     * @param type the service class
-     * @return an instance of the service
-     */
-    <T> T getService(Class<T> type);
-
-    /**
      * Get a service with the given type.
      *
      * @param <T> the service type
@@ -113,14 +94,14 @@ public interface ServiceLocator {
     <T> T getService(Type type, String name);
 
     /**
-     * Get a service with the given type and name.
+     * Get a service with the given name.
      *
-     * @param <T> the service type
-     * @param type the service class
-     * @param name the service name
+     * @param <T>
+     * @param type the service type
+     * @param annotations the service annotations
      * @return an instance of the service
      */
-    <T> T getService(Class<T> type, String name);
+    <T> T getService(Type type, Set<? extends Annotation> annotations);
 
     /**
      * Get a service with the given type and arguments.

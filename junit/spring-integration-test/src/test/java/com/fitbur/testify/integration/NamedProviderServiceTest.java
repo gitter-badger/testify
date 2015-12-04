@@ -19,9 +19,10 @@ import com.fitbur.testify.Cut;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
-import com.fitbur.testify.integration.fixture.service.QualifiedListService;
-import java.util.List;
+import com.fitbur.testify.integration.fixture.service.NamedProviderService;
 import javax.inject.Named;
+import javax.inject.Provider;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -31,17 +32,21 @@ import org.junit.runner.RunWith;
  */
 @RunWith(SpringIntegrationTestRunner.class)
 @Module(SpringIntegrationConfig.class)
-public class QualifiedListServiceTest {
+public class NamedProviderServiceTest {
 
     @Cut
-    QualifiedListService cut;
+    NamedProviderService cut;
 
     @Real
-    @Named("strings")
-    List<String> strings;
+    @Named("provider")
+    Provider<String> provider;
 
     @Test
     public void verifyInjection() {
-        System.out.println("");
+        assertThat(cut).isNotNull();
+        assertThat(provider).isNotNull();
+        assertThat(provider).isSameAs(cut.getProvider());
+        assertThat(provider.get()).isEqualTo("test");
+
     }
 }

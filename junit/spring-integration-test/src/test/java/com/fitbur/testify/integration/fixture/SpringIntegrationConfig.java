@@ -16,12 +16,17 @@
 package com.fitbur.testify.integration.fixture;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Qualifier;
+import java.util.Map;
+import java.util.Set;
+import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
 
 /**
  *
@@ -32,10 +37,25 @@ import org.springframework.context.annotation.Lazy;
 @ComponentScan(lazyInit = true)
 public class SpringIntegrationConfig {
 
-    @Bean
-    @Qualifier("strings")
-    List<String> listOfStrings() {
-        return ImmutableList.of("Test");
+    @Bean(name = "list")
+    List<String> lists() {
+        return ImmutableList.of("test");
+    }
+
+    @Bean(name = "map")
+    Map<String, String> maps() {
+        return ImmutableMap.of("test", "test");
+    }
+
+    @Bean(name = "set")
+    Set<String> sets() {
+        return ImmutableSet.of("test");
+    }
+
+    @Bean(name = "provider")
+    @Scope(SCOPE_PROTOTYPE)
+    String provider() {
+        return "test";
     }
 
 }

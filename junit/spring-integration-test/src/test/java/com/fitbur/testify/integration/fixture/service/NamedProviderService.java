@@ -15,7 +15,7 @@
  */
 package com.fitbur.testify.integration.fixture.service;
 
-import java.util.List;
+import javax.inject.Provider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -25,17 +25,17 @@ import org.springframework.stereotype.Component;
  * @author saden
  */
 @Component
-public class QualifiedListService {
+public class NamedProviderService {
 
-    private final List<String> strings;
+    private final Provider<String> provider;
 
     @Autowired
-    QualifiedListService(@Qualifier("strings") List<String> strings) {
-        this.strings = strings;
+    NamedProviderService(@Qualifier("provider") Provider<String> provider) {
+        this.provider = provider;
     }
 
-    public List<String> getStrings() {
-        return strings;
+    public Provider<String> getProvider() {
+        return provider;
     }
 
 }

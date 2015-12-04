@@ -34,7 +34,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import static org.mockito.AdditionalAnswers.delegatesTo;
@@ -99,7 +98,7 @@ public class IntegrationTestReifier implements TestReifier {
 
                 return instance;
             } catch (IllegalAccessException | IllegalArgumentException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
         });
 
@@ -153,40 +152,45 @@ public class IntegrationTestReifier implements TestReifier {
             } catch (SecurityException |
                     IllegalAccessException |
                     IllegalArgumentException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
         });
     }
 
     @Override
     public void reifyTest(Set< FieldDescriptor> fieldDescriptors) {
-        Stream<Field> stream = fieldDescriptors
-                .parallelStream()
-                .map(FieldDescriptor::getField);
 
-        stream.forEach(p -> {
-            Object spy;
-            Real real = p.getDeclaredAnnotation(Real.class);
-            if (real != null && real.value()) {
-                spy = spy(locator.getService(p.getType()));
-            } else {
-                spy = locator.getService(p.getType());
-            }
+        AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
 
-            Object instance = spy;
-            AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-                try {
-                    p.setAccessible(true);
-                    p.set(testInstance, instance);
+            fieldDescriptors
+                    .parallelStream()
+                    .forEach(p -> {
+                        try {
+                            Field field = p.getField();
+                            Optional<Real> real = p.getAnnotation(Real.class);
+                            Optional<Inject> inject = p.getAnnotation(Inject.class);
 
-                    return instance;
-                } catch (SecurityException |
-                        IllegalAccessException |
-                        IllegalArgumentException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+                            Object instance = null;
+
+                            if (real.isPresent() && real.get().value()) {
+                                Object service = locator.getService(p.getType());
+                                instance = mock(p.getType(), delegatesTo(service));
+                            } else if (real.isPresent() || inject.isPresent()) {
+                                instance = locator.getService(p.getType());
+                            }
+
+                            field.setAccessible(true);
+                            field.set(testInstance, instance);
+                        } catch (SecurityException |
+                                IllegalAccessException |
+                                IllegalArgumentException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    });
+
+            return null;
         });
+
     }
 
 }
