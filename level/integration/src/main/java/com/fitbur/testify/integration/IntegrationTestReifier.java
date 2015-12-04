@@ -25,7 +25,6 @@ import com.fitbur.testify.descriptor.ParameterDescriptor;
 import com.fitbur.testify.di.ServiceDescriptor;
 import com.fitbur.testify.di.ServiceDescriptorBuilder;
 import com.fitbur.testify.di.ServiceLocator;
-import com.fitbur.testify.di.ServiceProvider;
 import com.fitbur.testify.di.ServiceScope;
 import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Constructor;
@@ -53,11 +52,11 @@ import static org.mockito.Mockito.withSettings;
  */
 public class IntegrationTestReifier implements TestReifier {
 
-    private final ServiceLocator appContext;
+    private final ServiceLocator locator;
     private final Object testInstance;
 
-    public IntegrationTestReifier(ServiceLocator appContext, Object testInstance) {
-        this.appContext = appContext;
+    public IntegrationTestReifier(ServiceLocator locator, Object testInstance) {
+        this.locator = locator;
         this.testInstance = testInstance;
     }
 
@@ -66,7 +65,7 @@ public class IntegrationTestReifier implements TestReifier {
         return AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
             try {
                 Field field = descriptor.getField();
-                Type genericFieldTYpe = field.getGenericType();
+                Type fieldType = field.getGenericType();
                 field.setAccessible(true);
                 Object instance = field.get(testInstance);
 
@@ -87,16 +86,7 @@ public class IntegrationTestReifier implements TestReifier {
                     }
 
                 } else if (optReal.isPresent() || optInject.isPresent()) {
-                    TypeToken<?> token = TypeToken.of(genericFieldTYpe);
-                    Class rawType;
-
-                    if (token.isSubtypeOf(Provider.class)) {
-                        rawType = token.resolveType(Provider.class.getTypeParameters()[0]).getRawType();
-                        instance = new ServiceProvider(appContext, rawType);
-                    } else {
-                        rawType = (Class) genericFieldTYpe;
-                        instance = appContext.getService(rawType);
-                    }
+                    instance = locator.getService(fieldType, descriptor.getAnnotations());
 
                     if (optReal.isPresent() && optReal.get().value()) {
                         instance = mock(instance.getClass(), delegatesTo(instance));
@@ -147,9 +137,9 @@ public class IntegrationTestReifier implements TestReifier {
                         .lazy(true)
                         .build();
 
-                appContext.addService(serviceDescriptor);
+                locator.addService(serviceDescriptor);
 
-                Object instance = appContext.getServiceWith(rawType, arguments);
+                Object instance = locator.getServiceWith(rawType, arguments);
 
                 if (cut.value()) {
                     instance = spy(instance);
@@ -178,9 +168,9 @@ public class IntegrationTestReifier implements TestReifier {
             Object spy;
             Real real = p.getDeclaredAnnotation(Real.class);
             if (real != null && real.value()) {
-                spy = spy(appContext.getService(p.getType()));
+                spy = spy(locator.getService(p.getType()));
             } else {
-                spy = appContext.getService(p.getType());
+                spy = locator.getService(p.getType());
             }
 
             Object instance = spy;

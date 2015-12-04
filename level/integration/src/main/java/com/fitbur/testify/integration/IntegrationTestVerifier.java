@@ -125,8 +125,13 @@ public class IntegrationTestVerifier implements TestVerifier {
                 String fieldName = p.getName();
                 String fieldTypeName = p.getTypeName();
 
+                checkState(!fieldType.isArray(),
+                        "Field '%s' in test class '%s' can not be configured because '%s'"
+                        + " is an array. Please consider using a List instead of arrays.",
+                        fieldName, testClassName, fieldTypeName);
+
                 checkState(!isFinal(fieldType.getModifiers()),
-                        "Field '%s' in test class '%s' can not be mocked because '%s'"
+                        "Field '%s' in test class '%s' can not be configured because '%s'"
                         + " is a final class.",
                         fieldName, testClassName, fieldTypeName);
 

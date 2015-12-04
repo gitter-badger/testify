@@ -13,29 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.integration.fixture;
+package com.fitbur.testify.integration.fixture.service;
 
-import com.google.common.collect.ImmutableList;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author saden
  */
-@Lazy
-@Configuration
-@ComponentScan(lazyInit = true)
-public class SpringIntegrationConfig {
+@Component
+public class QualifiedListService {
 
-    @Bean
-    @Qualifier("strings")
-    List<String> listOfStrings() {
-        return ImmutableList.of("Test");
+    private final List<String> strings;
+
+    @Autowired
+    QualifiedListService(@Qualifier("strings") List<String> strings) {
+        this.strings = strings;
+    }
+
+    public List<String> getStrings() {
+        return strings;
     }
 
 }

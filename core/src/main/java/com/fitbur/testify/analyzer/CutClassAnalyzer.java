@@ -59,7 +59,6 @@ public class CutClassAnalyzer extends ClassVisitor {
                 Type type = getMethodType(desc);
                 Class[] parameterTypes = of(type.getArgumentTypes())
                         .sequential()
-                        .map(Type::getClassName)
                         .map(this::getClass)
                         .toArray(Class[]::new);
 
@@ -96,11 +95,11 @@ public class CutClassAnalyzer extends ClassVisitor {
         context.setConstructorCount(constCount);
     }
 
-    private Class<?> getClass(String className) {
+    private Class<?> getClass(Type type) {
         try {
-            return forName(className);
+            return forName(type.getInternalName().replace('/', '.'));
         } catch (ClassNotFoundException e) {
-            checkState(false, "Class '%s' not found in the classpath.", className);
+            checkState(false, "Class '%s' not found in the classpath.", type.getClassName());
             //not reachable;
             throw new IllegalStateException(e);
         }

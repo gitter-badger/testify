@@ -15,6 +15,10 @@
  */
 package com.fitbur.testify.di;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Set;
+
 /**
  * A contract that defines methods for working with various dependency injection
  * frameworks to add services and modules as well as retrieve services.
@@ -62,6 +66,25 @@ public interface ServiceLocator {
     String getName();
 
     /**
+     * Get a service with the given name.
+     *
+     * @param <T> the service type
+     * @param name the service name
+     * @return an instance of the service
+     */
+    <T> T getService(String name);
+
+    /**
+     * Get a service with the given name.
+     *
+     * @param <T>
+     * @param type the service type
+     * @param annotations the service annotations
+     * @return an instance of the service
+     */
+    <T> T getService(Type type, Set<? extends Annotation> annotations);
+
+    /**
      * Get a service with the given type.
      *
      * @param <T> the service type
@@ -69,6 +92,25 @@ public interface ServiceLocator {
      * @return an instance of the service
      */
     <T> T getService(Class<T> type);
+
+    /**
+     * Get a service with the given type.
+     *
+     * @param <T> the service type
+     * @param type the service class
+     * @return an instance of the service
+     */
+    <T> T getService(Type type);
+
+    /**
+     * Get a service with the given type and name.
+     *
+     * @param <T> the service type
+     * @param type the service class
+     * @param name the service name
+     * @return an instance of the service
+     */
+    <T> T getService(Type type, String name);
 
     /**
      * Get a service with the given type and name.
