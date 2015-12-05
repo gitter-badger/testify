@@ -15,14 +15,13 @@
  */
 package com.fitbur.testify.need.hsql;
 
-import com.fitbur.testify.need.hsql.InMemoryHSQL;
 import com.fitbur.testify.Config;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.Real;
-import com.fitbur.testify.need.hsql.fixture.DatabaseConfig;
-import com.fitbur.testify.need.hsql.fixture.entity.UserEntity;
 import com.fitbur.testify.integration.SpringIntegrationTestRunner;
 import com.fitbur.testify.need.Need;
+import com.fitbur.testify.need.hsql.fixture.DatabaseConfig;
+import com.fitbur.testify.need.hsql.fixture.entity.UserEntity;
 import com.zaxxer.hikari.HikariConfig;
 import java.io.Serializable;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;

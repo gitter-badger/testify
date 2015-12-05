@@ -99,7 +99,7 @@ public class SpringServiceLocator implements ServiceLocator {
     @Override
     public <T> T getService(Type type) {
         TypeToken<?> token = TypeToken.of(type);
-        Class<?> rawType = token.getRawType();
+        Class rawType = token.getRawType();
         Object instance;
 
         if (token.isSubtypeOf(Provider.class)) {
