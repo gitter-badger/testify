@@ -17,7 +17,6 @@ package com.fitbur.testify.junit;
 
 import com.fitbur.testify.TestContext;
 import org.junit.runner.Description;
-import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.slf4j.Logger;
@@ -38,25 +37,22 @@ public class UnitTestRunListener extends RunListener {
     }
 
     @Override
-    public void testRunStarted(Description description) throws Exception {
-        super.testRunStarted(description); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void testRunFinished(Result result) throws Exception {
-        super.testRunFinished(result); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void testStarted(Description description) throws Exception {
         logger.info("Running {}", description.getMethodName());
+    }
+
+    @Override
+    public void testAssumptionFailure(Failure failure) {
+        String methodName = failure.getDescription().getMethodName();
+        String traceMessage = failure.getTrace();
+        logger.error("{} Failed\n{}", methodName, traceMessage);
     }
 
     @Override
     public void testFailure(Failure failure) throws Exception {
         String methodName = failure.getDescription().getMethodName();
         String traceMessage = failure.getTrace();
-        logger.error("Failed: {}\n{}", methodName, traceMessage);
+        logger.error("{} Failed\n{}", methodName, traceMessage);
     }
 
     @Override
@@ -66,8 +62,7 @@ public class UnitTestRunListener extends RunListener {
 
     @Override
     public void testIgnored(Description description) throws Exception {
-        String methodName = description.getMethodName();
-        logger.warn("Ignored: {}", methodName);
+        logger.warn("Ignored {}", description.getMethodName());
     }
 
 }

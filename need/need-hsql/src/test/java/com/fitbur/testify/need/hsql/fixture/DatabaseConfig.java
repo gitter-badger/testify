@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.hsql.fixture;
+package com.fitbur.testify.need.hsql.fixture;
 
 import javax.sql.DataSource;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl;

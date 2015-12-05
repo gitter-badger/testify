@@ -93,6 +93,10 @@ public class TestClassAnalyzer extends ClassVisitor {
                 context.putFieldDescriptor(key, descriptor);
             }
         } catch (NoSuchFieldException e) {
+            checkState(false,
+                    "Field '%s' not found in test class '%s'.\n%s",
+                    name, context.getTestClassName(), e.getMessage());
+
             throw new RuntimeException(e);
         }
 

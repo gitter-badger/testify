@@ -21,6 +21,7 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
+import static com.google.common.base.Preconditions.checkState;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -77,6 +78,9 @@ public class UnitTestReifier implements TestReifier {
 
                 return instance;
             } catch (IllegalAccessException | IllegalArgumentException e) {
+                checkState(false,
+                        "Field '%s' in test class '%s' is not accessible.\n",
+                        fieldDescriptor.getName(), testInstance.getClass().getSimpleName(), e.getMessage());
                 throw new RuntimeException(e);
             }
         });
@@ -104,11 +108,12 @@ public class UnitTestReifier implements TestReifier {
                 descriptor.setArguments(arguments);
 
                 return instance;
-            } catch (SecurityException |
-                    InstantiationException |
+            } catch (InstantiationException |
                     IllegalAccessException |
-                    IllegalArgumentException |
                     InvocationTargetException e) {
+                checkState(false,
+                        "Cut '%s' in test class '%s' could not be created.\n%s",
+                        descriptor.getName(), testInstance.getClass().getSimpleName(), e.getMessage());
                 throw new RuntimeException(e);
             }
         });

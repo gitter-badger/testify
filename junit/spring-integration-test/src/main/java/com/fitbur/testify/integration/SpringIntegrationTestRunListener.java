@@ -53,6 +53,7 @@ public class SpringIntegrationTestRunListener extends RunListener {
 
     @Override
     public void testStarted(Description description) throws Exception {
+        logger.info("Running {}", description.getMethodName());
         String testClassName = testContext.getTestClassName();
         Object testInstance = testContext.getTestInstance();
 
@@ -104,21 +105,29 @@ public class SpringIntegrationTestRunListener extends RunListener {
 
     @Override
     public void testFinished(Description description) throws Exception {
+        logger.debug("Finished {}", description.getMethodName());
         this.done(description);
     }
 
     @Override
     public void testAssumptionFailure(Failure failure) {
+        String methodName = failure.getDescription().getMethodName();
+        String traceMessage = failure.getTrace();
+        logger.error("{} Failed\n{}", methodName, traceMessage);
         this.done(failure.getDescription());
     }
 
     @Override
     public void testFailure(Failure failure) throws Exception {
+        String methodName = failure.getDescription().getMethodName();
+        String traceMessage = failure.getTrace();
+        logger.error("{} Failed\n{}", methodName, traceMessage);
         this.done(failure.getDescription());
     }
 
     @Override
     public void testIgnored(Description description) throws Exception {
+        logger.warn("Ignored {}", description.getMethodName());
         this.done(description);
     }
 
