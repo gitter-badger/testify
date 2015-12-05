@@ -46,14 +46,12 @@ public class IntegrationTestCreator {
 
     private final TestContext context;
     private final TestReifier testReifier;
-    private final ServiceLocator appContext;
+    private final ServiceLocator locator;
 
-    public IntegrationTestCreator(TestContext context,
-            TestReifier testReifier,
-            ServiceLocator appContext) {
-        this.context = context;
+    public IntegrationTestCreator(TestContext testContext, TestReifier testReifier, ServiceLocator locator) {
+        this.context = testContext;
         this.testReifier = testReifier;
-        this.appContext = appContext;
+        this.locator = locator;
     }
 
     public void cut() {
@@ -90,9 +88,9 @@ public class IntegrationTestCreator {
         of(testClass.getDeclaredAnnotationsByType(Module.class))
                 .map(Module::value)
                 .distinct()
-                .forEachOrdered(appContext::addModule);
+                .forEachOrdered(locator::addModule);
 
-        appContext.reload();
+        locator.reload();
 
         descriptors.parallelStream()
                 .filter(p -> !p.hasAnyAnnotation(Mock.class))
@@ -108,9 +106,9 @@ public class IntegrationTestCreator {
         of(testClass.getDeclaredAnnotationsByType(Module.class))
                 .map(Module::value)
                 .distinct()
-                .forEachOrdered(appContext::addModule);
+                .forEachOrdered(locator::addModule);
 
-        appContext.reload();
+        locator.reload();
 
         testReifier.reifyTest(fieldDescriptors);
     }

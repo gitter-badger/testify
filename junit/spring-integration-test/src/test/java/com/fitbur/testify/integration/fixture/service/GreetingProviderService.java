@@ -25,12 +25,12 @@ import org.springframework.stereotype.Component;
  * @author saden
  */
 @Component
-public class GenericTypeService {
+public class GreetingProviderService {
 
     private final Provider<Hello> hello;
 
     @Autowired
-    GenericTypeService(Provider<Hello> hello) {
+    GreetingProviderService(Provider<Hello> hello) {
         this.hello = hello;
     }
 

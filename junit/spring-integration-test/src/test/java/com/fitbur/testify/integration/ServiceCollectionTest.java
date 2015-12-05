@@ -15,16 +15,16 @@
  */
 package com.fitbur.testify.integration;
 
-import com.fitbur.testify.Cut;
-import com.fitbur.testify.Mock;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
-import com.fitbur.testify.integration.fixture.service.GreetingService;
-import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
+import com.fitbur.testify.integration.fixture.service.collaborator.Greeting;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.inject.Inject;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.internal.util.MockUtil;
 
 /**
  *
@@ -32,23 +32,22 @@ import org.mockito.internal.util.MockUtil;
  */
 @RunWith(SpringIntegrationTestRunner.class)
 @Module(SpringIntegrationConfig.class)
-public class ClassTypeCutWithMockTest {
+public class ServiceCollectionTest {
 
-    @Cut
-    GreetingService cut;
+    @Inject
+    List<Greeting> greetingsList;
 
-    @Mock
-    Hello hello;
+    @Inject
+    Set<Greeting> greetingsSet;
+
+    @Inject
+    Map<String, Greeting> greetingsMap;
 
     @Test
-    public void verifyInjections() {
-        assertThat(cut).isNotNull();
-        assertThat(hello)
-                .isNotNull()
-                .isSameAs(cut.getHello());
+    public void verifyInjection() {
+        assertThat(greetingsList).isNotEmpty().hasSize(2);
+        assertThat(greetingsSet).isNotEmpty().hasSize(2);
+        assertThat(greetingsMap).isNotEmpty().hasSize(2);
 
-        MockUtil util = new MockUtil();
-        assertThat(util.isMock(hello)).isTrue();
     }
-
 }

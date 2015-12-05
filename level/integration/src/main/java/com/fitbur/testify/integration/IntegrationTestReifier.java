@@ -72,6 +72,7 @@ public class IntegrationTestReifier implements TestReifier {
                 Optional<Mock> optMock = descriptor.getMock();
                 Optional<Real> optReal = descriptor.getAnnotation(Real.class);
                 Optional<Inject> optInject = descriptor.getAnnotation(Inject.class);
+
                 if (optMock.isPresent()) {
                     Mock mock = optMock.get();
                     //if the field value is set then create a mock otherwise create a mock

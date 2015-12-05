@@ -19,7 +19,7 @@ import com.fitbur.testify.Cut;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
-import com.fitbur.testify.integration.fixture.service.ClassTypeService;
+import com.fitbur.testify.integration.fixture.service.GreetingService;
 import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
@@ -35,7 +35,7 @@ import org.mockito.internal.util.MockUtil;
 public class ClassTypeCutWithRealTest {
 
     @Cut
-    ClassTypeService cut;
+    GreetingService cut;
 
     @Real
     Hello hello;

@@ -22,8 +22,9 @@ import org.springframework.stereotype.Component;
  * @author saden
  */
 @Component
-public class World {
+public class World implements Greeting {
 
+    @Override
     public String greet() {
         return "World";
     }

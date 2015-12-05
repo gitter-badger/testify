@@ -39,11 +39,11 @@ import org.slf4j.Logger;
  */
 public class UnitTestVerifier implements TestVerifier {
 
-    private final TestContext context;
+    private final TestContext testContext;
     private final Logger logger;
 
-    public UnitTestVerifier(TestContext context, Logger logger) {
-        this.context = context;
+    public UnitTestVerifier(TestContext testContext, Logger logger) {
+        this.testContext = testContext;
         this.logger = logger;
     }
 
@@ -68,14 +68,14 @@ public class UnitTestVerifier implements TestVerifier {
 
     @Override
     public void configuration() {
-        String testClassName = context.getTestClassName();
-        Collection<FieldDescriptor> fieldDescriptors = context.getFieldDescriptors().values();
-        CutDescriptor cutDescriptor = context.getCutDescriptor();
+        String testClassName = testContext.getTestClassName();
+        Collection<FieldDescriptor> fieldDescriptors = testContext.getFieldDescriptors().values();
+        CutDescriptor cutDescriptor = testContext.getCutDescriptor();
 
-        checkState(context.getConstructorCount() == 1,
+        checkState(testContext.getConstructorCount() == 1,
                 "Class under test '%s' has '%d' constructors. Please insure that "
                 + "the class under test has one and only one constructor.",
-                cutDescriptor.getTypeName(), context.getConstructorCount());
+                cutDescriptor.getTypeName(), testContext.getConstructorCount());
 
         fieldDescriptors.parallelStream().forEach(p -> {
 
@@ -99,11 +99,11 @@ public class UnitTestVerifier implements TestVerifier {
 
     @Override
     public void wiring() {
-        CutDescriptor cutDescriptor = context.getCutDescriptor();
-        String testClassName = context.getTestClassName();
+        CutDescriptor cutDescriptor = testContext.getCutDescriptor();
+        String testClassName = testContext.getTestClassName();
         String cutClassName = cutDescriptor.getTypeName();
         Collection<ParameterDescriptor> fieldDescriptors
-                = context.getParamaterDescriptors().values();
+                = testContext.getParamaterDescriptors().values();
 
         fieldDescriptors.parallelStream().forEach(p -> {
             Optional instance = p.getInstance();

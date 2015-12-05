@@ -17,15 +17,17 @@ package com.fitbur.testify.integration;
 
 import com.fitbur.testify.Cut;
 import com.fitbur.testify.Module;
-import com.fitbur.testify.Real;
 import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
-import com.fitbur.testify.integration.fixture.service.GenericTypeService;
-import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
-import javax.inject.Provider;
+import com.fitbur.testify.integration.fixture.service.NamedCollectionsService;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.inject.Inject;
+import javax.inject.Named;
 import static org.assertj.core.api.Assertions.assertThat;
+import org.assertj.core.data.MapEntry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.internal.util.MockUtil;
 
 /**
  *
@@ -33,23 +35,32 @@ import org.mockito.internal.util.MockUtil;
  */
 @RunWith(SpringIntegrationTestRunner.class)
 @Module(SpringIntegrationConfig.class)
-public class GenericTypeRealDelegateTest {
+public class NamedCollectionCutWithInjectTest {
 
     @Cut
-    GenericTypeService cut;
+    NamedCollectionsService cut;
 
-    @Real(true)
-    Provider<Hello> hello;
+    @Inject
+    @Named("list")
+    List<String> list;
+    
+    @Inject
+    @Named("set")
+    Set<String> set;
+    
+    @Inject
+    @Named("map")
+    Map<String, String> map;
 
     @Test
-    public void verifyInjections() {
+    public void verifyInjection() {
         assertThat(cut).isNotNull();
-        assertThat(hello)
-                .isNotNull()
-                .isSameAs(cut.getHello());
-
-        MockUtil util = new MockUtil();
-        assertThat(util.isMock(hello)).isTrue();
+        assertThat(cut.getList()).isSameAs(list);
+        assertThat(cut.getSet()).isSameAs(set);
+        assertThat(cut.getMap()).isSameAs(map);
+        assertThat(list).containsExactly("test");
+        assertThat(set).containsExactly("test");
+        assertThat(map).containsOnly(MapEntry.entry("test", "test"));
+        
     }
-
 }

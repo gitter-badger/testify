@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.integration.fixture.service.collaborator;
+package com.fitbur.testify.integration.fixture.service;
 
+import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -22,10 +24,21 @@ import org.springframework.stereotype.Component;
  * @author saden
  */
 @Component
-public class Hello implements Greeting {
+public class GreetingService {
 
-    @Override
-    public String greet() {
-        return "Hello";
+    private final Hello hello;
+
+    @Autowired
+    GreetingService(Hello hello) {
+        this.hello = hello;
     }
+
+    public String greet() {
+        return hello.greet();
+    }
+
+    public Hello getHello() {
+        return hello;
+    }
+
 }

@@ -28,11 +28,8 @@ import static java.security.AccessController.doPrivileged;
 import java.security.PrivilegedAction;
 import java.util.Optional;
 import static org.mockito.AdditionalAnswers.delegatesTo;
-import static org.mockito.Answers.RETURNS_DEFAULTS;
-import org.mockito.MockSettings;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.withSettings;
 import org.mockito.internal.util.MockUtil;
 
 /**
@@ -59,15 +56,15 @@ public class UnitTestReifier implements TestReifier {
 
                 if (mock.isPresent()) {
                     Field field = fieldDescriptor.getField();
-
                     field.setAccessible(true);
+
                     Object value = field.get(testInstance);
                     //if the field value is null create a new mock
-                    if (value == null || MOCK_UTIL.isMock(value) || MOCK_UTIL.isSpy(value)) {
-                        MockSettings settings = withSettings()
-                                .defaultAnswer(RETURNS_DEFAULTS);
-
-                        instance = mock(field.getType(), settings);
+                    if (value == null) {
+                        instance = mock(field.getType());
+                    } else if (MOCK_UTIL.isMock(value)) {
+                        //if the value is already a mock just use it.
+                        instance = value;
                     } else {
                         //otherwise create a mock that delegates to the value
                         instance = mock(field.getType(), delegatesTo(value));

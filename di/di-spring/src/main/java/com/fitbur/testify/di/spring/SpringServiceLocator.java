@@ -100,13 +100,34 @@ public class SpringServiceLocator implements ServiceLocator {
     public <T> T getService(Type type) {
         TypeToken<?> token = TypeToken.of(type);
         Class<?> rawType = token.getRawType();
-        Class<Provider> providerType = Provider.class;
         Object instance;
 
-        if (token.isSubtypeOf(providerType)) {
-            TypeVariable<Class<Provider>> paramType = providerType.getTypeParameters()[0];
+        if (token.isSubtypeOf(Provider.class)) {
+            TypeVariable<Class<Provider>> paramType = Provider.class.getTypeParameters()[0];
             rawType = token.resolveType(paramType).getRawType();
             instance = new ServiceProvider(this, rawType);
+        } else if (token.isSubtypeOf(Optional.class)) {
+            TypeVariable<Class<Optional>> paramType = Optional.class.getTypeParameters()[0];
+            rawType = token.resolveType(paramType).getRawType();
+            instance = Optional.ofNullable(context.getBean(rawType));
+        } else if (token.isSubtypeOf(Map.class)) {
+            TypeVariable<Class<Map>> valueType = Map.class.getTypeParameters()[1];
+            rawType = token.resolveType(valueType).getRawType();
+            instance = context.getBeansOfType(rawType);
+        } else if (token.isSubtypeOf(Set.class)) {
+            TypeVariable<Class<Set>> valueType = Set.class.getTypeParameters()[0];
+            rawType = token.resolveType(valueType).getRawType();
+            instance = context.getBeansOfType(rawType)
+                    .values()
+                    .stream()
+                    .collect(toSet());
+        } else if (token.isSubtypeOf(List.class)) {
+            TypeVariable<Class<List>> valueType = List.class.getTypeParameters()[0];
+            rawType = token.resolveType(valueType).getRawType();
+            instance = context.getBeansOfType(rawType)
+                    .values()
+                    .stream()
+                    .collect(toList());
         } else {
             instance = context.getBean(rawType);
         }
@@ -128,7 +149,6 @@ public class SpringServiceLocator implements ServiceLocator {
         Object instance;
         Optional<String> beanName = empty();
         Class rawType = token.getRawType();
-        Class<Provider> providerClass = Provider.class;
 
         Optional<Qualifier> qualifier = annotations.parallelStream()
                 .filter(p -> p.annotationType().equals(Qualifier.class))
@@ -150,27 +170,19 @@ public class SpringServiceLocator implements ServiceLocator {
 
         if (beanName.isPresent()) {
             String name = beanName.get();
-            if (token.isSubtypeOf(providerClass)) {
-                TypeVariable<Class<Provider>> providerParamType = providerClass.getTypeParameters()[0];
-                Class paramType = token.resolveType(providerParamType).getRawType();
-                instance = new ServiceProvider(this, name, paramType);
+            if (token.isSubtypeOf(Provider.class)) {
+                TypeVariable<Class<Provider>> paramType = Provider.class.getTypeParameters()[0];
+                rawType = token.resolveType(paramType).getRawType();
+                instance = new ServiceProvider(this, name, rawType);
+            } else if (token.isSubtypeOf(Optional.class)) {
+                TypeVariable<Class<Optional>> paramType = Optional.class.getTypeParameters()[0];
+                rawType = token.resolveType(paramType).getRawType();
+                instance = Optional.ofNullable(context.getBean(name, rawType));
             } else {
                 instance = context.getBean(name, rawType);
             }
-        } else if (token.isSubtypeOf(providerClass)) {
-            TypeVariable<Class<Provider>> providerParamType = providerClass.getTypeParameters()[0];
-            Class paramType = token.resolveType(providerParamType).getRawType();
-            instance = new ServiceProvider(this, paramType);
-        } else if (Map.class.isAssignableFrom(rawType)) {
-            instance = context.getBeansOfType(rawType);
-        } else if (Set.class.isAssignableFrom(rawType)) {
-            instance = context.getBeansOfType(rawType).values().stream()
-                    .collect(toSet());
-        } else if (List.class.isAssignableFrom(rawType)) {
-            instance = context.getBeansOfType(rawType).values().stream()
-                    .collect(toList());
         } else {
-            instance = context.getBean(rawType);
+            instance = getService(type);
         }
 
         return (T) instance;

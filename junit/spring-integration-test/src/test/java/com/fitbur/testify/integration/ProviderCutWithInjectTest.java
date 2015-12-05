@@ -15,10 +15,13 @@
  */
 package com.fitbur.testify.integration;
 
+import com.fitbur.testify.Cut;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
-import com.fitbur.testify.integration.fixture.service.GenericTypeService;
+import com.fitbur.testify.integration.fixture.service.GreetingProviderService;
+import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
 import javax.inject.Inject;
+import javax.inject.Provider;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,19 +33,23 @@ import org.mockito.internal.util.MockUtil;
  */
 @RunWith(SpringIntegrationTestRunner.class)
 @Module(SpringIntegrationConfig.class)
-public class GenericInjectInjectionTest {
+public class ProviderCutWithInjectTest {
+
+    @Cut
+    GreetingProviderService cut;
 
     @Inject
-    GenericTypeService cut;
+    Provider<Hello> hello;
 
     @Test
     public void verifyInjections() {
         assertThat(cut).isNotNull();
-        assertThat(cut.getHello())
-                .isNotNull();
+        assertThat(hello)
+                .isNotNull()
+                .isSameAs(cut.getHello());
 
         MockUtil util = new MockUtil();
-        assertThat(util.isSpy(cut)).isFalse();
+        assertThat(util.isMock(hello)).isFalse();
     }
 
 }

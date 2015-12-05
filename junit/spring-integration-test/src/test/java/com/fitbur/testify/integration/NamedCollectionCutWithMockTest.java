@@ -19,9 +19,10 @@ import com.fitbur.testify.Cut;
 import com.fitbur.testify.Mock;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
-import com.fitbur.testify.integration.fixture.service.GenericTypeService;
-import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
-import javax.inject.Provider;
+import com.fitbur.testify.integration.fixture.service.NamedCollectionsService;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,23 +34,31 @@ import org.mockito.internal.util.MockUtil;
  */
 @RunWith(SpringIntegrationTestRunner.class)
 @Module(SpringIntegrationConfig.class)
-public class GenericTypeCutWithMockTest {
+public class NamedCollectionCutWithMockTest {
 
     @Cut
-    GenericTypeService cut;
+    NamedCollectionsService cut;
 
     @Mock
-    Provider<Hello> hello;
+    List<String> list;
+
+    @Mock
+    Set<String> set;
+
+    @Mock
+    Map<String, String> map;
 
     @Test
-    public void verifyInjections() {
+    public void verifyInjection() {
         assertThat(cut).isNotNull();
-        assertThat(hello)
-                .isNotNull()
-                .isSameAs(cut.getHello());
+        assertThat(cut.getList()).isSameAs(list);
+        assertThat(cut.getSet()).isSameAs(set);
+        assertThat(cut.getMap()).isSameAs(map);
 
         MockUtil util = new MockUtil();
-        assertThat(util.isMock(hello)).isTrue();
-    }
+        assertThat(util.isMock(list)).isTrue();
+        assertThat(util.isMock(set)).isTrue();
+        assertThat(util.isMock(map)).isTrue();
 
+    }
 }

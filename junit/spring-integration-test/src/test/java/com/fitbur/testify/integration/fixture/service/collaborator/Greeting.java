@@ -13,32 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.integration.fixture.service;
-
-import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+package com.fitbur.testify.integration.fixture.service.collaborator;
 
 /**
  *
  * @author saden
  */
-@Component
-public class ClassTypeService {
+public interface Greeting {
 
-    private final Hello hello;
-
-    @Autowired
-    ClassTypeService(Hello hello) {
-        this.hello = hello;
-    }
-
-    public String greet() {
-        return hello.greet();
-    }
-
-    public Hello getHello() {
-        return hello;
-    }
+    String greet();
 
 }

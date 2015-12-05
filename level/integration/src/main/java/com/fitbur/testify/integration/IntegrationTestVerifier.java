@@ -41,11 +41,11 @@ import org.slf4j.Logger;
  */
 public class IntegrationTestVerifier implements TestVerifier {
 
-    private final TestContext context;
+    private final TestContext testContext;
     private final Logger logger;
 
     public IntegrationTestVerifier(TestContext context, Logger logger) {
-        this.context = context;
+        this.testContext = context;
         this.logger = logger;
     }
 
@@ -76,18 +76,18 @@ public class IntegrationTestVerifier implements TestVerifier {
     @Override
     public void configuration() {
         AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-            String testClassName = context.getTestClassName();
-            CutDescriptor cutDescriptor = context.getCutDescriptor();
-            Collection<FieldDescriptor> fieldDescriptors = context.getFieldDescriptors().values();
+            String testClassName = testContext.getTestClassName();
+            CutDescriptor cutDescriptor = testContext.getCutDescriptor();
+            Collection<FieldDescriptor> fieldDescriptors = testContext.getFieldDescriptors().values();
 
-            if (context.getCutCount() == 1) {
-                checkState(context.getConstructorCount() == 1,
+            if (testContext.getCutCount() == 1) {
+                checkState(testContext.getConstructorCount() == 1,
                         "Class under test '%s' has '%d' constructors. Please insure that "
                         + "the class under test has one and only one constructor.",
-                        cutDescriptor.getTypeName(), context.getConstructorCount());
+                        cutDescriptor.getTypeName(), testContext.getConstructorCount());
             }
             // insure that only one field has Cut annotation on it.
-            if (context.getCutCount() > 1) {
+            if (testContext.getCutCount() > 1) {
                 checkState(false,
                         "Found more than one class under test in %s. Please insure "
                         + "that only one field is annotated with @Cut.",
@@ -96,7 +96,7 @@ public class IntegrationTestVerifier implements TestVerifier {
 
             //insure that there is a field annotated with @Cut defined or one or more
             //fields annotated with @Real or @Inject
-            if (context.getCutCount() == 0 && fieldDescriptors.isEmpty()) {
+            if (testContext.getCutCount() == 0 && fieldDescriptors.isEmpty()) {
                 checkState(false,
                         "Test class '%s' does not define a field annotated with @Cut "
                         + "nor does it have fields annotated with @Real or @Inject. "
@@ -107,7 +107,7 @@ public class IntegrationTestVerifier implements TestVerifier {
             }
 
             //insure need providers have default constructors.
-            context.getNeeds().parallelStream().map(Need::value).forEach(p -> {
+            testContext.getNeeds().parallelStream().map(Need::value).forEach(p -> {
                 try {
                     p.getDeclaredConstructor();
                 } catch (NoSuchMethodException e) {
@@ -144,10 +144,10 @@ public class IntegrationTestVerifier implements TestVerifier {
     @Override
     public void wiring() {
         AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-            CutDescriptor cutDescriptor = context.getCutDescriptor();
-            String testClassName = context.getTestClassName();
+            CutDescriptor cutDescriptor = testContext.getCutDescriptor();
+            String testClassName = testContext.getTestClassName();
             Collection<ParameterDescriptor> paramDescriptors
-                    = context.getParamaterDescriptors().values();
+                    = testContext.getParamaterDescriptors().values();
 
             if (cutDescriptor != null) {
                 String cutClassName = cutDescriptor.getTypeName();
