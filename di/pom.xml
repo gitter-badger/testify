@@ -21,13 +21,15 @@
     <parent>
         <groupId>com.fitbur.testify</groupId>
         <artifactId>parent</artifactId>
-        <version>0.0.2</version>
+        <version>0.0.3</version>
     </parent>
     <artifactId>di</artifactId>
     <packaging>pom</packaging>
+
     <name>DI</name>
+
     <modules>
-        <module>di-api</module>
         <module>di-spring</module>
     </modules>
+
 </project>

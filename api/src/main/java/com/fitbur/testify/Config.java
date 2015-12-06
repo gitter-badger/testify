@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 
 /**
  * An annotation for declaring a method in a test class as a configuration
- * method that must be executed prior to running tests.
+ * method that must.
  *
  * @author saden
  */

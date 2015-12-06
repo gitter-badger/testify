@@ -21,6 +21,7 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
+import static com.google.common.base.Preconditions.checkState;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -28,11 +29,8 @@ import static java.security.AccessController.doPrivileged;
 import java.security.PrivilegedAction;
 import java.util.Optional;
 import static org.mockito.AdditionalAnswers.delegatesTo;
-import static org.mockito.Answers.RETURNS_DEFAULTS;
-import org.mockito.MockSettings;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.withSettings;
 import org.mockito.internal.util.MockUtil;
 
 /**
@@ -59,15 +57,15 @@ public class UnitTestReifier implements TestReifier {
 
                 if (mock.isPresent()) {
                     Field field = fieldDescriptor.getField();
-
                     field.setAccessible(true);
+
                     Object value = field.get(testInstance);
                     //if the field value is null create a new mock
-                    if (value == null || MOCK_UTIL.isMock(value) || MOCK_UTIL.isSpy(value)) {
-                        MockSettings settings = withSettings()
-                                .defaultAnswer(RETURNS_DEFAULTS);
-
-                        instance = mock(field.getType(), settings);
+                    if (value == null) {
+                        instance = mock(field.getType());
+                    } else if (MOCK_UTIL.isMock(value)) {
+                        //if the value is already a mock just use it.
+                        instance = value;
                     } else {
                         //otherwise create a mock that delegates to the value
                         instance = mock(field.getType(), delegatesTo(value));
@@ -80,6 +78,9 @@ public class UnitTestReifier implements TestReifier {
 
                 return instance;
             } catch (IllegalAccessException | IllegalArgumentException e) {
+                checkState(false,
+                        "Field '%s' in test class '%s' is not accessible.\n",
+                        fieldDescriptor.getName(), testInstance.getClass().getSimpleName(), e.getMessage());
                 throw new RuntimeException(e);
             }
         });
@@ -107,11 +108,12 @@ public class UnitTestReifier implements TestReifier {
                 descriptor.setArguments(arguments);
 
                 return instance;
-            } catch (SecurityException |
-                    InstantiationException |
+            } catch (InstantiationException |
                     IllegalAccessException |
-                    IllegalArgumentException |
                     InvocationTargetException e) {
+                checkState(false,
+                        "Cut '%s' in test class '%s' could not be created.\n%s",
+                        descriptor.getName(), testInstance.getClass().getSimpleName(), e.getMessage());
                 throw new RuntimeException(e);
             }
         });

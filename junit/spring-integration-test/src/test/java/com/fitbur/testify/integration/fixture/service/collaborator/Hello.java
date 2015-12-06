@@ -22,8 +22,9 @@ import org.springframework.stereotype.Component;
  * @author saden
  */
 @Component
-public class Hello {
+public class Hello implements Greeting {
 
+    @Override
     public String greet() {
         return "Hello";
     }

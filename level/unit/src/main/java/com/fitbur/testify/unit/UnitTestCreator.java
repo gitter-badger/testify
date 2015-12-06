@@ -34,17 +34,17 @@ import java.util.Map;
  */
 public class UnitTestCreator {
 
-    private final TestContext context;
+    private final TestContext testContext;
     private final TestReifier testReifier;
 
-    public UnitTestCreator(TestContext context, TestReifier testReifier) {
-        this.context = context;
+    public UnitTestCreator(TestContext testContext, TestReifier testReifier) {
+        this.testContext = testContext;
         this.testReifier = testReifier;
     }
 
     public void create() {
-        Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = context.getParamaterDescriptors();
-        Map<DescriptorKey, FieldDescriptor> fieldDescriptors = context.getFieldDescriptors();
+        Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = testContext.getParamaterDescriptors();
+        Map<DescriptorKey, FieldDescriptor> fieldDescriptors = testContext.getFieldDescriptors();
         Object[] arguments = new Object[parameterDescriptors.size()];
         Collection<FieldDescriptor> descriptors = fieldDescriptors.values();
 
@@ -52,14 +52,14 @@ public class UnitTestCreator {
         descriptors.parallelStream()
                 .filter(p -> p.getMock().isPresent())
                 .filter(p -> p.getMock().get().index() != -1)
-                .map(p -> new UnitIndexMockInjector(context, testReifier, p, arguments))
+                .map(p -> new UnitIndexMockInjector(testContext, testReifier, p, arguments))
                 .forEach(UnitIndexMockInjector::inject);
 
         //process fields with custom names second
         descriptors.parallelStream()
                 .filter(p -> p.getMock().isPresent())
                 .filter(p -> !p.getMock().get().name().isEmpty())
-                .map(p -> new UnitNameMockInjector(context, testReifier, p, arguments))
+                .map(p -> new UnitNameMockInjector(testContext, testReifier, p, arguments))
                 .forEach(UnitNameMockInjector::inject);
 
         //finally try to do type based injection
@@ -68,10 +68,10 @@ public class UnitTestCreator {
                 .filter(p -> p.getMock().get().index() == -1
                         && p.getMock().get().name().isEmpty()
                 )
-                .map(p -> new UnitTypeMockInjector(context, testReifier, p, arguments))
+                .map(p -> new UnitTypeMockInjector(testContext, testReifier, p, arguments))
                 .forEach(UnitTypeMockInjector::inject);
 
-        testReifier.reifyCut(context.getCutDescriptor(), arguments);
+        testReifier.reifyCut(testContext.getCutDescriptor(), arguments);
     }
 
 }

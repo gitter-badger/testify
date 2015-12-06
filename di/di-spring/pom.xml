@@ -21,18 +21,18 @@
     <parent>
         <groupId>com.fitbur.testify</groupId>
         <artifactId>di</artifactId>
-        <version>0.0.2</version>
+        <version>0.0.3</version>
     </parent>
     <artifactId>di-spring</artifactId>
     <dependencies>
         <dependency>
             <groupId>com.fitbur.testify</groupId>
-            <artifactId>di-api</artifactId>
+            <artifactId>api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-        </dependency> 
+        </dependency>
     </dependencies>
 </project>

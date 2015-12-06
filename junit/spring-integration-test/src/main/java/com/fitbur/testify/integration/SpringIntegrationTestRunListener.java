@@ -15,15 +15,23 @@
  */
 package com.fitbur.testify.integration;
 
+import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
-import com.fitbur.testify.di.ServiceLocator;
+import com.fitbur.testify.descriptor.FieldDescriptor;
+import com.fitbur.testify.di.spring.SpringServiceLocator;
+import com.fitbur.testify.need.NeedContext;
 import com.fitbur.testify.need.NeedDescriptor;
-import static java.util.Collections.EMPTY_LIST;
-import java.util.List;
-import java.util.Map;
+import com.fitbur.testify.need.NeedProvider;
+import static com.google.common.base.Preconditions.checkState;
+import java.util.Set;
+import static java.util.stream.Collectors.toSet;
+import javax.inject.Inject;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
  * A JUnit run listener that listens for test case execution life-cycle and
@@ -33,59 +41,103 @@ import org.junit.runner.notification.RunListener;
  */
 public class SpringIntegrationTestRunListener extends RunListener {
 
-    public final String name;
-    public final Map<Class, TestContext> testClassContexts;
-    public final Map<Class, ServiceLocator> applicationContexts;
-    private final Map<Class, List<NeedDescriptor>> testNeedDescriptors;
+    private final TestContext testContext;
+    private final Logger logger;
+    private SpringServiceLocator serviceLocator;
+    private Set<NeedContext> needContexts;
 
-    SpringIntegrationTestRunListener(String name,
-            Map<Class, TestContext> testClassContexts,
-            Map<Class, ServiceLocator> applicationContexts,
-            Map<Class, List<NeedDescriptor>> testNeedDescriptors) {
-        this.name = name;
-        this.testClassContexts = testClassContexts;
-        this.applicationContexts = applicationContexts;
-        this.testNeedDescriptors = testNeedDescriptors;
+    SpringIntegrationTestRunListener(TestContext testContext, Logger logger) {
+        this.testContext = testContext;
+        this.logger = logger;
     }
 
     @Override
     public void testStarted(Description description) throws Exception {
-        Class<?> testClass = description.getTestClass();
-        List<NeedDescriptor> needs = testNeedDescriptors.getOrDefault(testClass, EMPTY_LIST);
-        needs.stream()
-                .forEach(p -> p.getTestNeed().before(p.getContext()));
+        logger.info("Running {}", description.getMethodName());
+        String testClassName = testContext.getTestClassName();
+        Object testInstance = testContext.getTestInstance();
+
+        IntegrationTestVerifier verifier = new IntegrationTestVerifier(testContext, logger);
+        AnnotationConfigApplicationContext appContext = new AnnotationConfigApplicationContext();
+        appContext.setId(testClassName);
+        appContext.setAllowBeanDefinitionOverriding(true);
+        appContext.setAllowCircularReferences(false);
+
+        this.serviceLocator = new SpringServiceLocator(appContext);
+
+        IntegrationTestReifier reifier = new IntegrationTestReifier(serviceLocator, testInstance);
+        this.needContexts = testContext.getNeeds().parallelStream().map(p -> {
+            Class<? extends NeedProvider> providerClass = p.value();
+            try {
+                NeedProvider provider = providerClass.newInstance();
+                NeedDescriptor descriptor
+                        = new SpringIntegrationNeedDescriptor(p, testContext, serviceLocator);
+                Object context = provider.configure(descriptor);
+                provider.init(descriptor, context);
+
+                return new NeedContext(provider, descriptor, context);
+            } catch (InstantiationException | IllegalAccessException ex) {
+                checkState(false, "Need provider '%s' could not be instanticated.", providerClass.getSimpleName());
+                return null;
+            }
+        }).collect(toSet());
+
+        IntegrationTestCreator creator
+                = new IntegrationTestCreator(testContext, reifier, serviceLocator);
+
+        //if we are not testing a specific cut class we can still inject
+        //services for testing purpose. this is useful for testing things
+        //like JPA entities which aren't really services.
+        if (testContext.getCutDescriptor() == null) {
+            Set<FieldDescriptor> real = testContext.getFieldDescriptors()
+                    .values()
+                    .parallelStream()
+                    .filter(p -> p.hasAnyAnnotation(Inject.class, Autowired.class, Real.class))
+                    .collect(toSet());
+            creator.real(real);
+        } else {
+            creator.cut();
+        }
+
+        verifier.wiring();
+
     }
 
     @Override
     public void testFinished(Description description) throws Exception {
-        this.closeApplicationContext(description);
+        logger.debug("Finished {}", description.getMethodName());
+        this.done(description);
     }
 
     @Override
     public void testAssumptionFailure(Failure failure) {
-        this.closeApplicationContext(failure.getDescription());
+        String methodName = failure.getDescription().getMethodName();
+        String traceMessage = failure.getTrace();
+        logger.error("{} Failed\n{}", methodName, traceMessage);
+        this.done(failure.getDescription());
     }
 
     @Override
     public void testFailure(Failure failure) throws Exception {
-        this.closeApplicationContext(failure.getDescription());
+        String methodName = failure.getDescription().getMethodName();
+        String traceMessage = failure.getTrace();
+        logger.error("{} Failed\n{}", methodName, traceMessage);
+        this.done(failure.getDescription());
     }
 
     @Override
     public void testIgnored(Description description) throws Exception {
-        this.closeApplicationContext(description);
+        logger.warn("Ignored {}", description.getMethodName());
+        this.done(description);
     }
 
-    private void closeApplicationContext(Description description) {
-        Class<?> testClass = description.getTestClass();
-        List<NeedDescriptor> needs = testNeedDescriptors.getOrDefault(testClass, EMPTY_LIST);
-        needs.stream()
-                .forEach(p -> p.getTestNeed().after(p.getContext()));
-        this.applicationContexts.computeIfPresent(testClass, (k, v) -> {
-            v.destroy();
+    private void done(Description description) {
+        serviceLocator.destroy();
 
-            return null;
+        needContexts.parallelStream().forEach(p -> {
+            p.getProvider().destroy(p.getDescriptor(), p.getConfig());
         });
+
     }
 
 }

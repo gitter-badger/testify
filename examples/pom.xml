@@ -21,14 +21,12 @@
     <parent>
         <groupId>com.fitbur.testify</groupId>
         <artifactId>parent</artifactId>
-        <version>0.0.2</version>
+        <version>0.0.3</version>
     </parent>
     <groupId>com.fitbur.testify.examples</groupId>
     <artifactId>examples</artifactId>
     <packaging>pom</packaging>
 
     <name>Examples</name>
-    <modules>
-        <module>junit-unittest</module>
-    </modules>
+    <modules></modules>
 </project>

@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 /**
- * A package that contains all test annotations.
+ * A package that contains test annotations and api classes.
  */
 package com.fitbur.testify;

@@ -25,9 +25,9 @@ import com.fitbur.testify.descriptor.ParameterDescriptor;
 import com.fitbur.testify.di.ServiceDescriptor;
 import com.fitbur.testify.di.ServiceDescriptorBuilder;
 import com.fitbur.testify.di.ServiceLocator;
-import com.fitbur.testify.di.ServiceProvider;
 import com.fitbur.testify.di.ServiceScope;
 import com.google.common.reflect.TypeToken;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -35,7 +35,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import static org.mockito.AdditionalAnswers.delegatesTo;
@@ -53,11 +52,11 @@ import static org.mockito.Mockito.withSettings;
  */
 public class IntegrationTestReifier implements TestReifier {
 
-    private final ServiceLocator appContext;
+    private final ServiceLocator locator;
     private final Object testInstance;
 
-    public IntegrationTestReifier(ServiceLocator appContext, Object testInstance) {
-        this.appContext = appContext;
+    public IntegrationTestReifier(ServiceLocator locator, Object testInstance) {
+        this.locator = locator;
         this.testInstance = testInstance;
     }
 
@@ -66,13 +65,14 @@ public class IntegrationTestReifier implements TestReifier {
         return AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
             try {
                 Field field = descriptor.getField();
-                Type genericFieldTYpe = field.getGenericType();
+                Type fieldType = field.getGenericType();
                 field.setAccessible(true);
                 Object instance = field.get(testInstance);
 
                 Optional<Mock> optMock = descriptor.getMock();
                 Optional<Real> optReal = descriptor.getAnnotation(Real.class);
                 Optional<Inject> optInject = descriptor.getAnnotation(Inject.class);
+
                 if (optMock.isPresent()) {
                     Mock mock = optMock.get();
                     //if the field value is set then create a mock otherwise create a mock
@@ -87,16 +87,7 @@ public class IntegrationTestReifier implements TestReifier {
                     }
 
                 } else if (optReal.isPresent() || optInject.isPresent()) {
-                    TypeToken<?> token = TypeToken.of(genericFieldTYpe);
-                    Class rawType;
-
-                    if (token.isSubtypeOf(Provider.class)) {
-                        rawType = token.resolveType(Provider.class.getTypeParameters()[0]).getRawType();
-                        instance = new ServiceProvider(appContext, rawType);
-                    } else {
-                        rawType = (Class) genericFieldTYpe;
-                        instance = appContext.getService(rawType);
-                    }
+                    instance = locator.getService(fieldType, descriptor.getAnnotations());
 
                     if (optReal.isPresent() && optReal.get().value()) {
                         instance = mock(instance.getClass(), delegatesTo(instance));
@@ -109,7 +100,7 @@ public class IntegrationTestReifier implements TestReifier {
 
                 return instance;
             } catch (IllegalAccessException | IllegalArgumentException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
         });
 
@@ -147,9 +138,9 @@ public class IntegrationTestReifier implements TestReifier {
                         .lazy(true)
                         .build();
 
-                appContext.addService(serviceDescriptor);
+                locator.addService(serviceDescriptor);
 
-                Object instance = appContext.getServiceWith(rawType, arguments);
+                Object instance = locator.getServiceWith(rawType, arguments);
 
                 if (cut.value()) {
                     instance = spy(instance);
@@ -163,40 +154,47 @@ public class IntegrationTestReifier implements TestReifier {
             } catch (SecurityException |
                     IllegalAccessException |
                     IllegalArgumentException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
         });
     }
 
     @Override
     public void reifyTest(Set< FieldDescriptor> fieldDescriptors) {
-        Stream<Field> stream = fieldDescriptors
-                .parallelStream()
-                .map(FieldDescriptor::getField);
 
-        stream.forEach(p -> {
-            Object spy;
-            Real real = p.getDeclaredAnnotation(Real.class);
-            if (real != null && real.value()) {
-                spy = spy(appContext.getService(p.getType()));
-            } else {
-                spy = appContext.getService(p.getType());
-            }
+        AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
 
-            Object instance = spy;
-            AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-                try {
-                    p.setAccessible(true);
-                    p.set(testInstance, instance);
+            fieldDescriptors
+                    .parallelStream()
+                    .forEach(p -> {
+                        try {
+                            Field field = p.getField();
+                            Type fieldType = p.getGenericType();
+                            Set<? extends Annotation> fieldAnnotations = p.getAnnotations();
 
-                    return instance;
-                } catch (SecurityException |
-                        IllegalAccessException |
-                        IllegalArgumentException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+                            Optional<Real> real = p.getAnnotation(Real.class);
+                            Object instance = locator.getService(fieldType, fieldAnnotations);
+
+                            if (instance == null) {
+                                return;
+                            }
+
+                            if (real.isPresent() && real.get().value()) {
+                                instance = mock(p.getType(), delegatesTo(instance));
+                            }
+
+                            field.setAccessible(true);
+                            field.set(testInstance, instance);
+                        } catch (SecurityException |
+                                IllegalAccessException |
+                                IllegalArgumentException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    });
+
+            return null;
         });
+
     }
 
 }

@@ -21,14 +21,13 @@
     <parent>
         <groupId>com.fitbur.testify</groupId>
         <artifactId>parent</artifactId>
-        <version>0.0.2</version>
+        <version>0.0.3</version>
     </parent>
     <groupId>com.fitbur.testify.need</groupId>
     <artifactId>need</artifactId>
     <name>Need</name>
     <packaging>pom</packaging>
     <modules>
-        <module>need-api</module>
         <module>need-hsql</module>
         <module>need-docker</module>
     </modules>

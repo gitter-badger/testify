@@ -16,13 +16,10 @@
 package com.fitbur.testify.junit;
 
 import com.fitbur.testify.TestContext;
-import java.util.Map;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
-import org.junit.runners.model.TestClass;
 import org.slf4j.Logger;
-import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * A junit listener that listens for test case execution life-cycle.
@@ -31,35 +28,41 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public class UnitTestRunListener extends RunListener {
 
-    private final Logger log = getLogger("test");
-    private final String name;
-    private final TestClass testClass;
-    private final Map<Class, TestContext> contexts;
+    private final Logger logger;
+    private final TestContext testContext;
 
-    UnitTestRunListener(String name, TestClass testClass, Map<Class, TestContext> contexts) {
-        this.name = name;
-        this.testClass = testClass;
-        this.contexts = contexts;
+    UnitTestRunListener(TestContext testContext, Logger logger) {
+        this.testContext = testContext;
+        this.logger = logger;
     }
 
     @Override
     public void testStarted(Description description) throws Exception {
-        log.info("Test Case Started: {}", description);
+        logger.info("Running {}", description.getMethodName());
+    }
+
+    @Override
+    public void testAssumptionFailure(Failure failure) {
+        String methodName = failure.getDescription().getMethodName();
+        String traceMessage = failure.getTrace();
+        logger.error("{} Failed\n{}", methodName, traceMessage);
     }
 
     @Override
     public void testFailure(Failure failure) throws Exception {
-        log.info("Test Case Failed: {}", failure);
+        String methodName = failure.getDescription().getMethodName();
+        String traceMessage = failure.getTrace();
+        logger.error("{} Failed\n{}", methodName, traceMessage);
     }
 
     @Override
     public void testFinished(Description description) throws Exception {
-        log.info("Test Case Finished: {}", description);
+        logger.debug("Finished {}", description.getMethodName());
     }
 
     @Override
     public void testIgnored(Description description) throws Exception {
-        log.info("Test Case Ignored: {}", description);
+        logger.warn("Ignored {}", description.getMethodName());
     }
 
 }

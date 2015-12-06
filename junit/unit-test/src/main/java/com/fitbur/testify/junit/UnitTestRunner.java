@@ -15,23 +15,20 @@
  */
 package com.fitbur.testify.junit;
 
-import com.fitbur.testify.Cut;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.analyzer.CutClassAnalyzer;
 import com.fitbur.testify.analyzer.TestClassAnalyzer;
+import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.unit.UnitTestCreator;
 import com.fitbur.testify.unit.UnitTestReifier;
 import com.fitbur.testify.unit.UnitTestVerifier;
-import java.lang.reflect.Field;
+import static com.google.common.base.Preconditions.checkState;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import static java.util.stream.Collectors.toSet;
-import static java.util.stream.Stream.of;
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.internal.runners.model.EachTestNotifier;
 import org.junit.runner.Description;
-import static org.junit.runner.Description.createTestDescription;
+import org.junit.runner.Result;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runner.notification.StoppedByUserException;
 import org.junit.runners.BlockJUnit4ClassRunner;
@@ -55,7 +52,6 @@ public class UnitTestRunner extends BlockJUnit4ClassRunner {
 
     static final Logger LOGGER = LoggerFactory.getLogger("testify");
     Map<Class, TestContext> testClassContexts = new HashMap<>();
-    private RunNotifier notifier;
 
     /**
      * Create a new test runner instance for the class under test.
@@ -68,95 +64,97 @@ public class UnitTestRunner extends BlockJUnit4ClassRunner {
         super(testClass);
     }
 
-    /**
-     * Describe the test class.
-     *
-     * @return
-     */
-    @Override
-    public Description getDescription() {
-        TestClass testClass = getTestClass();
-        Class<?> javaClass = testClass.getJavaClass();
-        String name = javaClass.getSimpleName();
-
-        return createTestDescription(javaClass, name, testClass.getAnnotations());
-    }
-
     @Override
     protected Object createTest() throws Exception {
         try {
+            Object testInstace = super.createTest();
+
             TestClass testClass = getTestClass();
             Class<?> javaClass = testClass.getJavaClass();
-            String name = javaClass.getSimpleName();
 
-            TestContext testContext = testClassContexts.computeIfAbsent(javaClass, p -> {
-                Object instance;
-                try {
-                    instance = super.createTest();
-                    TestContext context = new TestContext(name, javaClass, instance, LOGGER);
-                    Set<Field> candidatesFields = of(javaClass.getDeclaredFields())
-                            .parallel()
-                            .filter(f -> f.isAnnotationPresent(Cut.class))
-                            .collect(toSet());
-
-                    Field cutField = candidatesFields.iterator().next();
-                    ClassReader testReader = new ClassReader(javaClass.getName());
-                    ClassReader cutReader = new ClassReader(cutField.getType().getName());
-
-                    testReader.accept(new TestClassAnalyzer(context), ClassReader.SKIP_DEBUG);
-                    cutReader.accept(new CutClassAnalyzer(context), ClassReader.SKIP_DEBUG);
-
-                    return context;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
-
-            Object instance = testContext.getTestInstance();
+            TestContext testContext = testClassContexts.get(javaClass);
+            testContext.setTestInstance(testContext);
             UnitTestVerifier verifier = new UnitTestVerifier(testContext, LOGGER);
-            verifier.dependency();
-            verifier.configuration();
-            UnitTestReifier reifier = new UnitTestReifier(instance);
+
+            UnitTestReifier reifier = new UnitTestReifier(testInstace);
             UnitTestCreator creator = new UnitTestCreator(testContext, reifier);
             creator.create();
             verifier.wiring();
 
-            return instance;
+            return testInstace;
         } catch (IllegalStateException e) {
-            notifier.pleaseStop();
             throw e;
         }
     }
 
+    public TestContext analyzeClass(Class<?> javaClass, String name) {
+        TestContext testContext = testClassContexts.computeIfAbsent(javaClass, p -> {
+            try {
+                TestContext context = new TestContext(name, javaClass, LOGGER);
+                ClassReader testReader = new ClassReader(javaClass.getName());
+                testReader.accept(new TestClassAnalyzer(context), ClassReader.SKIP_DEBUG);
+                CutDescriptor cutDescriptor = context.getCutDescriptor();
+
+                if (cutDescriptor != null) {
+                    ClassReader cutReader = new ClassReader(cutDescriptor.getType().getName());
+                    cutReader.accept(new CutClassAnalyzer(context), ClassReader.SKIP_DEBUG);
+                }
+
+                return context;
+            } catch (Exception e) {
+                checkState(false, "Analysis of test class '%s' failed.\n'%s'", name, e.getMessage());
+                //not reachable
+                throw new IllegalStateException(e);
+            }
+        });
+
+        return testContext;
+    }
+
     @Override
     public void run(RunNotifier notifier) {
+        Description description = getDescription();
+        TestClass testClass = getTestClass();
+        Class<?> javaClass = testClass.getJavaClass();
+        String name = javaClass.getSimpleName();
+
+        TestContext testContext = analyzeClass(javaClass, name);
+        UnitTestVerifier verifier = new UnitTestVerifier(testContext, LOGGER);
+        verifier.dependency();
+        verifier.configuration();
+
+        //register slf4j bridge
         if (!SLF4JBridgeHandler.isInstalled()) {
             SLF4JBridgeHandler.removeHandlersForRootLogger();
             SLF4JBridgeHandler.install();
         }
 
-        this.notifier = notifier;
-        Description description = getDescription();
-        TestClass testClass = getTestClass();
-        Class<?> javaClass = testClass.getJavaClass();
-        String name = javaClass.getSimpleName();
-        UnitTestRunListener listener = new UnitTestRunListener(name, testClass, testClassContexts);
-        notifier.addListener(listener);
-
+        UnitTestRunListener listener = new UnitTestRunListener(testContext, LOGGER);
+        notifier.addFirstListener(listener);
         EachTestNotifier testNotifier = new EachTestNotifier(notifier, description);
         try {
+            notifier.fireTestRunStarted(description);
             Statement statement = classBlock(notifier);
             statement.evaluate();
-
-            // invoke here the run started method
-            notifier.fireTestRunStarted(description);
         } catch (AssumptionViolatedException e) {
-            testNotifier.fireTestIgnored();
+            LOGGER.error("{}", e.getMessage());
+            testNotifier.addFailedAssumption(e);
         } catch (StoppedByUserException e) {
+            LOGGER.error("{}", e.getMessage());
             throw e;
+        } catch (IllegalStateException e) {
+            LOGGER.error("{}", e.getMessage());
+            notifier.pleaseStop();
         } catch (Throwable e) {
+            LOGGER.error("{}", e.getMessage());
             testNotifier.addFailure(e);
         } finally {
+            notifier.fireTestRunFinished(new Result());
+            //XXX: notifier is a singleton so we have to remove it or otherwise
+            //the listener will keep getting added to it and will be called
+            //multiple times
+            notifier.removeListener(listener);
+
             if (SLF4JBridgeHandler.isInstalled()) {
                 SLF4JBridgeHandler.uninstall();
             }

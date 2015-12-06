@@ -16,13 +16,15 @@
 package com.fitbur.testify.analyzer;
 
 import com.fitbur.testify.TestContext;
-import com.fitbur.testify.TestException;
 import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Class.forName;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.Arrays;
 import static java.util.stream.Stream.of;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -50,52 +52,57 @@ public class CutClassAnalyzer extends ClassVisitor {
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        if (CONSTRUCTOR_NAME.equals(name) && constCount == 0) {
-            try {
-                constCount++;
+        if (CONSTRUCTOR_NAME.equals(name)) {
+            constCount++;
+
+            AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
                 Type type = getMethodType(desc);
                 Class[] parameterTypes = of(type.getArgumentTypes())
                         .sequential()
-                        .map(Type::getClassName)
                         .map(this::getClass)
                         .toArray(Class[]::new);
+
                 CutDescriptor cutDescriptor = context.getCutDescriptor();
-                Constructor<?> constructor = cutDescriptor
-                        .getField()
-                        .getType()
-                        .getDeclaredConstructor(parameterTypes);
-                cutDescriptor.setConstructor(constructor);
 
-                Parameter[] parameters = constructor.getParameters();
-                for (int i = 0; i < parameters.length; i++) {
-                    ParameterDescriptor descriptor = new ParameterDescriptor(parameters[i], i);
-                    context.addParameterDescriptor(descriptor);
+                try {
+                    Constructor<?> constructor = cutDescriptor
+                            .getField()
+                            .getType()
+                            .getDeclaredConstructor(parameterTypes);
+
+                    cutDescriptor.setConstructor(constructor);
+
+                    Parameter[] parameters = constructor.getParameters();
+                    for (int i = 0; i < parameters.length; i++) {
+                        ParameterDescriptor descriptor = new ParameterDescriptor(parameters[i], i);
+                        context.addParameterDescriptor(descriptor);
+                    }
+
+                } catch (NoSuchMethodException | SecurityException e) {
+                    checkState(false,
+                            "Constructor with '%s' parameters not accessible in '%s' class.",
+                            Arrays.toString(parameterTypes), cutDescriptor.getTypeName());
                 }
-
-            } catch (NoSuchMethodException | SecurityException e) {
-                throw new TestException(e);
-            }
+                return null;
+            });
         }
 
         return null;
     }
 
-    private Class<?> getClass(String p) throws TestException {
-        try {
-            return forName(p);
-        } catch (ClassNotFoundException e) {
-            throw new TestException(e);
+    @Override
+    public void visitEnd() {
+        context.setConstructorCount(constCount);
+    }
 
+    private Class<?> getClass(Type type) {
+        try {
+            return forName(type.getInternalName().replace('/', '.'));
+        } catch (ClassNotFoundException e) {
+            checkState(false, "Class '%s' not found in the classpath.", type.getClassName());
+            //not reachable;
+            throw new IllegalStateException(e);
         }
     }
 
-    @Override
-    public void visitEnd() {
-        checkState(constCount <= 1,
-                "Class under test '%s' has more than one constructor. Please "
-                + "insure that the class under test has default constructor or "
-                + "only one constructor.",
-                context.getCutDescriptor().getField());
-
-    }
 }
