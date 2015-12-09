@@ -15,10 +15,10 @@ highlighter: pygments
 
 
 ### content configuration ###
-title:       "SinglePaged - Simple Jekyll template"
-keywords:    "SinglePaged, jekyll, template, github, blog, single page"
-description: "A single-page template for Jekyll based blogs (like what you'd use on github pages!)"
-source_link: "https://github.com/t413/SinglePaged"
+title:       "Testify - Java Testing Made Simple"
+keywords:    "fitburio, testify, java, mockito, annotation, driven, junit, testng, spring, hk2, jersey, guice"
+description: "A landing page for information about Testify framework, an annotation driven Java unit, integration, system testing framework."
+source_link: "https://github.com/FitburIO/testify"
 favicon:     "img/favicon.ico"
 touch_icon:  "img/apple-touch-icon.png"
 google_analytics_key: UA-49607422-1 ## put YOUR key here to enable tracking! (blank to disable)
@@ -33,6 +33,8 @@ colors:
   purple:    '#c869bf'
   orange:    '#fab125'
   turquoise: '#0fbfcf'
+  fnavy:     '#343e48'
+  forange:   '#f38630'
 
 kramdown:
   auto_ids:  false
