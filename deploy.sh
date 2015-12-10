@@ -22,31 +22,21 @@ RELEASE="-Prelease"
 if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
     echo "Deploying '$TRAVIS_BRANCH' branch"
     if [ "$TRAVIS_BRANCH" = "master" ]; then
-        echo "Staging release artifacts on maven-central"
+        PROJECT_VERSION=$(mvn -q org.codehaus.mojo:exec-maven-plugin:1.4.0:exec -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive)
+        echo "Releasing v$PROJECT_VERSION"
+        echo "Staging release artifacts"
         mvn clean deploy $MAVEN_SETTINGS $RELEASE $SKIP_TESTS -B
 
-        echo "Releasing artifacts to maven central"
+        echo "Releasing artifacts"
         mvn nexus-staging:release $MAVEN_SETTINGS $SKIP_TESTS -B
 
-        echo "Creating GitHub 'testify-$PROJECT_VERSION' Release"
-        PROJECT_VERSION=$(mvn -q org.codehaus.mojo:exec-maven-plugin:1.4.0:exec -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive)
-        curl -H "Content-Type: application/json" -X POST \
-        -d '{
-          "tag_name": "'"testify-$PROJECT_VERSION"'",
-          "target_commitish": "master",
-          "name": "'"Testify Release v$PROJECT_VERSION"'",
-          "body": "'"Testify Release v$PROJECT_VERSION"'",
-          "draft": false,
-          "prerelease": false
-        }' \
-        https://api.github.com/repos/FitburIO/testify/releases?access_token=$RELEASE_TOKEN
-
     elif [ "$TRAVIS_BRANCH" = "develop" ]; then
-        echo "Deploying snapshot artifacts to maven central"
+        echo "Snapshoting v$PROJECT_VERSION"
+        echo "Deploying snapshot artifacts"
         mvn clean deploy $MAVEN_SETTINGS $RELEASE $SKIP_TESTS -B
 
     else
-        echo "Unknown '$TRAVIS_BRANCH' branch. Artifacts not deployed."
+        echo "Branch '$TRAVIS_BRANCH' not a master or develop. Artifacts will not be deployed."
     fi
 
 fi

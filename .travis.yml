@@ -28,7 +28,7 @@ before_install:
 
 after_success:
     - codecov
-    - ./sonatype.sh
+    - ./deploy.sh
 
 env:
   global:

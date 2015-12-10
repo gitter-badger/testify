@@ -16,7 +16,7 @@
 package com.fitbur.testify.unit;
 
 import com.fitbur.testify.Cut;
-import com.fitbur.testify.Mock;
+import com.fitbur.testify.Fake;
 import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.FieldDescriptor;
@@ -53,7 +53,7 @@ public class UnitTestReifier implements TestReifier {
         return doPrivileged((PrivilegedAction) () -> {
             try {
                 Object instance = null;
-                Optional<Mock> mock = fieldDescriptor.getMock();
+                Optional<Fake> mock = fieldDescriptor.getAnnotation(Fake.class);
 
                 if (mock.isPresent()) {
                     Field field = fieldDescriptor.getField();

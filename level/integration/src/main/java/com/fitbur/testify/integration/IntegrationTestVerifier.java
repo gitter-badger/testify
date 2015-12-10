@@ -22,8 +22,9 @@ import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
 import com.fitbur.testify.need.Need;
 import static com.google.common.base.Preconditions.checkState;
+import static java.lang.Class.forName;
 import static java.lang.reflect.Modifier.isFinal;
-import java.security.AccessController;
+import static java.security.AccessController.doPrivileged;
 import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.HashMap;
@@ -51,7 +52,7 @@ public class IntegrationTestVerifier implements TestVerifier {
 
     @Override
     public void dependency() {
-        AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+        doPrivileged((PrivilegedAction<Object>) () -> {
             Map<String, String> dependencies = new HashMap<String, String>() {
                 {
                     put("org.mockito.Mockito", "Mockito");
@@ -61,7 +62,7 @@ public class IntegrationTestVerifier implements TestVerifier {
 
             dependencies.entrySet().parallelStream().forEach(p -> {
                 try {
-                    Class.forName(p.getKey());
+                    forName(p.getKey());
                 } catch (ClassNotFoundException e) {
                     checkState(false,
                             "'%s' not found. Please insure '%s' is in the classpath.",
@@ -75,7 +76,7 @@ public class IntegrationTestVerifier implements TestVerifier {
 
     @Override
     public void configuration() {
-        AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+        doPrivileged((PrivilegedAction<Object>) () -> {
             String testClassName = testContext.getTestClassName();
             CutDescriptor cutDescriptor = testContext.getCutDescriptor();
             Collection<FieldDescriptor> fieldDescriptors = testContext.getFieldDescriptors().values();
@@ -143,7 +144,7 @@ public class IntegrationTestVerifier implements TestVerifier {
 
     @Override
     public void wiring() {
-        AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+        doPrivileged((PrivilegedAction<Object>) () -> {
             CutDescriptor cutDescriptor = testContext.getCutDescriptor();
             String testClassName = testContext.getTestClassName();
             Collection<ParameterDescriptor> paramDescriptors

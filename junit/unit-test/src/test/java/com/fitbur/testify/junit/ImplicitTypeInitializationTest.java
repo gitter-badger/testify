@@ -16,7 +16,6 @@
 package com.fitbur.testify.junit;
 
 import com.fitbur.testify.Cut;
-import com.fitbur.testify.Mock;
 import com.fitbur.testify.junit.fixture.ImplicitType;
 import com.fitbur.testify.junit.fixture.collaborator.Hello;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +26,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import org.mockito.internal.util.MockUtil;
+import com.fitbur.testify.Fake;
 
 /**
  *
@@ -38,7 +38,7 @@ public class ImplicitTypeInitializationTest {
     @Cut
     ImplicitType cut;
 
-    @Mock
+    @Fake
     Hello hello = new Hello();
 
     @Before

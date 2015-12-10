@@ -15,14 +15,15 @@
  */
 package com.fitbur.testify.unit;
 
+import com.fitbur.testify.Fake;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import com.fitbur.testify.unit.injector.UnitIndexMockInjector;
-import com.fitbur.testify.unit.injector.UnitNameMockInjector;
-import com.fitbur.testify.unit.injector.UnitTypeMockInjector;
+import com.fitbur.testify.unit.injector.UnitIndexFakeInjector;
+import com.fitbur.testify.unit.injector.UnitNameFakeInjector;
+import com.fitbur.testify.unit.injector.UnitTypeFakeInjector;
 import java.util.Collection;
 import java.util.Map;
 
@@ -50,26 +51,26 @@ public class UnitTestCreator {
 
         //process fields with a custom index first
         descriptors.parallelStream()
-                .filter(p -> p.getMock().isPresent())
-                .filter(p -> p.getMock().get().index() != -1)
-                .map(p -> new UnitIndexMockInjector(testContext, testReifier, p, arguments))
-                .forEach(UnitIndexMockInjector::inject);
+                .filter(p -> p.getAnnotation(Fake.class).isPresent())
+                .filter(p -> p.getAnnotation(Fake.class).get().index() != -1)
+                .map(p -> new UnitIndexFakeInjector(testContext, testReifier, p, arguments))
+                .forEach(UnitIndexFakeInjector::inject);
 
         //process fields with custom names second
         descriptors.parallelStream()
-                .filter(p -> p.getMock().isPresent())
-                .filter(p -> !p.getMock().get().name().isEmpty())
-                .map(p -> new UnitNameMockInjector(testContext, testReifier, p, arguments))
-                .forEach(UnitNameMockInjector::inject);
+                .filter(p -> p.getAnnotation(Fake.class).isPresent())
+                .filter(p -> !p.getAnnotation(Fake.class).get().name().isEmpty())
+                .map(p -> new UnitNameFakeInjector(testContext, testReifier, p, arguments))
+                .forEach(UnitNameFakeInjector::inject);
 
         //finally try to do type based injection
         descriptors.parallelStream()
-                .filter(p -> p.getMock().isPresent())
-                .filter(p -> p.getMock().get().index() == -1
-                        && p.getMock().get().name().isEmpty()
+                .filter(p -> p.getAnnotation(Fake.class).isPresent())
+                .filter(p -> p.getAnnotation(Fake.class).get().index() == -1
+                        && p.getAnnotation(Fake.class).get().name().isEmpty()
                 )
-                .map(p -> new UnitTypeMockInjector(testContext, testReifier, p, arguments))
-                .forEach(UnitTypeMockInjector::inject);
+                .map(p -> new UnitTypeFakeInjector(testContext, testReifier, p, arguments))
+                .forEach(UnitTypeFakeInjector::inject);
 
         testReifier.reifyCut(testContext.getCutDescriptor(), arguments);
     }

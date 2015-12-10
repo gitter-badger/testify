@@ -15,7 +15,7 @@
  */
 package com.fitbur.testify.integration.injector;
 
-import com.fitbur.testify.Mock;
+import com.fitbur.testify.Fake;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestInjector;
 import com.fitbur.testify.TestReifier;
@@ -30,19 +30,19 @@ import java.util.Map;
 
 /**
  * An integration test injector implementation that injects fields annotated
- * with {@link Mock} that does some smart name/type based detection on the cut
+ * with {@link Fake} that does some smart name/type based detection on the cut
  * class constructor.
  *
  * @author saden
  */
-public class IntegrationTypeMockInjector implements TestInjector {
+public class IntegrationTypeFakeInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
     private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
-    public IntegrationTypeMockInjector(TestContext context,
+    public IntegrationTypeFakeInjector(TestContext context,
             TestReifier testReifier,
             FieldDescriptor fieldDescriptor,
             Object[] arguments) {
@@ -57,7 +57,7 @@ public class IntegrationTypeMockInjector implements TestInjector {
         Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = context.getParamaterDescriptors();
         Field field = fieldDescriptor.getField();
 
-        Mock mock = fieldDescriptor.getMock().get();
+        Fake fake = fieldDescriptor.getAnnotation(Fake.class).get();
         Type fieldType = field.getGenericType();
         String fieldName = field.getName();
         DescriptorKey descriptorKey = new DescriptorKey(fieldType, fieldName);

@@ -1,7 +1,7 @@
 # Testify
 [![Build Status](https://travis-ci.org/FitburIO/testify.svg?branch=develop)](https://travis-ci.org/FitburIO/testify)
 [![CodecovIO](https://codecov.io/github/FitburIO/testify/coverage.svg?branch=develop)](https://codecov.io/github/FitburIO/testify?branch=develop)
-[![Github Releases](https://img.shields.io/github/downloads/FitburIO/testify/latest/total.svg)]()
+[![Latest Release](https://img.shields.io/github/release/FitburIO/testify.svg)]()
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fitbur.testify/parent/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.fitbur.testify)
 [![License](https://img.shields.io/github/license/FitburIO/testify.svg)](LICENSE)
 
@@ -81,10 +81,6 @@ or
 TODO
 
 ## License
-The Testify is released under version 2.0 of the Apache License.
+The Testify is released under [Apache Software License, Version 2.0](LICENSE).
 
-
-
-Enjoy Testify and keep on testifying!
-
-
+Enjoy and keep on testifying!
