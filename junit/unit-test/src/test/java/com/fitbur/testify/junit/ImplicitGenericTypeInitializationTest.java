@@ -16,7 +16,6 @@
 package com.fitbur.testify.junit;
 
 import com.fitbur.testify.Cut;
-import com.fitbur.testify.Mock;
 import com.fitbur.testify.junit.fixture.ImplicitGenericType;
 import com.fitbur.testify.junit.fixture.collaborator.Hello;
 import javax.inject.Provider;
@@ -29,6 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import org.mockito.internal.util.MockUtil;
+import com.fitbur.testify.Fake;
 
 /**
  *
@@ -40,7 +40,7 @@ public class ImplicitGenericTypeInitializationTest {
     @Cut
     ImplicitGenericType cut;
 
-    @Mock
+    @Fake
     Provider<Hello> hello = () -> new Hello();
 
     @Before

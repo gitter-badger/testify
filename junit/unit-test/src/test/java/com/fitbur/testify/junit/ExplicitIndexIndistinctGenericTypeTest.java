@@ -16,7 +16,6 @@
 package com.fitbur.testify.junit;
 
 import com.fitbur.testify.Cut;
-import com.fitbur.testify.Mock;
 import com.fitbur.testify.junit.fixture.ExplicitIndexIndistinctGenericType;
 import com.fitbur.testify.junit.fixture.collaborator.Hello;
 import javax.inject.Provider;
@@ -28,6 +27,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import com.fitbur.testify.Fake;
 
 /**
  *
@@ -39,10 +39,10 @@ public class ExplicitIndexIndistinctGenericTypeTest {
     @Cut
     ExplicitIndexIndistinctGenericType cut;
 
-    @Mock(index = 0)
+    @Fake(index = 0)
     Provider<Hello> english;
 
-    @Mock
+    @Fake
     Provider<Hello> spanish;
 
     @Before

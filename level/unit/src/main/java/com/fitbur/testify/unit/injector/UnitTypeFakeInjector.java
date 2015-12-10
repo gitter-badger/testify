@@ -32,14 +32,14 @@ import java.util.Map;
  *
  * @author saden
  */
-public class UnitTypeMockInjector implements TestInjector {
+public class UnitTypeFakeInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
     private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
-    public UnitTypeMockInjector(TestContext context,
+    public UnitTypeFakeInjector(TestContext context,
             TestReifier testReifier,
             FieldDescriptor fieldDescriptor,
             Object[] arguments) {

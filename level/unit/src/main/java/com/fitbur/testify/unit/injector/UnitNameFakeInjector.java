@@ -15,7 +15,7 @@
  */
 package com.fitbur.testify.unit.injector;
 
-import com.fitbur.testify.Mock;
+import com.fitbur.testify.Fake;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestInjector;
 import com.fitbur.testify.TestReifier;
@@ -28,19 +28,19 @@ import java.util.Map;
 
 /**
  * A unit test injector implementation that injects fields annotated with
- * {@link Mock} which specify the parameter name of the mock on the class under
+ * {@link Fake} which specify the parameter name of the fake on the class under
  * test constructor.
  *
  * @author saden
  */
-public class UnitNameMockInjector implements TestInjector {
+public class UnitNameFakeInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
     private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
-    public UnitNameMockInjector(TestContext context,
+    public UnitNameFakeInjector(TestContext context,
             TestReifier testReifier,
             FieldDescriptor fieldDescriptor,
             Object[] arguments) {
@@ -59,35 +59,35 @@ public class UnitNameMockInjector implements TestInjector {
         String cutTypeName = context.getCutDescriptor().getTypeName();
         String testClassName = context.getTestClassName();
 
-        Mock mock = fieldDescriptor.getMock().get();
-        String mockName = mock.name();
-        DescriptorKey descriptorKey = new DescriptorKey(fieldType, mockName);
+        Fake fake = fieldDescriptor.getAnnotation(Fake.class).get();
+        String fakeName = fake.name();
+        DescriptorKey descriptorKey = new DescriptorKey(fieldType, fakeName);
 
         ParameterDescriptor paramDescriptor = parameterDescriptors.get(descriptorKey);
 
         checkArgument(paramDescriptor != null,
-                "Can not mock field '%s#%s'. Could not find constructor argument "
+                "Can not fake field '%s#%s'. Could not find constructor argument "
                 + "with the name '%s' in the '%s'. Please note that name based auto "
                 + "detection will only work if your code is compiled with debug "
                 + "information (javac -parameters or javac -g:vars).",
-                testClassName, fieldName, mockName, cutTypeName);
+                testClassName, fieldName, fakeName, cutTypeName);
 
         Integer paramIndex = paramDescriptor.getIndex();
         Type paramType = paramDescriptor.getGenericType();
         String paramTypeName = paramDescriptor.getTypeName();
 
         checkArgument(fieldType.equals(paramType),
-                "Can not mock field '%s#%s'. The test clas field and the class "
+                "Can not fake field '%s#%s'. The test clas field and the class "
                 + "under test constructor argument have the name '%s' but are "
                 + "not the same type. Please insure that the field type (%s) "
                 + "and paramater type (%s) are the same.",
-                testClassName, fieldName, mockName, fieldTypeName, paramType
+                testClassName, fieldName, fakeName, fieldTypeName, paramType
         );
 
         checkArgument(arguments[paramIndex] == null,
-                "Can not mock field '%s#%s'. Multipe test class fields have the "
+                "Can not fake field '%s#%s'. Multipe test class fields have the "
                 + "same name of '%s'",
-                testClassName, fieldName, mockName);
+                testClassName, fieldName, fakeName);
 
         arguments[paramIndex] = testReifier.reifyField(fieldDescriptor, paramDescriptor);
     }

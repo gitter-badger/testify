@@ -15,7 +15,6 @@
  */
 package com.fitbur.testify.descriptor;
 
-import com.fitbur.testify.Mock;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -52,10 +51,6 @@ public class MethodDescriptor {
 
     public String getName() {
         return method.getName();
-    }
-
-    public Optional<Mock> getMock() {
-        return ofNullable(method.getDeclaredAnnotation(Mock.class));
     }
 
     public Integer getOrder() {

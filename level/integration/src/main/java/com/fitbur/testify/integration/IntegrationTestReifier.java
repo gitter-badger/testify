@@ -16,7 +16,7 @@
 package com.fitbur.testify.integration;
 
 import com.fitbur.testify.Cut;
-import com.fitbur.testify.Mock;
+import com.fitbur.testify.Fake;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.CutDescriptor;
@@ -25,13 +25,14 @@ import com.fitbur.testify.descriptor.ParameterDescriptor;
 import com.fitbur.testify.di.ServiceDescriptor;
 import com.fitbur.testify.di.ServiceDescriptorBuilder;
 import com.fitbur.testify.di.ServiceLocator;
-import com.fitbur.testify.di.ServiceScope;
+import static com.fitbur.testify.di.ServiceScope.PROTOTYPE;
 import com.google.common.reflect.TypeToken;
+import static com.google.common.reflect.TypeToken.of;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.security.AccessController;
+import static java.security.AccessController.doPrivileged;
 import java.security.PrivilegedAction;
 import java.util.Optional;
 import java.util.Set;
@@ -62,19 +63,19 @@ public class IntegrationTestReifier implements TestReifier {
 
     @Override
     public Object reifyField(FieldDescriptor descriptor, ParameterDescriptor parameterDescriptor) {
-        return AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+        return doPrivileged((PrivilegedAction<Object>) () -> {
             try {
                 Field field = descriptor.getField();
                 Type fieldType = field.getGenericType();
                 field.setAccessible(true);
                 Object instance = field.get(testInstance);
 
-                Optional<Mock> optMock = descriptor.getMock();
+                Optional<Fake> optFake = descriptor.getAnnotation(Fake.class);
                 Optional<Real> optReal = descriptor.getAnnotation(Real.class);
                 Optional<Inject> optInject = descriptor.getAnnotation(Inject.class);
 
-                if (optMock.isPresent()) {
-                    Mock mock = optMock.get();
+                if (optFake.isPresent()) {
+                    Fake fake = optFake.get();
                     //if the field value is set then create a mock otherwise create a mock
                     //that delegates to the value
                     if (instance == null) {
@@ -108,7 +109,7 @@ public class IntegrationTestReifier implements TestReifier {
 
     @Override
     public Object reifyCut(CutDescriptor descriptor, Object[] arguments) {
-        return AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+        return doPrivileged((PrivilegedAction<Object>) () -> {
             try {
                 Cut cut = descriptor.getCut().get();
                 Field field = descriptor.getField();
@@ -120,7 +121,7 @@ public class IntegrationTestReifier implements TestReifier {
                 Constructor<?> constructor = descriptor.getConstructor();
                 constructor.setAccessible(true);
 
-                TypeToken<?> token = TypeToken.of(fieldType);
+                TypeToken<?> token = of(fieldType);
                 Class rawType;
 
                 if (token.isSupertypeOf(Provider.class) || token.isSupertypeOf(Optional.class)) {
@@ -133,7 +134,7 @@ public class IntegrationTestReifier implements TestReifier {
                         .name(fieldName)
                         .type(rawType)
                         .injectable(false)
-                        .scope(ServiceScope.PROTOTYPE)
+                        .scope(PROTOTYPE)
                         .primary(true)
                         .lazy(true)
                         .build();
@@ -162,7 +163,7 @@ public class IntegrationTestReifier implements TestReifier {
     @Override
     public void reifyTest(Set< FieldDescriptor> fieldDescriptors) {
 
-        AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+        doPrivileged((PrivilegedAction<Object>) () -> {
 
             fieldDescriptors
                     .parallelStream()

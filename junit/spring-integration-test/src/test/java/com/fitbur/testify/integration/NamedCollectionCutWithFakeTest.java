@@ -16,7 +16,6 @@
 package com.fitbur.testify.integration;
 
 import com.fitbur.testify.Cut;
-import com.fitbur.testify.Mock;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
 import com.fitbur.testify.integration.fixture.service.NamedCollectionsService;
@@ -27,6 +26,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.internal.util.MockUtil;
+import com.fitbur.testify.Fake;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
@@ -34,18 +35,18 @@ import org.mockito.internal.util.MockUtil;
  */
 @RunWith(SpringIntegrationTestRunner.class)
 @Module(SpringIntegrationConfig.class)
-public class NamedCollectionCutWithMockTest {
+public class NamedCollectionCutWithFakeTest {
 
     @Cut
     NamedCollectionsService cut;
 
-    @Mock
+    @Fake
     List<String> list;
 
-    @Mock
+    @Fake
     Set<String> set;
 
-    @Mock
+    @Fake
     Map<String, String> map;
 
     @Test

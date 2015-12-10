@@ -16,7 +16,6 @@
 package com.fitbur.testify.junit;
 
 import com.fitbur.testify.Cut;
-import com.fitbur.testify.Mock;
 import com.fitbur.testify.junit.fixture.ImplicitTypeDistinctTypes;
 import com.fitbur.testify.junit.fixture.collaborator.Hello;
 import com.fitbur.testify.junit.fixture.collaborator.World;
@@ -27,6 +26,7 @@ import org.junit.runner.RunWith;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import com.fitbur.testify.Fake;
 
 /**
  *
@@ -38,10 +38,10 @@ public class ImplicitTypeDistinctTypesTest {
     @Cut
     ImplicitTypeDistinctTypes cut;
 
-    @Mock
+    @Fake
     Hello hello;
 
-    @Mock
+    @Fake
     World world;
 
     @Before

@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.integration.injector;
+package com.fitbur.testify.unit.injector;
 
-import com.fitbur.testify.Mock;
+import com.fitbur.testify.Fake;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestInjector;
 import com.fitbur.testify.TestReifier;
@@ -29,20 +29,20 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * An integration test injector implementation that injects fields annotated
- * with {@link Mock} which specify the index of the mock on the class under test
+ * A unit test injector implementation that injects fields annotated with
+ * {@link Fake} which specify the index of the fake on the class under test
  * constructor.
  *
  * @author saden
  */
-public class IntegrationIndexMockInjector implements TestInjector {
+public class UnitIndexFakeInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
     private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
-    public IntegrationIndexMockInjector(TestContext context,
+    public UnitIndexFakeInjector(TestContext context,
             TestReifier testReifier,
             FieldDescriptor fieldDescriptor,
             Object[] arguments) {
@@ -56,11 +56,11 @@ public class IntegrationIndexMockInjector implements TestInjector {
     public void inject() {
         Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = context.getParamaterDescriptors();
 
-        Mock mock = fieldDescriptor.getMock().get();
-        Integer mockIndex = mock.index();
+        Fake fake = fieldDescriptor.getAnnotation(Fake.class).get();
+        Integer fakeIndex = fake.index();
         Optional<ParameterDescriptor> optional = parameterDescriptors.values()
                 .parallelStream()
-                .filter(p -> mockIndex.equals(p.getIndex()))
+                .filter(p -> fakeIndex.equals(p.getIndex()))
                 .findFirst();
 
         ParameterDescriptor paramDescriptor = optional.get();
@@ -73,20 +73,20 @@ public class IntegrationIndexMockInjector implements TestInjector {
         Type parameterType = parameter.getParameterizedType();
 
         checkState(fieldType.equals(parameterType),
-                "Can not mock field '%s#%s'. Test class field type '%s' and class "
+                "Can not fake field '%s#%s'. Test class field type '%s' and class "
                 + "under test constructor parameter type '%s' at index '%d' do "
                 + "not match.",
-                testClassName, fieldName, fieldTypeName, parameterType, mockIndex
+                testClassName, fieldName, fieldTypeName, parameterType, fakeIndex
         );
 
-        checkState(arguments[mockIndex] == null,
-                "Can not mock field '%s#%s'. Multipe test class fields are "
+        checkState(arguments[fakeIndex] == null,
+                "Can not fake field '%s#%s'. Multipe test class fields are "
                 + "annotated with @Mock(index=%d). Please insure the @Mock "
                 + "annotations have unqiue indexes.",
-                testClassName, fieldName, mockIndex
+                testClassName, fieldName, fakeIndex
         );
 
-        arguments[mockIndex] = testReifier.reifyField(fieldDescriptor, paramDescriptor);
+        arguments[fakeIndex] = testReifier.reifyField(fieldDescriptor, paramDescriptor);
     }
 
 }

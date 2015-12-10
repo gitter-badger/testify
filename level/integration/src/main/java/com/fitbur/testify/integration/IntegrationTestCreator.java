@@ -15,7 +15,7 @@
  */
 package com.fitbur.testify.integration;
 
-import com.fitbur.testify.Mock;
+import com.fitbur.testify.Fake;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
@@ -24,10 +24,10 @@ import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
 import com.fitbur.testify.di.ServiceLocator;
-import com.fitbur.testify.integration.injector.IntegrationIndexMockInjector;
-import com.fitbur.testify.integration.injector.IntegrationNameMockInjector;
+import com.fitbur.testify.integration.injector.IntegrationIndexFakeInjector;
+import com.fitbur.testify.integration.injector.IntegrationNameFakeInjector;
 import com.fitbur.testify.integration.injector.IntegrationRealServiceInjector;
-import com.fitbur.testify.integration.injector.IntegrationTypeMockInjector;
+import com.fitbur.testify.integration.injector.IntegrationTypeFakeInjector;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -61,28 +61,28 @@ public class IntegrationTestCreator {
         Collection<FieldDescriptor> descriptors = fieldDescriptors.values();
 
         Set<FieldDescriptor> mockDescriptors = descriptors.parallelStream()
-                .filter(p -> p.getMock().isPresent())
+                .filter(p -> p.getAnnotation(Fake.class).isPresent())
                 .collect(toSet());
 
         //process fields with a custom index first
         mockDescriptors.parallelStream()
-                .filter(p -> p.getMock().get().index() != -1)
-                .map(p -> new IntegrationIndexMockInjector(context, testReifier, p, arguments))
-                .forEach(IntegrationIndexMockInjector::inject);
+                .filter(p -> p.getAnnotation(Fake.class).get().index() != -1)
+                .map(p -> new IntegrationIndexFakeInjector(context, testReifier, p, arguments))
+                .forEach(IntegrationIndexFakeInjector::inject);
 
         //process fields with custom names second
         mockDescriptors.parallelStream()
-                .filter(p -> !p.getMock().get().name().isEmpty())
-                .map(p -> new IntegrationNameMockInjector(context, testReifier, p, arguments))
-                .forEach(IntegrationNameMockInjector::inject);
+                .filter(p -> !p.getAnnotation(Fake.class).get().name().isEmpty())
+                .map(p -> new IntegrationNameFakeInjector(context, testReifier, p, arguments))
+                .forEach(IntegrationNameFakeInjector::inject);
 
         //process fields with type based injection
         mockDescriptors.parallelStream()
-                .filter(p -> p.getMock().get().index() == -1
-                        && p.getMock().get().name().isEmpty()
+                .filter(p -> p.getAnnotation(Fake.class).get().index() == -1
+                        && p.getAnnotation(Fake.class).get().name().isEmpty()
                 )
-                .map(p -> new IntegrationTypeMockInjector(context, testReifier, p, arguments))
-                .forEach(IntegrationTypeMockInjector::inject);
+                .map(p -> new IntegrationTypeFakeInjector(context, testReifier, p, arguments))
+                .forEach(IntegrationTypeFakeInjector::inject);
 
         Class<?> testClass = context.getTestClass();
         of(testClass.getDeclaredAnnotationsByType(Module.class))
@@ -93,7 +93,7 @@ public class IntegrationTestCreator {
         locator.reload();
 
         descriptors.parallelStream()
-                .filter(p -> !p.hasAnyAnnotation(Mock.class))
+                .filter(p -> !p.hasAnyAnnotation(Fake.class))
                 .filter(p -> p.hasAnyAnnotation(Real.class, Inject.class))
                 .map(p -> new IntegrationRealServiceInjector(context, testReifier, p, arguments))
                 .forEach(IntegrationRealServiceInjector::inject);

@@ -16,11 +16,11 @@
 package com.fitbur.testify.junit;
 
 import com.fitbur.testify.Cut;
-import com.fitbur.testify.Mock;
 import com.fitbur.testify.junit.fixture.ImplicitTypeDistinctTypes;
 import com.fitbur.testify.junit.fixture.collaborator.Hello;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import com.fitbur.testify.Fake;
 
 /**
  *
@@ -32,7 +32,7 @@ public class MissingMockDeclarationTest {
     @Cut
     ImplicitTypeDistinctTypes cut;
 
-    @Mock
+    @Fake
     Hello hello;
 
     @Test(expected = NullPointerException.class)

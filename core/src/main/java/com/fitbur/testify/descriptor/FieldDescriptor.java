@@ -15,7 +15,6 @@
  */
 package com.fitbur.testify.descriptor;
 
-import com.fitbur.testify.Mock;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -61,14 +60,6 @@ public class FieldDescriptor {
 
     public String getTypeName() {
         return field.getType().getSimpleName();
-    }
-
-    public Optional<Mock> getMock() {
-        return ofNullable(field.getDeclaredAnnotation(Mock.class));
-    }
-
-    public boolean hasMock() {
-        return field.getDeclaredAnnotation(Mock.class) != null;
     }
 
     public Integer getOrder() {
@@ -135,7 +126,7 @@ public class FieldDescriptor {
 
     @Override
     public String toString() {
-        return "MockFieldDescriptor{" + "field=" + field
+        return "FieldDescriptor{" + "field=" + field
                 + ", order=" + order
                 + ", instance=" + instance
                 + '}';

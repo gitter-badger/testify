@@ -16,7 +16,6 @@
 package com.fitbur.testify.junit;
 
 import com.fitbur.testify.Cut;
-import com.fitbur.testify.Mock;
 import com.fitbur.testify.junit.fixture.ExplicitIndexIndistinctType;
 import com.fitbur.testify.junit.fixture.collaborator.Hello;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +25,7 @@ import org.junit.runner.RunWith;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import com.fitbur.testify.Fake;
 
 /**
  *
@@ -37,10 +37,10 @@ public class ExplicitIndexIndistinctTypeTest {
     @Cut
     ExplicitIndexIndistinctType cut;
 
-    @Mock
+    @Fake
     Hello english;
 
-    @Mock(index = 1)
+    @Fake(index = 1)
     Hello spanishi;
 
     @Before

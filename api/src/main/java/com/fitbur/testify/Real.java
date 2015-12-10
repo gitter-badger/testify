@@ -37,11 +37,10 @@ public @interface Real {
 
     /**
      * <p>
-     * Indicates whether mock that delegates to the real instance should be
-     * created. This is useful if you wish to stub or verify c package private
-     * methods of the class under test instance. Be very careful how you use
-     * this since delegating to the real instance can have undesirable side
-     * effect.
+     * Indicates whether a mock that delegates to the real instance should be
+     * created. This is useful if you wish to stub or verify certain methods of
+     * the class under test. Be very careful how you use this since delegating
+     * to the real instance can have undesirable side effect.
      * </p>
      * <p>
      * By default a delegating mock is not created.
