@@ -28,5 +28,8 @@
     <packaging>pom</packaging>
 
     <name>Examples</name>
-    <modules></modules>
+    <modules>
+        <module>example-junit-unittest</module>
+        <module>example-junit-spring-integrationtest</module>
+    </modules>
 </project>

@@ -15,11 +15,14 @@
  */
 package com.fitbur.testify.integration.fixture.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.inject.Named;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,9 +38,9 @@ public class NamedCollectionsService {
 
     @Autowired
     NamedCollectionsService(
-            @Qualifier("list") List<String> list,
-            @Qualifier("set") Set<String> set,
-            @Qualifier("map") Map<String, String> map) {
+            @Named("listOfStrings") ArrayList<String> list,
+            @Named("setOfStrings") HashSet<String> set,
+            @Named("mapOfStrings") HashMap<String, String> map) {
         this.list = list;
         this.set = set;
         this.map = map;

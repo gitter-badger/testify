@@ -23,6 +23,7 @@ import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
 import static com.google.common.base.Preconditions.checkState;
+import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -70,18 +71,19 @@ public class IntegrationIndexFakeInjector implements TestInjector {
         Type fieldType = fieldDescriptor.getGenericType();
         String fieldTypeName = fieldDescriptor.getTypeName();
         String fieldName = fieldDescriptor.getName();
-        Type parameterType = parameter.getParameterizedType();
+        Type paramType = parameter.getParameterizedType();
+        TypeToken token = TypeToken.of(fieldType);
 
-        checkState(fieldType.equals(parameterType),
+        checkState(token.isSubtypeOf(paramType),
                 "Can not fake field '%s#%s'. Test class field type '%s' and class "
                 + "under test constructor parameter type '%s' at index '%d' do "
                 + "not match.",
-                testClassName, fieldName, fieldTypeName, parameterType, fakeIndex
+                testClassName, fieldName, fieldTypeName, paramType, fakeIndex
         );
 
         checkState(arguments[fakeIndex] == null,
                 "Can not fake field '%s#%s'. Multipe test class fields are "
-                + "annotated with @Mock(index=%d). Please insure the @Mock "
+                + "annotated with @Fake(index=%d). Please insure the @Fake "
                 + "annotations have unqiue indexes.",
                 testClassName, fieldName, fakeIndex
         );

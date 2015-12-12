@@ -15,14 +15,15 @@
  */
 package com.fitbur.testify.integration;
 
-import com.fitbur.testify.Cut;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
-import com.fitbur.testify.integration.fixture.service.NamedProviderService;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.inject.Named;
-import javax.inject.Provider;
 import static org.assertj.core.api.Assertions.assertThat;
+import org.assertj.core.data.MapEntry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -32,21 +33,24 @@ import org.junit.runner.RunWith;
  */
 @RunWith(SpringIntegrationTestRunner.class)
 @Module(SpringIntegrationConfig.class)
-public class NamedProviderServiceTest {
-
-    @Cut
-    NamedProviderService cut;
+public class NamedCollectionRealTest {
 
     @Real
-    @Named("provider")
-    Provider<String> provider;
+    @Named("listOfStrings")
+    List<String> list;
+
+    @Real
+    @Named("setOfStrings")
+    Set<String> set;
+
+    @Real
+    @Named("mapOfStrings")
+    Map<String, String> map;
 
     @Test
     public void verifyInjection() {
-        assertThat(cut).isNotNull();
-        assertThat(provider).isNotNull();
-        assertThat(provider).isSameAs(cut.getProvider());
-        assertThat(provider.get()).isEqualTo("test");
-
+        assertThat(list).containsExactly("list");
+        assertThat(set).containsExactly("set");
+        assertThat(map).containsExactly(MapEntry.entry("map", "map"));
     }
 }

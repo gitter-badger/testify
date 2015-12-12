@@ -89,9 +89,9 @@ public class UnitTestVerifier implements TestVerifier {
                     fieldName, testClassName, fieldTypeName);
 
             checkState(!p.hasAnyAnnotation(Real.class, Inject.class),
-                    "Field '%s' in test class '%s' is not annotated with @Mock. "
-                    + "@Real and @Inject annotations not supported for "
-                    + "unit tests. Please use @Mock instead.",
+                    "Field '%s' in test class '%s' is not annotated with @Fake. "
+                    + "Note that @Real and @Inject annotations not supported for "
+                    + "unit tests. Please use @Fake instead.",
                     fieldName, fieldTypeName
             );
         });
@@ -111,7 +111,7 @@ public class UnitTestVerifier implements TestVerifier {
                 String paramTypeName = p.getTypeName();
                 logger.warn("Improper wiring detected. Class under test '{}' defined "
                         + "in '{}' declars constructor argument of type '{}' but '{}' "
-                        + "does not define a field of type '{}' annotated with @Mock.",
+                        + "does not define a field of type '{}' annotated with @Fake.",
                         cutClassName, testClassName, paramTypeName, testClassName, paramTypeName);
             }
 

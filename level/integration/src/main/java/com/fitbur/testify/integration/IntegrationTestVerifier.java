@@ -158,7 +158,7 @@ public class IntegrationTestVerifier implements TestVerifier {
                         String paramTypeName = p.getTypeName();
                         logger.warn("Improper wiring detected. Class under test '{}' defined "
                                 + "in '{}' declars constructor argument of type '{}' but '{}' "
-                                + "does not define a field of type '{}' annotated with @Mock.",
+                                + "does not define a field of type '{}' annotated with @Fake or @Real.",
                                 cutClassName, testClassName, paramTypeName, testClassName, paramTypeName);
                     }
 

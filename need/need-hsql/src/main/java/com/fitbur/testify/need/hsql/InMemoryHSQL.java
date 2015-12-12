@@ -75,7 +75,8 @@ public class InMemoryHSQL implements NeedProvider<HikariConfig> {
                     .scope(SINGLETON)
                     .arguments(hikariConfig)
                     .lazy(true)
-                    .injectable(true)
+                    .discoverable(true)
+                    .injectable(false)
                     .primary(true)
                     .build();
 

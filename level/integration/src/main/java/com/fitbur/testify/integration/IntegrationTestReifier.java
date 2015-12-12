@@ -124,7 +124,7 @@ public class IntegrationTestReifier implements TestReifier {
                 TypeToken<?> token = of(fieldType);
                 Class rawType;
 
-                if (token.isSupertypeOf(Provider.class) || token.isSupertypeOf(Optional.class)) {
+                if (token.isSubtypeOf(Provider.class) || token.isSubtypeOf(Optional.class)) {
                     rawType = token.getRawType();
                 } else {
                     rawType = (Class) fieldType;
@@ -134,14 +134,16 @@ public class IntegrationTestReifier implements TestReifier {
                         .name(fieldName)
                         .type(rawType)
                         .injectable(false)
+                        .discoverable(true)
                         .scope(PROTOTYPE)
                         .primary(true)
                         .lazy(true)
+                        .arguments(arguments)
                         .build();
 
                 locator.addService(serviceDescriptor);
 
-                Object instance = locator.getServiceWith(rawType, arguments);
+                Object instance = locator.getService(rawType);
 
                 if (cut.value()) {
                     instance = spy(instance);

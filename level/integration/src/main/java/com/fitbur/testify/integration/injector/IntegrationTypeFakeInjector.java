@@ -15,13 +15,13 @@
  */
 package com.fitbur.testify.integration.injector;
 
-import com.fitbur.testify.Fake;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestInjector;
 import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
+import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
@@ -30,8 +30,8 @@ import java.util.Map;
 
 /**
  * An integration test injector implementation that injects fields annotated
- * with {@link Fake} that does some smart name/type based detection on the cut
- * class constructor.
+ * with {@link com.fitbur.testify.Fake} that does some smart name/type based
+ * detection on the cut * class constructor.
  *
  * @author saden
  */
@@ -57,8 +57,7 @@ public class IntegrationTypeFakeInjector implements TestInjector {
         Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = context.getParamaterDescriptors();
         Field field = fieldDescriptor.getField();
 
-        Fake fake = fieldDescriptor.getAnnotation(Fake.class).get();
-        Type fieldType = field.getGenericType();
+        Type fieldType = fieldDescriptor.getGenericType();
         String fieldName = field.getName();
         DescriptorKey descriptorKey = new DescriptorKey(fieldType, fieldName);
 
@@ -70,18 +69,20 @@ public class IntegrationTypeFakeInjector implements TestInjector {
             Object instance = testReifier.reifyField(fieldDescriptor, descriptor);
             arguments[index] = instance;
         } else {
+            TypeToken token = TypeToken.of(fieldType);
+
             //otherwise find the right parameter based on the type of the field
             Collection<ParameterDescriptor> descriptors = parameterDescriptors.values();
             for (ParameterDescriptor descriptor : descriptors) {
                 Parameter parameter = descriptor.getParameter();
-                Type parameterType = parameter.getParameterizedType();
+                Type paramType = parameter.getParameterizedType();
                 Integer index = descriptor.getIndex();
 
                 if (arguments[index] != null) {
                     continue;
                 }
 
-                if (parameterType.equals(fieldType)) {
+                if (token.isSubtypeOf(paramType)) {
                     Object instance = testReifier.reifyField(fieldDescriptor, descriptor);
                     arguments[index] = instance;
                     break;

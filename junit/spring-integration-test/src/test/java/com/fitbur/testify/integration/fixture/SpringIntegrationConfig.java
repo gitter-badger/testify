@@ -15,46 +15,50 @@
  */
 package com.fitbur.testify.integration.fixture;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import static org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 
 /**
  *
  * @author saden
  */
-@Lazy
 @Configuration
-@ComponentScan(lazyInit = true)
+@ComponentScan
 public class SpringIntegrationConfig {
 
-    @Bean(name = "list")
-    List<String> lists() {
-        return ImmutableList.of("test");
+    @Bean
+    public ArrayList<String> listOfStrings() {
+        ArrayList list = new ArrayList(1);
+        list.add("list");
+
+        return list;
     }
 
-    @Bean(name = "map")
-    Map<String, String> maps() {
-        return ImmutableMap.of("test", "test");
+    @Bean
+    public HashMap<String, String> mapOfStrings() {
+        HashMap<String, String> map = new HashMap<>(1);
+        map.put("map", "map");
+
+        return map;
     }
 
-    @Bean(name = "set")
-    Set<String> sets() {
-        return ImmutableSet.of("test");
+    @Bean
+    public HashSet<String> setOfStrings() {
+        HashSet set = new HashSet(1);
+        set.add("set");
+
+        return set;
     }
 
-    @Bean(name = "provider")
+    @Bean
     @Scope(SCOPE_PROTOTYPE)
-    String provider() {
+    public String stringProvider() {
         return "test";
     }
 

@@ -23,6 +23,7 @@ import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
 import static com.google.common.base.Preconditions.checkArgument;
+import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -76,8 +77,9 @@ public class IntegrationNameFakeInjector implements TestInjector {
         Parameter parameter = paramDescriptor.getParameter();
         Integer paramIndex = paramDescriptor.getIndex();
         Type paramType = parameter.getParameterizedType();
+        TypeToken token = TypeToken.of(fieldType);
 
-        checkArgument(fieldType.equals(paramType),
+        checkArgument(token.isSubtypeOf(paramType),
                 "Can not fake field '%s#%s'. The test clas field and the class "
                 + "under test constructor argument have the name '%s' but are "
                 + "not the same type. Please insure that the field type (%s) "
