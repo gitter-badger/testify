@@ -16,6 +16,7 @@
 package com.fitbur.testify.junit;
 
 import com.fitbur.testify.Cut;
+import com.fitbur.testify.Fake;
 import com.fitbur.testify.junit.fixture.ImplicitGenericTypeDistinct;
 import com.fitbur.testify.junit.fixture.collaborator.Hello;
 import com.fitbur.testify.junit.fixture.collaborator.World;
@@ -28,13 +29,12 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import com.fitbur.testify.Fake;
 
 /**
  *
  * @author saden
  */
-@RunWith(UnitTestRunner.class)
+@RunWith(UnitTest.class)
 public class ImplicitGenericTypeDistinctTest {
 
     @Cut

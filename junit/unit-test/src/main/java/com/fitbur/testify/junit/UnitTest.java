@@ -48,7 +48,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
  *
  * @author saden
  */
-public class UnitTestRunner extends BlockJUnit4ClassRunner {
+public class UnitTest extends BlockJUnit4ClassRunner {
 
     static final Logger LOGGER = LoggerFactory.getLogger("testify");
     Map<Class, TestContext> testClassContexts = new HashMap<>();
@@ -60,7 +60,7 @@ public class UnitTestRunner extends BlockJUnit4ClassRunner {
      *
      * @throws InitializationError thrown if the test class is malformed.
      */
-    public UnitTestRunner(Class<?> testClass) throws InitializationError {
+    public UnitTest(Class<?> testClass) throws InitializationError {
         super(testClass);
     }
 

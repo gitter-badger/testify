@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import javax.inject.Named;
 import static org.assertj.core.api.Assertions.assertThat;
-import org.assertj.core.data.MapEntry;
+import static org.assertj.core.data.MapEntry.entry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -33,7 +33,7 @@ import org.junit.runner.RunWith;
  *
  * @author saden
  */
-@RunWith(SpringIntegrationTestRunner.class)
+@RunWith(SpringIntegrationTest.class)
 @Module(SpringIntegrationConfig.class)
 public class NamedCollectionCutWithRealTest {
 
@@ -61,6 +61,6 @@ public class NamedCollectionCutWithRealTest {
 
         assertThat(list).containsExactly("list");
         assertThat(set).containsExactly("set");
-        assertThat(map).containsExactly(MapEntry.entry("map", "map"));
+        assertThat(map).containsExactly(entry("map", "map"));
     }
 }

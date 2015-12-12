@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.examples.junit.unittest;
+package com.fitbur.testify.examples.junit.spring.integrationtest;
 
 import com.fitbur.testify.Cut;
-import com.fitbur.testify.Fake;
-import com.fitbur.testify.junit.UnitTest;
+import com.fitbur.testify.Module;
+import com.fitbur.testify.Real;
+import com.fitbur.testify.examples.junit.spring.integrationtest.greeting.Hello;
+import com.fitbur.testify.integration.SpringIntegrationTest;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,14 +28,15 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-@RunWith(UnitTest.class)
-public class GreeterTest {
+@Module(GreetingConfig.class)
+@RunWith(SpringIntegrationTest.class)
+public class GreeterDelegatingRealTest {
 
     @Cut
     Greeter cut;
 
-    @Fake
-    Greeting greeting;
+    @Real(true)
+    Hello greeting;
 
     @Before
     public void verifyInjection() {
@@ -45,23 +48,8 @@ public class GreeterTest {
     @Test
     public void callToGreetShouldReturnHello() {
         //Arrange
-        String phrase = "Hello";
-        given(greeting.phrase()).willReturn(phrase);
-
-        //Act
-        String result = cut.greet();
-
-        //Assert
-        assertThat(result).isEqualTo(phrase);
-        verify(greeting).phrase();
-        verifyNoMoreInteractions(greeting);
-    }
-
-    @Test
-    public void callToGreetShouldReturnCiao() {
-        //Arrange
         String phrase = "Ciao";
-        given(greeting.phrase()).willReturn(phrase);
+        given(greeting.phrase()).willReturn("Ciao");
 
         //Act
         String result = cut.greet();
@@ -71,5 +59,4 @@ public class GreeterTest {
         verify(greeting).phrase();
         verifyNoMoreInteractions(greeting);
     }
-
 }

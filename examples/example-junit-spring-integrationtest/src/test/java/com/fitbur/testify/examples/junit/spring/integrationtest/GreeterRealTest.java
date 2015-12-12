@@ -19,14 +19,14 @@ import com.fitbur.testify.Cut;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.examples.junit.spring.integrationtest.greeting.Hello;
-import com.fitbur.testify.integration.SpringIntegrationTestRunner;
+import com.fitbur.testify.integration.SpringIntegrationTest;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @Module(GreetingConfig.class)
-@RunWith(SpringIntegrationTestRunner.class)
+@RunWith(SpringIntegrationTest.class)
 public class GreeterRealTest {
 
     @Cut

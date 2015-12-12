@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
  *
  * @author saden
  */
-@RunWith(UnitTestRunner.class)
+@RunWith(UnitTest.class)
 public class DefaultConstructorTest {
 
     @Cut

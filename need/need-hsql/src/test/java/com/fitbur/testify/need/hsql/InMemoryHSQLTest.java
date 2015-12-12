@@ -18,7 +18,7 @@ package com.fitbur.testify.need.hsql;
 import com.fitbur.testify.Config;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.Real;
-import com.fitbur.testify.integration.SpringIntegrationTestRunner;
+import com.fitbur.testify.integration.SpringIntegrationTest;
 import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.hsql.fixture.DatabaseConfig;
 import com.fitbur.testify.need.hsql.fixture.entity.UserEntity;
@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
  */
 @Module(DatabaseConfig.class)
 @Need(InMemoryHSQL.class)
-@RunWith(SpringIntegrationTestRunner.class)
+@RunWith(SpringIntegrationTest.class)
 public class InMemoryHSQLTest {
 
     @Real

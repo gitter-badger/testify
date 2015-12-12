@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
  *
  * @author saden
  */
-@RunWith(SpringIntegrationTestRunner.class)
+@RunWith(SpringIntegrationTest.class)
 @Module(SpringIntegrationConfig.class)
 public class NamedProviderServiceRealTest {
 

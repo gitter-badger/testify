@@ -38,8 +38,11 @@ import org.junit.runners.model.TestClass;
 import org.objectweb.asm.ClassReader;
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.bridge.SLF4JBridgeHandler;
+import static org.slf4j.LoggerFactory.getLogger;
+import static org.slf4j.bridge.SLF4JBridgeHandler.install;
+import static org.slf4j.bridge.SLF4JBridgeHandler.isInstalled;
+import static org.slf4j.bridge.SLF4JBridgeHandler.removeHandlersForRootLogger;
+import static org.slf4j.bridge.SLF4JBridgeHandler.uninstall;
 
 /**
  * A JUnit spring integration test runner. This class is the main entry point
@@ -49,9 +52,9 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
  *
  * @author saden
  */
-public class SpringIntegrationTestRunner extends BlockJUnit4ClassRunner {
+public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
 
-    static final Logger LOGGER = LoggerFactory.getLogger("testify");
+    static final Logger LOGGER = getLogger("testify");
     protected Map<Class, TestContext> testClassContexts = new ConcurrentHashMap<>();
     public Map<Class, SpringServiceLocator> applicationContexts = new ConcurrentHashMap<>();
     public Map<Class, List<NeedProvider>> needProvider = new ConcurrentHashMap<>();
@@ -65,7 +68,7 @@ public class SpringIntegrationTestRunner extends BlockJUnit4ClassRunner {
      *
      * @throws InitializationError thrown if the test class is malformed.
      */
-    public SpringIntegrationTestRunner(Class<?> testClass) throws InitializationError {
+    public SpringIntegrationTest(Class<?> testClass) throws InitializationError {
         super(testClass);
     }
 
@@ -119,9 +122,9 @@ public class SpringIntegrationTestRunner extends BlockJUnit4ClassRunner {
         verifier.configuration();
 
         //register slf4j bridge
-        if (!SLF4JBridgeHandler.isInstalled()) {
-            SLF4JBridgeHandler.removeHandlersForRootLogger();
-            SLF4JBridgeHandler.install();
+        if (!isInstalled()) {
+            removeHandlersForRootLogger();
+            install();
         }
 
         SpringIntegrationTestRunListener listener
@@ -154,8 +157,8 @@ public class SpringIntegrationTestRunner extends BlockJUnit4ClassRunner {
             //multiple times
             notifier.removeListener(listener);
 
-            if (SLF4JBridgeHandler.isInstalled()) {
-                SLF4JBridgeHandler.uninstall();
+            if (isInstalled()) {
+                uninstall();
             }
         }
     }

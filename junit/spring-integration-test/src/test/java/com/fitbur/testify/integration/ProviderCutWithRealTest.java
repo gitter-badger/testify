@@ -31,7 +31,7 @@ import org.mockito.internal.util.MockUtil;
  *
  * @author saden
  */
-@RunWith(SpringIntegrationTestRunner.class)
+@RunWith(SpringIntegrationTest.class)
 @Module(SpringIntegrationConfig.class)
 public class ProviderCutWithRealTest {
 
