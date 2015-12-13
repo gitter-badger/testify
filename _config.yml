@@ -33,8 +33,11 @@ colors:
   purple:    '#c869bf'
   orange:    '#fab125'
   turquoise: '#0fbfcf'
-  fnavy:     '#343e48'
-  forange:   '#f38630'
+  fnavy:     '#3c4e5c'
+  forange:   '#e4844a'
+  fyellow:   '#bb9236'
+  fblue:     '#a3b4a4'
+  fblack:    '#130c1e'
 
 kramdown:
   auto_ids:  false
