@@ -55,12 +55,10 @@ was added, changed, deprecated, removed, fix and security fixes.
 - Removed HSQLTestException and HSQLContext (not necessary with the addition of NeedProvider)
 - Removed Tests module in favor of testing inside modules themselves
 
-## [0.0.4] - 2015-12-10
+## [0.0.4] - 2015-12-13
 ### Changed
 - Changed Mock annotation to Fake
-
-## [0.0.5] - 2015-12-10
 - Changed UnitTestRunner to UnitTest
 - Changed SpringIntegrationTestRunner to SpringIntegrationTest
-- Host of fixes for issue relating to test class injection
+- Host of fixes for issue relating to test class wiring
 
