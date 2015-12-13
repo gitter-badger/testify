@@ -27,7 +27,7 @@ import java.util.Map;
 
 /**
  * A unit test injector implementation that injects fields annotated with
- * {@link com.fitbur.testify.Mock} that does some smart name/type based
+ * {@link com.fitbur.testify.Fake} that does some smart name/type based
  * detection on the cut class * constructor.
  *
  * @author saden
