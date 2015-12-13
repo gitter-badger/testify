@@ -19,13 +19,13 @@ import com.fitbur.testify.Cut;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
 import com.fitbur.testify.integration.fixture.service.NamedCollectionsService;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import javax.inject.Inject;
 import javax.inject.Named;
 import static org.assertj.core.api.Assertions.assertThat;
-import org.assertj.core.data.MapEntry;
+import static org.assertj.core.data.MapEntry.entry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -33,7 +33,7 @@ import org.junit.runner.RunWith;
  *
  * @author saden
  */
-@RunWith(SpringIntegrationTestRunner.class)
+@RunWith(SpringIntegrationTest.class)
 @Module(SpringIntegrationConfig.class)
 public class NamedCollectionCutWithInjectTest {
 
@@ -41,16 +41,16 @@ public class NamedCollectionCutWithInjectTest {
     NamedCollectionsService cut;
 
     @Inject
-    @Named("list")
-    List<String> list;
-    
+    @Named("listOfStrings")
+    ArrayList<String> list;
+
     @Inject
-    @Named("set")
-    Set<String> set;
-    
+    @Named("setOfStrings")
+    HashSet<String> set;
+
     @Inject
-    @Named("map")
-    Map<String, String> map;
+    @Named("mapOfStrings")
+    HashMap<String, String> map;
 
     @Test
     public void verifyInjection() {
@@ -58,9 +58,9 @@ public class NamedCollectionCutWithInjectTest {
         assertThat(cut.getList()).isSameAs(list);
         assertThat(cut.getSet()).isSameAs(set);
         assertThat(cut.getMap()).isSameAs(map);
-        assertThat(list).containsExactly("test");
-        assertThat(set).containsExactly("test");
-        assertThat(map).containsOnly(MapEntry.entry("test", "test"));
-        
+
+        assertThat(list).containsExactly("list");
+        assertThat(set).containsExactly("set");
+        assertThat(map).containsExactly(entry("map", "map"));
     }
 }

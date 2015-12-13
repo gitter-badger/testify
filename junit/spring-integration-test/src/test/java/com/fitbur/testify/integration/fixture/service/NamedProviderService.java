@@ -30,7 +30,7 @@ public class NamedProviderService {
     private final Provider<String> provider;
 
     @Autowired
-    NamedProviderService(@Qualifier("provider") Provider<String> provider) {
+    NamedProviderService(@Qualifier("stringProvider") Provider<String> provider) {
         this.provider = provider;
     }
 

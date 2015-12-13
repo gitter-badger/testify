@@ -39,7 +39,8 @@ import javax.inject.Provider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import static org.springframework.beans.factory.config.BeanDefinition.ROLE_APPLICATION;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
-import static org.springframework.beans.factory.support.AbstractBeanDefinition.AUTOWIRE_BY_TYPE;
+import static org.springframework.beans.factory.support.AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR;
+import static org.springframework.beans.factory.support.AbstractBeanDefinition.AUTOWIRE_NO;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -211,18 +212,32 @@ public class SpringServiceLocator implements ServiceLocator {
 
         GenericBeanDefinition bean = new GenericBeanDefinition();
         bean.setBeanClass(descriptor.getType());
-        bean.setAutowireCandidate(descriptor.getInjectable());
+        bean.setAutowireCandidate(descriptor.getDiscoverable());
         bean.setPrimary(descriptor.getPrimary());
         bean.setLazyInit(descriptor.getLazy());
         bean.setRole(ROLE_APPLICATION);
-        bean.setAutowireMode(AUTOWIRE_BY_TYPE);
-        ConstructorArgumentValues values = new ConstructorArgumentValues();
 
-        for (Object value : descriptor.getArguments()) {
-            values.addGenericArgumentValue(value);
+        if (descriptor.getInjectable()) {
+            bean.setAutowireMode(AUTOWIRE_CONSTRUCTOR);
+        } else {
+            bean.setAutowireMode(AUTOWIRE_NO);
+            ConstructorArgumentValues values = new ConstructorArgumentValues();
+
+            Object[] arguments = descriptor.getArguments();
+            for (int i = 0; i < arguments.length; i++) {
+                Object arg = arguments[i];
+
+                if (arg == null) {
+                    //TODO: warn user that the argument was not specified and there
+                    //for the real instance will be injected.
+                    continue;
+                }
+
+                values.addIndexedArgumentValue(i, arg);
+            }
+
+            bean.setConstructorArgumentValues(values);
         }
-
-        bean.setConstructorArgumentValues(values);
 
         ServiceScope scope = descriptor.getScope();
         switch (scope) {

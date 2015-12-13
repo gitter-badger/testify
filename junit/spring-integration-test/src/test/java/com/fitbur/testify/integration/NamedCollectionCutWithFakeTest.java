@@ -16,24 +16,23 @@
 package com.fitbur.testify.integration;
 
 import com.fitbur.testify.Cut;
+import com.fitbur.testify.Fake;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
 import com.fitbur.testify.integration.fixture.service.NamedCollectionsService;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.internal.util.MockUtil;
-import com.fitbur.testify.Fake;
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
  * @author saden
  */
-@RunWith(SpringIntegrationTestRunner.class)
+@RunWith(SpringIntegrationTest.class)
 @Module(SpringIntegrationConfig.class)
 public class NamedCollectionCutWithFakeTest {
 
@@ -41,13 +40,13 @@ public class NamedCollectionCutWithFakeTest {
     NamedCollectionsService cut;
 
     @Fake
-    List<String> list;
+    ArrayList<String> list;
 
     @Fake
-    Set<String> set;
+    HashSet<String> set;
 
     @Fake
-    Map<String, String> map;
+    HashMap<String, String> map;
 
     @Test
     public void verifyInjection() {

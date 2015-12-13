@@ -16,17 +16,17 @@
 package com.fitbur.testify.junit;
 
 import com.fitbur.testify.Cut;
+import com.fitbur.testify.Fake;
 import com.fitbur.testify.junit.fixture.ImplicitTypeDistinctTypes;
 import com.fitbur.testify.junit.fixture.collaborator.Hello;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import com.fitbur.testify.Fake;
 
 /**
  *
  * @author saden
  */
-@RunWith(UnitTestRunner.class)
+@RunWith(UnitTest.class)
 public class MissingMockDeclarationTest {
 
     @Cut

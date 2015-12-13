@@ -81,7 +81,7 @@ public class UnitIndexFakeInjector implements TestInjector {
 
         checkState(arguments[fakeIndex] == null,
                 "Can not fake field '%s#%s'. Multipe test class fields are "
-                + "annotated with @Mock(index=%d). Please insure the @Mock "
+                + "annotated with @Fake(index=%d). Please insure the @Fake "
                 + "annotations have unqiue indexes.",
                 testClassName, fieldName, fakeIndex
         );

@@ -28,26 +28,17 @@ public class ServiceDescriptor {
 
     private final Class<?> type;
     private final String name;
-    private final Object[] arguments;
     private final ServiceScope scope;
-    private final boolean lazy;
-    private final boolean injectable;
-    private final boolean primary;
+    private Object[] arguments;
+    private boolean lazy;
+    private boolean injectable;
+    private boolean discoverable;
+    private boolean primary;
 
-    ServiceDescriptor(Class<?> type,
-            String name,
-            Object[] arguments,
-            ServiceScope scope,
-            boolean lazy,
-            boolean injectable,
-            boolean primary) {
+    ServiceDescriptor(Class<?> type, String name, ServiceScope scope) {
         this.type = type;
         this.name = name;
-        this.arguments = arguments;
         this.scope = scope;
-        this.lazy = lazy;
-        this.injectable = injectable;
-        this.primary = primary;
     }
 
     /**
@@ -79,6 +70,15 @@ public class ServiceDescriptor {
     }
 
     /**
+     * Set the service constructor arguments.
+     *
+     * @param arguments an array of objects.
+     */
+    public void setArguments(Object[] arguments) {
+        this.arguments = arguments;
+    }
+
+    /**
      * Get the scope of the service.
      *
      * @return the scope of the service
@@ -97,12 +97,48 @@ public class ServiceDescriptor {
     }
 
     /**
-     * Determine whether the service is an injectable service.
+     * Set whether the service is lazy loaded.
+     *
+     * @param lazy set true if the service is lazy-loaded, false otherwise
+     */
+    public void setLazy(boolean lazy) {
+        this.lazy = lazy;
+    }
+
+    /**
+     * Determine whether the service can be injected with collaborators.
      *
      * @return true if the service is an injectable service, false otherwise
      */
     public boolean getInjectable() {
         return injectable;
+    }
+
+    /**
+     * Set whether the service can be injected with collaborators.
+     *
+     * @param injectable set true for injectable services, false otherwise
+     */
+    public void setInjectable(boolean injectable) {
+        this.injectable = injectable;
+    }
+
+    /**
+     * Determine whether the service is discoverable and available for wiring.
+     *
+     * @return true if the service is an injectable service, false otherwise
+     */
+    public boolean getDiscoverable() {
+        return discoverable;
+    }
+
+    /**
+     * Set whether the service can be discovered.
+     *
+     * @param discoverable set true if discoverable, false otherwise
+     */
+    public void setDiscoverable(boolean discoverable) {
+        this.discoverable = discoverable;
     }
 
     /**
@@ -114,6 +150,15 @@ public class ServiceDescriptor {
         return primary;
     }
 
+    /**
+     * Set whether the service is a primary service.
+     *
+     * @param primary set true if a primary service, false otherwise
+     */
+    public void setPrimary(boolean primary) {
+        this.primary = primary;
+    }
+
     @Override
     public int hashCode() {
         int hash = 7;
@@ -123,6 +168,7 @@ public class ServiceDescriptor {
         hash = 19 * hash + Objects.hashCode(this.scope);
         hash = 19 * hash + Objects.hashCode(this.lazy);
         hash = 19 * hash + Objects.hashCode(this.injectable);
+        hash = 19 * hash + Objects.hashCode(this.discoverable);
         hash = 19 * hash + Objects.hashCode(this.primary);
         return hash;
     }
@@ -154,6 +200,9 @@ public class ServiceDescriptor {
         if (!Objects.equals(this.injectable, other.injectable)) {
             return false;
         }
+        if (!Objects.equals(this.discoverable, other.discoverable)) {
+            return false;
+        }
         return Objects.equals(this.primary, other.primary);
     }
 
@@ -162,7 +211,7 @@ public class ServiceDescriptor {
         return "ServiceDescriptor{" + "type=" + type + ", name=" + name
                 + ", arguments=" + Arrays.toString(arguments) + ", scope=" + scope
                 + ", lazy=" + lazy + ", injectable=" + injectable
-                + ", primary=" + primary + '}';
+                + ", discoverable=" + discoverable + ", primary=" + primary + '}';
     }
 
 }

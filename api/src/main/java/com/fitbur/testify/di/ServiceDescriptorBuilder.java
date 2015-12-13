@@ -30,6 +30,7 @@ public class ServiceDescriptorBuilder {
     private boolean injectable = true;
     private boolean primary = true;
     private Object[] arguments = new Object[]{};
+    private boolean discoverable;
 
     public ServiceDescriptorBuilder() {
     }
@@ -64,6 +65,11 @@ public class ServiceDescriptorBuilder {
         return this;
     }
 
+    public ServiceDescriptorBuilder discoverable(boolean discoverable) {
+        this.discoverable = discoverable;
+        return this;
+    }
+
     public ServiceDescriptorBuilder primary(boolean primary) {
         this.primary = primary;
         return this;
@@ -75,13 +81,14 @@ public class ServiceDescriptorBuilder {
      * @return a service descriptor instance.
      */
     public ServiceDescriptor build() {
-        return new ServiceDescriptor(type,
-                name,
-                arguments,
-                scope,
-                lazy,
-                injectable,
-                primary);
+        ServiceDescriptor descriptor = new ServiceDescriptor(type, name, scope);
+        descriptor.setArguments(arguments);
+        descriptor.setDiscoverable(discoverable);
+        descriptor.setInjectable(injectable);
+        descriptor.setLazy(lazy);
+        descriptor.setPrimary(primary);
+
+        return descriptor;
     }
 
 }

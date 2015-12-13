@@ -16,6 +16,7 @@
 package com.fitbur.testify.junit;
 
 import com.fitbur.testify.Cut;
+import com.fitbur.testify.Fake;
 import com.fitbur.testify.junit.fixture.ImplicitType;
 import com.fitbur.testify.junit.fixture.collaborator.Hello;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,13 +26,12 @@ import org.junit.runner.RunWith;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import com.fitbur.testify.Fake;
 
 /**
  *
  * @author saden
  */
-@RunWith(UnitTestRunner.class)
+@RunWith(UnitTest.class)
 public class ImplicitTypeTest {
 
     @Cut

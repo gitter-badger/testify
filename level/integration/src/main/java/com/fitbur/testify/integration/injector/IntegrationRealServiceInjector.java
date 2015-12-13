@@ -21,6 +21,7 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
+import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -66,18 +67,19 @@ public class IntegrationRealServiceInjector implements TestInjector {
             Object instance = testReifier.reifyField(fieldDescriptor, descriptor);
             arguments[index] = instance;
         } else {
+            TypeToken token = TypeToken.of(fieldType);
             //otherwise find the right parameter based on the type of the field
             Collection<ParameterDescriptor> descriptors = parameterDescriptors.values();
             for (ParameterDescriptor paramDescriptor : descriptors) {
                 Parameter parameter = paramDescriptor.getParameter();
-                Type parameterType = parameter.getParameterizedType();
+                Type paramType = parameter.getParameterizedType();
                 Integer index = paramDescriptor.getIndex();
 
                 if (arguments[index] != null) {
                     continue;
                 }
 
-                if (parameterType.equals(fieldType)) {
+                if (token.isSubtypeOf(paramType)) {
                     Object instance = testReifier.reifyField(fieldDescriptor, paramDescriptor);
                     arguments[index] = instance;
                     break;
