@@ -42,10 +42,8 @@ public @interface Scan {
      * <p>
      * Please note that to encourage simplicity and modular design loading of
      * modules is limited to a single package. If you absolutely need to scan
-     * multiple packages {
-     *
-     * @Scan} annotation is repeatable and you may additional {
-     * @Scan} annotation to your test class.
+     * multiple packages Scan annotation is repeatable and you may additional
+     * Scan annotation to your test class.
      * </p>
      *
      * @return a package name.
