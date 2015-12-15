@@ -168,4 +168,10 @@ public interface ServiceLocator {
     default void removeModule(Class<?> type) {
     }
 
+    /**
+     * Scan the given package.
+     *
+     * @param packageName the package name
+     */
+    void scanPackage(String packageName);
 }

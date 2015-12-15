@@ -15,6 +15,8 @@
  */
 package com.fitbur.testify;
 
+import com.fitbur.testify.descriptor.FieldDescriptor;
+
 /**
  * An interface that defines custom test injectors. Implementations of this
  * interface are responsible for injecting test classes with relevant instances
@@ -25,5 +27,5 @@ package com.fitbur.testify;
  */
 public interface TestInjector {
 
-    void inject();
+    void inject(FieldDescriptor descriptor);
 }

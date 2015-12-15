@@ -12,7 +12,11 @@ was added, changed, deprecated, removed, fix and security fixes.
 - Security - Lists security fixes to security vulnerabilities
 
 ## [Unreleased]
+### Changed
+- TestInjector contract now takes FieldDescriptor
 
+### Added
+- @Scan annotation to enable package scanning to load services
 
 ## [0.0.1] - 2015-11-23
 ### Added

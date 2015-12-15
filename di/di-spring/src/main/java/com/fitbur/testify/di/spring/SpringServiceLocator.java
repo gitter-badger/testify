@@ -279,4 +279,9 @@ public class SpringServiceLocator implements ServiceLocator {
         context.register(type);
     }
 
+    @Override
+    public void scanPackage(String packageName) {
+        context.scan(packageName);
+    }
+
 }

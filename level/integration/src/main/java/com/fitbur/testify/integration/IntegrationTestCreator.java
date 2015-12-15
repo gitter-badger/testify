@@ -17,7 +17,7 @@ package com.fitbur.testify.integration;
 
 import com.fitbur.testify.Fake;
 import com.fitbur.testify.Module;
-import com.fitbur.testify.Real;
+import com.fitbur.testify.Scan;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
-import javax.inject.Inject;
 
 /**
  * A spring integration test creator which looks at the test descriptors,
@@ -60,29 +59,25 @@ public class IntegrationTestCreator {
         Object[] arguments = new Object[parameterDescriptors.size()];
         Collection<FieldDescriptor> descriptors = fieldDescriptors.values();
 
-        Set<FieldDescriptor> mockDescriptors = descriptors.parallelStream()
+        Set<FieldDescriptor> fakeDescriptors = descriptors.parallelStream()
                 .filter(p -> p.getAnnotation(Fake.class).isPresent())
                 .collect(toSet());
 
+        IntegrationIndexFakeInjector indexInjector = new IntegrationIndexFakeInjector(context, testReifier, arguments);
+        IntegrationNameFakeInjector nameInjector = new IntegrationNameFakeInjector(context, testReifier, arguments);
+        IntegrationTypeFakeInjector typeInjector = new IntegrationTypeFakeInjector(context, testReifier, arguments);
+
         //process fields with a custom index first
-        mockDescriptors.parallelStream()
-                .filter(p -> p.getAnnotation(Fake.class).get().index() != -1)
-                .map(p -> new IntegrationIndexFakeInjector(context, testReifier, p, arguments))
-                .forEach(IntegrationIndexFakeInjector::inject);
+        fakeDescriptors.parallelStream()
+                .forEach(indexInjector::inject);
 
         //process fields with custom names second
-        mockDescriptors.parallelStream()
-                .filter(p -> !p.getAnnotation(Fake.class).get().name().isEmpty())
-                .map(p -> new IntegrationNameFakeInjector(context, testReifier, p, arguments))
-                .forEach(IntegrationNameFakeInjector::inject);
+        fakeDescriptors.parallelStream()
+                .forEach(nameInjector::inject);
 
-        //process fields with type based injection
-        mockDescriptors.parallelStream()
-                .filter(p -> p.getAnnotation(Fake.class).get().index() == -1
-                        && p.getAnnotation(Fake.class).get().name().isEmpty()
-                )
-                .map(p -> new IntegrationTypeFakeInjector(context, testReifier, p, arguments))
-                .forEach(IntegrationTypeFakeInjector::inject);
+        //finally process fields based on their type
+        fakeDescriptors.parallelStream()
+                .forEach(typeInjector::inject);
 
         Class<?> testClass = context.getTestClass();
         of(testClass.getDeclaredAnnotationsByType(Module.class))
@@ -90,13 +85,16 @@ public class IntegrationTestCreator {
                 .distinct()
                 .forEachOrdered(locator::addModule);
 
+        of(testClass.getDeclaredAnnotationsByType(Scan.class))
+                .map(Scan::value)
+                .distinct()
+                .forEachOrdered(locator::scanPackage);
+
         locator.reload();
 
+        IntegrationRealServiceInjector realInjector = new IntegrationRealServiceInjector(context, testReifier, arguments);
         descriptors.parallelStream()
-                .filter(p -> !p.hasAnyAnnotation(Fake.class))
-                .filter(p -> p.hasAnyAnnotation(Real.class, Inject.class))
-                .map(p -> new IntegrationRealServiceInjector(context, testReifier, p, arguments))
-                .forEach(IntegrationRealServiceInjector::inject);
+                .forEach(realInjector::inject);
 
         testReifier.reifyCut(context.getCutDescriptor(), arguments);
     }
