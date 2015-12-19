@@ -15,9 +15,9 @@
  */
 package com.fitbur.testify.integration;
 
-import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.descriptor.FieldDescriptor;
+import com.fitbur.testify.di.ServiceAnnotations;
 import com.fitbur.testify.di.spring.SpringServiceLocator;
 import com.fitbur.testify.need.NeedContext;
 import com.fitbur.testify.need.NeedDescriptor;
@@ -25,12 +25,10 @@ import com.fitbur.testify.need.NeedProvider;
 import static com.google.common.base.Preconditions.checkState;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
-import javax.inject.Inject;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
@@ -63,10 +61,10 @@ public class SpringIntegrationTestRunListener extends RunListener {
         appContext.setAllowBeanDefinitionOverriding(true);
         appContext.setAllowCircularReferences(false);
         appContext.register(SpringBeanFactoryPostProcessor.class);
+        ServiceAnnotations serviceAnnotations = testContext.getServiceAnnotations();
 
-        this.serviceLocator = new SpringServiceLocator(appContext);
+        this.serviceLocator = new SpringServiceLocator(appContext, serviceAnnotations);
 
-        IntegrationTestReifier reifier = new IntegrationTestReifier(serviceLocator, testInstance);
         this.needContexts = testContext.getNeeds().parallelStream().map(p -> {
             Class<? extends NeedProvider> providerClass = p.value();
             try {
@@ -83,6 +81,8 @@ public class SpringIntegrationTestRunListener extends RunListener {
             }
         }).collect(toSet());
 
+        IntegrationTestReifier reifier
+                = new IntegrationTestReifier(testContext, serviceLocator, testInstance);
         IntegrationTestCreator creator
                 = new IntegrationTestCreator(testContext, reifier, serviceLocator);
 
@@ -93,7 +93,7 @@ public class SpringIntegrationTestRunListener extends RunListener {
             Set<FieldDescriptor> real = testContext.getFieldDescriptors()
                     .values()
                     .parallelStream()
-                    .filter(p -> p.hasAnyAnnotation(Inject.class, Autowired.class, Real.class))
+                    .filter(p -> p.hasAnnotations(serviceAnnotations.getInjectors()))
                     .collect(toSet());
             creator.real(real);
         } else {

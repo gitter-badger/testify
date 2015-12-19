@@ -25,6 +25,7 @@ import static java.util.Optional.ofNullable;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
+import javax.inject.Qualifier;
 
 /**
  * A small context class that contains metadata about class under test
@@ -83,7 +84,14 @@ public class ParameterDescriptor {
     }
 
     public Set<? extends Annotation> getAnnotations() {
-        return of(parameter.getDeclaredAnnotations()).collect(toSet());
+        return of(parameter.getDeclaredAnnotations()).parallel()
+                .collect(toSet());
+    }
+
+    public Set<? extends Annotation> getQualifiers() {
+        return of(parameter.getDeclaredAnnotations())
+                .filter(p -> p.annotationType().isAnnotationPresent(Qualifier.class))
+                .collect(toSet());
     }
 
     public <T extends Annotation> Set<T> getAnnotations(Class<T> type) {

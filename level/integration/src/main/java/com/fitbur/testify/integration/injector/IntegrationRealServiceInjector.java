@@ -15,7 +15,6 @@
  */
 package com.fitbur.testify.integration.injector;
 
-import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestInjector;
 import com.fitbur.testify.TestReifier;
@@ -27,7 +26,6 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
-import javax.inject.Inject;
 
 /**
  * An integration test injector implementation that injects fields annotated
@@ -53,7 +51,7 @@ public class IntegrationRealServiceInjector implements TestInjector {
 
     @Override
     public void inject(FieldDescriptor descriptor) {
-        if (!descriptor.hasAnyAnnotation(Real.class, Inject.class)) {
+        if (!descriptor.hasAnnotations(context.getServiceAnnotations().getInjectors())) {
             return;
         }
 

@@ -79,12 +79,22 @@ public class FieldDescriptor {
     }
 
     public Set<? extends Annotation> getAnnotations() {
-        return of(field.getDeclaredAnnotations()).collect(toSet());
+        return of(field.getDeclaredAnnotations()).parallel()
+                .collect(toSet());
     }
 
     public <T extends Annotation> Set<T> getAnnotations(Class<T> type) {
         return of(field.getDeclaredAnnotations())
+                .parallel()
                 .filter(p -> p.annotationType().equals(type))
+                .map(p -> (T) p)
+                .collect(toSet());
+    }
+
+    public <T extends Annotation> Set<T> getAnnotations(Set<Class<? extends Annotation>> annotations) {
+        return of(field.getDeclaredAnnotations())
+                .parallel()
+                .filter(p -> annotations.contains(p.annotationType()))
                 .map(p -> (T) p)
                 .collect(toSet());
     }
@@ -94,7 +104,13 @@ public class FieldDescriptor {
     }
 
     public boolean hasAnyAnnotation(Class<? extends Annotation>... type) {
-        return of(type).anyMatch(field::isAnnotationPresent);
+        return of(type).parallel().anyMatch(field::isAnnotationPresent);
+    }
+
+    public boolean hasAnnotations(Set<Class<? extends Annotation>> annotations) {
+        return of(field.getDeclaredAnnotations())
+                .parallel()
+                .anyMatch(p -> annotations.contains(p.annotationType()));
     }
 
     @Override

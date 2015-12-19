@@ -15,6 +15,7 @@
  */
 package com.fitbur.testify.di.spring;
 
+import com.fitbur.testify.di.ServiceAnnotations;
 import com.fitbur.testify.di.ServiceDescriptor;
 import com.fitbur.testify.di.ServiceLocator;
 import com.fitbur.testify.di.ServiceProvider;
@@ -54,9 +55,12 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class SpringServiceLocator implements ServiceLocator {
 
     public final AnnotationConfigApplicationContext context;
+    private final ServiceAnnotations serviceAnnotations;
 
-    public SpringServiceLocator(AnnotationConfigApplicationContext context) {
+    public SpringServiceLocator(AnnotationConfigApplicationContext context,
+            ServiceAnnotations serviceAnnotations) {
         this.context = context;
+        this.serviceAnnotations = serviceAnnotations;
     }
 
     @Override
@@ -282,6 +286,11 @@ public class SpringServiceLocator implements ServiceLocator {
     @Override
     public void scanPackage(String packageName) {
         context.scan(packageName);
+    }
+
+    @Override
+    public ServiceAnnotations getServiceAnnotations() {
+        return serviceAnnotations;
     }
 
 }

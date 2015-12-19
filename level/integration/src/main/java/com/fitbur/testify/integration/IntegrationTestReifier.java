@@ -18,6 +18,7 @@ package com.fitbur.testify.integration;
 import com.fitbur.testify.Cut;
 import com.fitbur.testify.Fake;
 import com.fitbur.testify.Real;
+import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.FieldDescriptor;
@@ -36,7 +37,6 @@ import static java.security.AccessController.doPrivileged;
 import java.security.PrivilegedAction;
 import java.util.Optional;
 import java.util.Set;
-import javax.inject.Inject;
 import javax.inject.Provider;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Answers.RETURNS_DEFAULTS;
@@ -53,10 +53,12 @@ import static org.mockito.Mockito.withSettings;
  */
 public class IntegrationTestReifier implements TestReifier {
 
+    private final TestContext testContext;
     private final ServiceLocator locator;
     private final Object testInstance;
 
-    public IntegrationTestReifier(ServiceLocator locator, Object testInstance) {
+    public IntegrationTestReifier(TestContext testContext, ServiceLocator locator, Object testInstance) {
+        this.testContext = testContext;
         this.locator = locator;
         this.testInstance = testInstance;
     }
@@ -69,13 +71,11 @@ public class IntegrationTestReifier implements TestReifier {
                 Type fieldType = field.getGenericType();
                 field.setAccessible(true);
                 Object instance = field.get(testInstance);
+                Set<Class<? extends Annotation>> injectorAnnotations = locator.getServiceAnnotations().getInjectors();
 
-                Optional<Fake> optFake = descriptor.getAnnotation(Fake.class);
-                Optional<Real> optReal = descriptor.getAnnotation(Real.class);
-                Optional<Inject> optInject = descriptor.getAnnotation(Inject.class);
+                Set<? extends Annotation> injectors = descriptor.getAnnotations(injectorAnnotations);
 
-                if (optFake.isPresent()) {
-                    Fake fake = optFake.get();
+                if (descriptor.hasAnnotation(Fake.class)) {
                     //if the field value is set then create a mock otherwise create a mock
                     //that delegates to the value
                     if (instance == null) {
@@ -87,10 +87,11 @@ public class IntegrationTestReifier implements TestReifier {
                         instance = mock(field.getType(), delegatesTo(instance));
                     }
 
-                } else if (optReal.isPresent() || optInject.isPresent()) {
+                } else if (!injectors.isEmpty()) {
                     instance = locator.getService(fieldType, descriptor.getAnnotations());
 
-                    if (optReal.isPresent() && optReal.get().value()) {
+                    Optional<Real> real = descriptor.getAnnotation(Real.class);
+                    if (real.isPresent() && real.get().value()) {
                         instance = mock(instance.getClass(), delegatesTo(instance));
                     }
                 }
@@ -103,7 +104,8 @@ public class IntegrationTestReifier implements TestReifier {
             } catch (IllegalAccessException | IllegalArgumentException e) {
                 throw new IllegalStateException(e);
             }
-        });
+        }
+        );
 
     }
 
@@ -124,7 +126,9 @@ public class IntegrationTestReifier implements TestReifier {
                 TypeToken<?> token = of(fieldType);
                 Class rawType;
 
-                if (token.isSubtypeOf(Provider.class) || token.isSubtypeOf(Optional.class)) {
+                if (token.isSubtypeOf(Provider.class
+                ) || token.isSubtypeOf(Optional.class
+                )) {
                     rawType = token.getRawType();
                 } else {
                     rawType = (Class) fieldType;
@@ -175,7 +179,8 @@ public class IntegrationTestReifier implements TestReifier {
                             Type fieldType = p.getGenericType();
                             Set<? extends Annotation> fieldAnnotations = p.getAnnotations();
 
-                            Optional<Real> real = p.getAnnotation(Real.class);
+                            Optional<Real> real = p.getAnnotation(Real.class
+                            );
                             Object instance = locator.getService(fieldType, fieldAnnotations);
 
                             if (instance == null) {

@@ -46,6 +46,7 @@ import static org.objectweb.asm.Type.getType;
 public class TestClassAnalyzer extends ClassVisitor {
 
     public static final String CONSTRUCTOR_NAME = "<init>";
+    public static final String STATIC_NAME = "<cinit>";
     private final TestContext context;
     private int fieldOrder = 0;
     private int methodOrder = 0;
@@ -105,9 +106,10 @@ public class TestClassAnalyzer extends ClassVisitor {
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        if (CONSTRUCTOR_NAME.equals(name)) {
+        if (CONSTRUCTOR_NAME.equals(name) || STATIC_NAME.equals(name)) {
             return null;
         }
+
         Class<?> testClass = context.getTestClass();
 
         Type type = getMethodType(desc);
