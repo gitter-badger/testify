@@ -17,6 +17,7 @@ was added, changed, deprecated, removed, fix and security fixes.
 
 ### Added
 - @Scan annotation to enable package scanning to load services
+- Ability to support DI framework injection and qualifier annotations
 
 ## [0.0.1] - 2015-11-23
 ### Added
