@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import java.util.Set;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -152,25 +153,42 @@ public class SpringServiceLocator implements ServiceLocator {
         TypeToken<?> token = TypeToken.of(type);
 
         Object instance;
-        Optional<String> beanName = empty();
+        Optional<Class<? extends Annotation>> beanAnnotation = empty();
         Class rawType = token.getRawType();
 
-        Optional<Qualifier> qualifier = annotations.parallelStream()
+        Optional<String> beanName = annotations.parallelStream()
                 .filter(p -> p.annotationType().equals(Qualifier.class))
                 .map(Qualifier.class::cast)
+                .map(Qualifier::value)
                 .findFirst();
 
-        Optional<Named> named = annotations.parallelStream()
-                .filter(p -> p.annotationType().equals(Named.class))
-                .map(Named.class::cast)
-                .findFirst();
-
-        if (named.isPresent()) {
-            beanName = Optional.of(named.get().value());
+        if (!beanName.isPresent()) {
+            beanName = annotations.parallelStream()
+                    .filter(p -> p.annotationType().equals(Named.class))
+                    .map(Named.class::cast)
+                    .map(Named::value)
+                    .findFirst();
         }
 
-        if (qualifier.isPresent()) {
-            beanName = Optional.of(qualifier.get().value());
+        if (!beanName.isPresent()) {
+            Set<Class<? extends Annotation>> customQualfiers
+                    = serviceAnnotations.getCustomQualifiers();
+
+            for (Annotation annotation : annotations) {
+                Class<? extends Annotation> annotationType = annotation.annotationType();
+
+                for (Class<? extends Annotation> customQualfier : customQualfiers) {
+                    if (annotationType.isAnnotationPresent(customQualfier)
+                            || annotationType.equals(Qualifier.class)) {
+                        beanAnnotation = of(annotationType);
+                        break;
+                    }
+                }
+
+                if (beanAnnotation.isPresent()) {
+                    break;
+                }
+            }
         }
 
         if (beanName.isPresent()) {
@@ -186,6 +204,20 @@ public class SpringServiceLocator implements ServiceLocator {
             } else {
                 instance = context.getBean(name, rawType);
             }
+        } else if (beanAnnotation.isPresent()) {
+            Map<String, Object> beans = context.getBeansWithAnnotation(beanAnnotation.get());
+            instance = beans.entrySet().parallelStream().map(p -> {
+                Object value;
+                if (token.isSubtypeOf(Provider.class)) {
+                    value = new ServiceProvider(this, p.getKey(), p.getValue().getClass());
+                } else if (token.isSubtypeOf(Optional.class)) {
+                    value = of(p.getValue());
+                } else {
+                    value = p.getValue();
+                }
+
+                return value;
+            }).findFirst().get();
         } else {
             instance = getService(type);
         }

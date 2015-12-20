@@ -15,13 +15,14 @@
  */
 package com.fitbur.testify.integration;
 
+import com.fitbur.testify.Cut;
 import com.fitbur.testify.Module;
+import com.fitbur.testify.Real;
 import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
+import com.fitbur.testify.integration.fixture.service.QualifiedGreetingService;
 import com.fitbur.testify.integration.fixture.service.collaborator.Greeting;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.inject.Inject;
+import com.fitbur.testify.integration.fixture.service.collaborator.qualfied.annotation.JSR330Qualifier;
+import com.fitbur.testify.integration.fixture.service.collaborator.qualfied.annotation.SpringQualifier;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,22 +33,29 @@ import org.junit.runner.RunWith;
  */
 @RunWith(SpringIntegrationTest.class)
 @Module(SpringIntegrationConfig.class)
-public class ServiceCollectionTest {
+public class CustomQualfierTest {
 
-    @Inject
-    List<Greeting> greetingsList;
+    @Cut
+    QualifiedGreetingService cut;
 
-    @Inject
-    Set<Greeting> greetingsSet;
+    @Real
+    @JSR330Qualifier
+    Greeting jsr330Qualfied;
 
-    @Inject
-    Map<String, Greeting> greetingsMap;
+    @Real
+    @SpringQualifier
+    Greeting springQualified;
 
     @Test
-    public void verifyInjection() {
-        assertThat(greetingsList).isNotEmpty();
-        assertThat(greetingsSet).isNotEmpty();
-        assertThat(greetingsMap).isNotEmpty();
+    public void verifyInjections() {
+        assertThat(cut).isNotNull();
+        assertThat(jsr330Qualfied)
+                .isNotNull()
+                .isSameAs(cut.getJSRQualified());
+        assertThat(springQualified)
+                .isNotNull()
+                .isSameAs(cut.getSpringQualified());
 
     }
+
 }
