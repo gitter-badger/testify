@@ -282,8 +282,8 @@
                         <skip>${skipTests}</skip>
                         <skipTests>${skipTests}</skipTests>
                         <threads>4</threads>
-                        <historyInputLocation>${project.build.directory/pit.history</historyInputLocation>
-                        <historyOutputLocation>${project.build.directory/pit.history</historyOutputLocation>
+                        <historyInputLocation>${project.build.directory}/pit.history</historyInputLocation>
+                        <historyOutputLocation>${project.build.directory}/pit.history</historyOutputLocation>
                         <targetClasses>
                             <param>com.fitbur.*</param>
                         </targetClasses>
