@@ -60,7 +60,7 @@ public class SpringIntegrationTestRunListener extends RunListener {
         appContext.setId(testClassName);
         appContext.setAllowBeanDefinitionOverriding(true);
         appContext.setAllowCircularReferences(false);
-        appContext.register(SpringBeanFactoryPostProcessor.class);
+        appContext.register(SpringIntegrationPostProcessor.class);
         ServiceAnnotations serviceAnnotations = testContext.getServiceAnnotations();
 
         this.serviceLocator = new SpringServiceLocator(appContext, serviceAnnotations);
