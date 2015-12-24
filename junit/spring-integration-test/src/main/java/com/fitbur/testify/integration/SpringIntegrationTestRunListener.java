@@ -40,12 +40,14 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class SpringIntegrationTestRunListener extends RunListener {
 
     private final TestContext testContext;
+    private final ServiceAnnotations serviceAnnotations;
     private final Logger logger;
     private SpringServiceLocator serviceLocator;
     private Set<NeedContext> needContexts;
 
-    SpringIntegrationTestRunListener(TestContext testContext, Logger logger) {
+    SpringIntegrationTestRunListener(TestContext testContext, ServiceAnnotations serviceAnnotations, Logger logger) {
         this.testContext = testContext;
+        this.serviceAnnotations = serviceAnnotations;
         this.logger = logger;
     }
 
@@ -61,7 +63,6 @@ public class SpringIntegrationTestRunListener extends RunListener {
         appContext.setAllowBeanDefinitionOverriding(true);
         appContext.setAllowCircularReferences(false);
         appContext.register(SpringIntegrationPostProcessor.class);
-        ServiceAnnotations serviceAnnotations = testContext.getServiceAnnotations();
 
         this.serviceLocator = new SpringServiceLocator(appContext, serviceAnnotations);
 

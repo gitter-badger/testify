@@ -71,9 +71,6 @@ public class IntegrationTestReifier implements TestReifier {
                 Type fieldType = field.getGenericType();
                 field.setAccessible(true);
                 Object instance = field.get(testInstance);
-                Set<Class<? extends Annotation>> injectorAnnotations = locator.getServiceAnnotations().getInjectors();
-
-                Set<? extends Annotation> injectors = descriptor.getAnnotations(injectorAnnotations);
 
                 if (descriptor.hasAnnotation(Fake.class)) {
                     //if the field value is set then create a mock otherwise create a mock
@@ -87,12 +84,17 @@ public class IntegrationTestReifier implements TestReifier {
                         instance = mock(field.getType(), delegatesTo(instance));
                     }
 
-                } else if (!injectors.isEmpty()) {
-                    instance = locator.getService(fieldType, descriptor.getAnnotations());
+                } else {
+                    Set<Class<? extends Annotation>> annotationTypes = locator.getServiceAnnotations().getInjectors();
+                    Set<? extends Annotation> injectors = descriptor.getAnnotations(annotationTypes);
 
-                    Optional<Real> real = descriptor.getAnnotation(Real.class);
-                    if (real.isPresent() && real.get().value()) {
-                        instance = mock(instance.getClass(), delegatesTo(instance));
+                    if (!injectors.isEmpty()) {
+                        instance = locator.getService(fieldType, descriptor.getAnnotations());
+
+                        Optional<Real> real = descriptor.getAnnotation(Real.class);
+                        if (real.isPresent() && real.get().value()) {
+                            instance = mock(instance.getClass(), delegatesTo(instance));
+                        }
                     }
                 }
 

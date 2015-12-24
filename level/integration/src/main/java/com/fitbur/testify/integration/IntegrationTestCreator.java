@@ -92,7 +92,7 @@ public class IntegrationTestCreator {
 
         locator.reload();
 
-        IntegrationRealServiceInjector realInjector = new IntegrationRealServiceInjector(context, testReifier, arguments);
+        IntegrationRealServiceInjector realInjector = new IntegrationRealServiceInjector(context, locator, testReifier, arguments);
         descriptors.parallelStream()
                 .forEach(realInjector::inject);
 

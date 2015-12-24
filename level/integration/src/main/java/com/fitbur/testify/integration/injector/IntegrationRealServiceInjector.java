@@ -21,6 +21,7 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
+import com.fitbur.testify.di.ServiceLocator;
 import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
@@ -38,20 +39,23 @@ import java.util.Map;
 public class IntegrationRealServiceInjector implements TestInjector {
 
     private final TestContext context;
+    private final ServiceLocator locator;
     private final TestReifier testReifier;
     private final Object[] arguments;
 
     public IntegrationRealServiceInjector(TestContext context,
+            ServiceLocator locator,
             TestReifier testReifier,
             Object[] arguments) {
         this.context = context;
+        this.locator = locator;
         this.testReifier = testReifier;
         this.arguments = arguments;
     }
 
     @Override
     public void inject(FieldDescriptor descriptor) {
-        if (!descriptor.hasAnnotations(context.getServiceAnnotations().getInjectors())) {
+        if (!descriptor.hasAnnotations(locator.getServiceAnnotations().getInjectors())) {
             return;
         }
 

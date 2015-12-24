@@ -20,7 +20,6 @@ import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.MethodDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import com.fitbur.testify.di.ServiceAnnotations;
 import com.fitbur.testify.need.Need;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
@@ -56,7 +55,6 @@ public class TestContext {
     private int fieldCount;
     private final Logger logger;
     private int constructorCount;
-    private ServiceAnnotations serviceAnnotations;
 
     public TestContext(String name, Class<?> testClass, Logger logger) {
         this.name = name;
@@ -179,14 +177,6 @@ public class TestContext {
 
     public int getConstructorCount() {
         return constructorCount;
-    }
-
-    public void setServiceAnnotations(ServiceAnnotations serviceAnnotations) {
-        this.serviceAnnotations = serviceAnnotations;
-    }
-
-    public ServiceAnnotations getServiceAnnotations() {
-        return serviceAnnotations;
     }
 
 }

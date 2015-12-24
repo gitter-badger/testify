@@ -93,12 +93,6 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
             try {
                 TestContext context = new TestContext(name, javaClass, LOGGER);
 
-                ServiceAnnotations serviceAnnotations = new ServiceAnnotations();
-                serviceAnnotations.addInjectors(Inject.class, Autowired.class, Real.class);
-                serviceAnnotations.addNamedQualifier(Named.class, Qualifier.class);
-                serviceAnnotations.addCustomQualfier(javax.inject.Qualifier.class, Qualifier.class);
-                context.setServiceAnnotations(serviceAnnotations);
-
                 ClassReader testReader = new ClassReader(javaClass.getName());
                 testReader.accept(new TestClassAnalyzer(context), EXPAND_FRAMES);
 
@@ -139,8 +133,13 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
             install();
         }
 
+        ServiceAnnotations serviceAnnotations = new ServiceAnnotations();
+        serviceAnnotations.addInjectors(Inject.class, Autowired.class, Real.class);
+        serviceAnnotations.addNamedQualifier(Named.class, Qualifier.class);
+        serviceAnnotations.addCustomQualfier(javax.inject.Qualifier.class, Qualifier.class);
+
         SpringIntegrationTestRunListener listener
-                = new SpringIntegrationTestRunListener(testContext, LOGGER);
+                = new SpringIntegrationTestRunListener(testContext, serviceAnnotations, LOGGER);
 
         notifier.addListener(listener);
         EachTestNotifier testNotifier = new EachTestNotifier(notifier, description);
@@ -150,7 +149,7 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
             Statement statement = this.classBlock(notifier);
             statement.evaluate();
         } catch (AssumptionViolatedException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.warn(e.getMessage());
             testNotifier.fireTestIgnored();
         } catch (IllegalStateException e) {
             LOGGER.error("{}", e.getMessage());
@@ -162,6 +161,7 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
         } catch (Throwable e) {
             LOGGER.error(e.getMessage());
             testNotifier.addFailure(e);
+            notifier.pleaseStop();
         } finally {
             notifier.fireTestRunFinished(new Result());
             //XXX: notifier is a singleton so we have to remove it or otherwise
