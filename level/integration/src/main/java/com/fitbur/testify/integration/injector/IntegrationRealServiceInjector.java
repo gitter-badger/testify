@@ -15,6 +15,7 @@
  */
 package com.fitbur.testify.integration.injector;
 
+import com.fitbur.guava.common.reflect.TypeToken;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestInjector;
 import com.fitbur.testify.TestReifier;
@@ -22,7 +23,6 @@ import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
 import com.fitbur.testify.di.ServiceLocator;
-import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Collection;

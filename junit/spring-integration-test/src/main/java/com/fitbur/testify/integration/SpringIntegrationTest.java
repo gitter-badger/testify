@@ -15,6 +15,8 @@
  */
 package com.fitbur.testify.integration;
 
+import com.fitbur.asm.ClassReader;
+import static com.fitbur.guava.common.base.Preconditions.checkState;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.analyzer.CutClassAnalyzer;
@@ -23,7 +25,6 @@ import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.di.ServiceAnnotations;
 import com.fitbur.testify.di.spring.SpringServiceLocator;
 import com.fitbur.testify.need.NeedProvider;
-import static com.google.common.base.Preconditions.checkState;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,8 +40,6 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
-import org.objectweb.asm.ClassReader;
-import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.slf4j.bridge.SLF4JBridgeHandler.install;
@@ -94,13 +93,13 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
                 TestContext context = new TestContext(name, javaClass, LOGGER);
 
                 ClassReader testReader = new ClassReader(javaClass.getName());
-                testReader.accept(new TestClassAnalyzer(context), EXPAND_FRAMES);
+                testReader.accept(new TestClassAnalyzer(context), ClassReader.SKIP_DEBUG);
 
                 CutDescriptor cutDescriptor = context.getCutDescriptor();
 
                 if (cutDescriptor != null) {
                     ClassReader cutReader = new ClassReader(context.getCutDescriptor().getField().getType().getName());
-                    cutReader.accept(new CutClassAnalyzer(context), EXPAND_FRAMES);
+                    cutReader.accept(new CutClassAnalyzer(context), ClassReader.SKIP_DEBUG);
                 }
 
                 return context;

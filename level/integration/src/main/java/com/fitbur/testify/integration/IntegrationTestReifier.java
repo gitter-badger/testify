@@ -15,6 +15,7 @@
  */
 package com.fitbur.testify.integration;
 
+import com.fitbur.guava.common.reflect.TypeToken;
 import com.fitbur.testify.Cut;
 import com.fitbur.testify.Fake;
 import com.fitbur.testify.Real;
@@ -27,8 +28,6 @@ import com.fitbur.testify.di.ServiceDescriptor;
 import com.fitbur.testify.di.ServiceDescriptorBuilder;
 import com.fitbur.testify.di.ServiceLocator;
 import static com.fitbur.testify.di.ServiceScope.PROTOTYPE;
-import com.google.common.reflect.TypeToken;
-import static com.google.common.reflect.TypeToken.of;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -125,7 +124,7 @@ public class IntegrationTestReifier implements TestReifier {
                 Constructor<?> constructor = descriptor.getConstructor();
                 constructor.setAccessible(true);
 
-                TypeToken<?> token = of(fieldType);
+                TypeToken<?> token = TypeToken.of(fieldType);
                 Class rawType;
 
                 if (token.isSubtypeOf(Provider.class

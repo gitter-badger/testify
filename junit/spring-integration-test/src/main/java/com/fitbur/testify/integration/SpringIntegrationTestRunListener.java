@@ -15,6 +15,7 @@
  */
 package com.fitbur.testify.integration;
 
+import static com.fitbur.guava.common.base.Preconditions.checkState;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.di.ServiceAnnotations;
@@ -22,7 +23,6 @@ import com.fitbur.testify.di.spring.SpringServiceLocator;
 import com.fitbur.testify.need.NeedContext;
 import com.fitbur.testify.need.NeedDescriptor;
 import com.fitbur.testify.need.NeedProvider;
-import static com.google.common.base.Preconditions.checkState;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import org.junit.runner.Description;

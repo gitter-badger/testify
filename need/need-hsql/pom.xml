@@ -66,7 +66,7 @@
         </dependency>
         <dependency>
             <groupId>com.fitbur.testify</groupId>
-            <artifactId>api</artifactId>
+            <artifactId>core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

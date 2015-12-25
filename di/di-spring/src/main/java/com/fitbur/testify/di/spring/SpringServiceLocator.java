@@ -15,6 +15,8 @@
  */
 package com.fitbur.testify.di.spring;
 
+import static com.fitbur.guava.common.base.Preconditions.checkState;
+import com.fitbur.guava.common.reflect.TypeToken;
 import com.fitbur.testify.di.ServiceAnnotations;
 import com.fitbur.testify.di.ServiceDescriptor;
 import com.fitbur.testify.di.ServiceLocator;
@@ -23,8 +25,6 @@ import com.fitbur.testify.di.ServiceScope;
 import static com.fitbur.testify.di.ServiceScope.REQUEST;
 import static com.fitbur.testify.di.ServiceScope.SESSION;
 import static com.fitbur.testify.di.ServiceScope.SINGLETON;
-import static com.google.common.base.Preconditions.checkState;
-import com.google.common.reflect.TypeToken;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;

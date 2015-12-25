@@ -15,6 +15,7 @@
  */
 package com.fitbur.testify.unit.injector;
 
+import static com.fitbur.guava.common.base.Preconditions.checkArgument;
 import com.fitbur.testify.Fake;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestInjector;
@@ -22,7 +23,6 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import static com.google.common.base.Preconditions.checkArgument;
 import java.lang.reflect.Type;
 import java.util.Map;
 
