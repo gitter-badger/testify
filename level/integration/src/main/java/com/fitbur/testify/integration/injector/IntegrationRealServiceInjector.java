@@ -15,13 +15,14 @@
  */
 package com.fitbur.testify.integration.injector;
 
+import com.fitbur.guava.common.reflect.TypeToken;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestInjector;
 import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import com.google.common.reflect.TypeToken;
+import com.fitbur.testify.di.ServiceLocator;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -38,33 +39,37 @@ import java.util.Map;
 public class IntegrationRealServiceInjector implements TestInjector {
 
     private final TestContext context;
+    private final ServiceLocator locator;
     private final TestReifier testReifier;
-    private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
     public IntegrationRealServiceInjector(TestContext context,
+            ServiceLocator locator,
             TestReifier testReifier,
-            FieldDescriptor fieldDescriptor,
             Object[] arguments) {
         this.context = context;
+        this.locator = locator;
         this.testReifier = testReifier;
-        this.fieldDescriptor = fieldDescriptor;
         this.arguments = arguments;
     }
 
     @Override
-    public void inject() {
+    public void inject(FieldDescriptor descriptor) {
+        if (!descriptor.hasAnnotations(locator.getServiceAnnotations().getInjectors())) {
+            return;
+        }
+
         Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = context.getParamaterDescriptors();
-        Type fieldType = fieldDescriptor.getGenericType();
-        String fieldName = fieldDescriptor.getName();
+        Type fieldType = descriptor.getGenericType();
+        String fieldName = descriptor.getName();
         DescriptorKey descriptorKey = new DescriptorKey(fieldType, fieldName);
 
         //if there is a parameter descriptor that matches the field then lets use that
         if (parameterDescriptors.containsKey(descriptorKey)) {
-            ParameterDescriptor descriptor = parameterDescriptors.get(descriptorKey);
-            Integer index = descriptor.getIndex();
+            ParameterDescriptor paramDescriptor = parameterDescriptors.get(descriptorKey);
+            Integer index = paramDescriptor.getIndex();
 
-            Object instance = testReifier.reifyField(fieldDescriptor, descriptor);
+            Object instance = testReifier.reifyField(descriptor, paramDescriptor);
             arguments[index] = instance;
         } else {
             TypeToken token = TypeToken.of(fieldType);
@@ -80,7 +85,7 @@ public class IntegrationRealServiceInjector implements TestInjector {
                 }
 
                 if (token.isSubtypeOf(paramType)) {
-                    Object instance = testReifier.reifyField(fieldDescriptor, paramDescriptor);
+                    Object instance = testReifier.reifyField(descriptor, paramDescriptor);
                     arguments[index] = instance;
                     break;
                 }

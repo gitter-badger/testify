@@ -96,7 +96,7 @@ public interface ServiceLocator {
     /**
      * Get a service with the given name.
      *
-     * @param <T>
+     * @param <T> the service type
      * @param type the service type
      * @param annotations the service annotations
      * @return an instance of the service
@@ -168,4 +168,17 @@ public interface ServiceLocator {
     default void removeModule(Class<?> type) {
     }
 
+    /**
+     * Scan the given package.
+     *
+     * @param packageName the package name
+     */
+    void scanPackage(String packageName);
+
+    /**
+     * Get the annotations supported by the service locator.
+     *
+     * @return service annotations instance.
+     */
+    ServiceAnnotations getServiceAnnotations();
 }

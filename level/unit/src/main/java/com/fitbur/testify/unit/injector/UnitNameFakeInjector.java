@@ -15,6 +15,7 @@
  */
 package com.fitbur.testify.unit.injector;
 
+import static com.fitbur.guava.common.base.Preconditions.checkArgument;
 import com.fitbur.testify.Fake;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestInjector;
@@ -22,7 +23,6 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import static com.google.common.base.Preconditions.checkArgument;
 import java.lang.reflect.Type;
 import java.util.Map;
 
@@ -37,33 +37,35 @@ public class UnitNameFakeInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
-    private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
     public UnitNameFakeInjector(TestContext context,
             TestReifier testReifier,
-            FieldDescriptor fieldDescriptor,
             Object[] arguments) {
         this.context = context;
         this.testReifier = testReifier;
-        this.fieldDescriptor = fieldDescriptor;
         this.arguments = arguments;
     }
 
     @Override
-    public void inject() {
-        Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = context.getParamaterDescriptors();
-        Type fieldType = fieldDescriptor.getGenericType();
-        String fieldName = fieldDescriptor.getName();
-        String fieldTypeName = fieldDescriptor.getTypeName();
+    public void inject(FieldDescriptor descriptor) {
+        Fake fake = descriptor.getAnnotation(Fake.class).get();
+        String fakeName = fake.name();
+
+        if (fakeName.isEmpty()) {
+            return;
+        }
+
+        Map<DescriptorKey, ParameterDescriptor> paramDescriptors = context.getParamaterDescriptors();
+        Type fieldType = descriptor.getGenericType();
+        String fieldName = descriptor.getName();
+        String fieldTypeName = descriptor.getTypeName();
         String cutTypeName = context.getCutDescriptor().getTypeName();
         String testClassName = context.getTestClassName();
 
-        Fake fake = fieldDescriptor.getAnnotation(Fake.class).get();
-        String fakeName = fake.name();
         DescriptorKey descriptorKey = new DescriptorKey(fieldType, fakeName);
 
-        ParameterDescriptor paramDescriptor = parameterDescriptors.get(descriptorKey);
+        ParameterDescriptor paramDescriptor = paramDescriptors.get(descriptorKey);
 
         checkArgument(paramDescriptor != null,
                 "Can not fake field '%s#%s'. Could not find constructor argument "
@@ -74,7 +76,6 @@ public class UnitNameFakeInjector implements TestInjector {
 
         Integer paramIndex = paramDescriptor.getIndex();
         Type paramType = paramDescriptor.getGenericType();
-        String paramTypeName = paramDescriptor.getTypeName();
 
         checkArgument(fieldType.equals(paramType),
                 "Can not fake field '%s#%s'. The test clas field and the class "
@@ -89,7 +90,8 @@ public class UnitNameFakeInjector implements TestInjector {
                 + "same name of '%s'",
                 testClassName, fieldName, fakeName);
 
-        arguments[paramIndex] = testReifier.reifyField(fieldDescriptor, paramDescriptor);
+        arguments[paramIndex] = testReifier.reifyField(descriptor, paramDescriptor);
+
     }
 
 }

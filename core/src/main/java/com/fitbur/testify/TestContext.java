@@ -47,6 +47,7 @@ public class TestContext {
     private final Set<MethodDescriptor> methodDescriptors = new LinkedHashSet<>();
     private final Set<Need> needs = new LinkedHashSet<>();
     private final Map<DescriptorKey, ParameterDescriptor> paramaterDescriptors = new LinkedHashMap<>();
+
     private Object testInstance;
     private CutDescriptor cutDescriptor;
     private int cutCount;

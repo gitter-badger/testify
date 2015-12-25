@@ -15,6 +15,15 @@
  */
 package com.fitbur.testify.analyzer;
 
+import com.fitbur.asm.AnnotationVisitor;
+import com.fitbur.asm.ClassVisitor;
+import com.fitbur.asm.FieldVisitor;
+import com.fitbur.asm.MethodVisitor;
+import static com.fitbur.asm.Opcodes.ASM5;
+import com.fitbur.asm.Type;
+import static com.fitbur.asm.Type.getMethodType;
+import static com.fitbur.asm.Type.getType;
+import static com.fitbur.guava.common.base.Preconditions.checkState;
 import com.fitbur.testify.Cut;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.descriptor.CutDescriptor;
@@ -23,20 +32,11 @@ import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.MethodDescriptor;
 import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.Needs;
-import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Class.forName;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import static java.util.stream.Stream.of;
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-import static org.objectweb.asm.Opcodes.ASM5;
-import org.objectweb.asm.Type;
-import static org.objectweb.asm.Type.getMethodType;
-import static org.objectweb.asm.Type.getType;
 
 /**
  * A class visitor implementation that performs analysis on the test class.
@@ -46,6 +46,7 @@ import static org.objectweb.asm.Type.getType;
 public class TestClassAnalyzer extends ClassVisitor {
 
     public static final String CONSTRUCTOR_NAME = "<init>";
+    public static final String STATIC_NAME = "<cinit>";
     private final TestContext context;
     private int fieldOrder = 0;
     private int methodOrder = 0;
@@ -105,9 +106,10 @@ public class TestClassAnalyzer extends ClassVisitor {
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        if (CONSTRUCTOR_NAME.equals(name)) {
+        if (CONSTRUCTOR_NAME.equals(name) || STATIC_NAME.equals(name)) {
             return null;
         }
+
         Class<?> testClass = context.getTestClass();
 
         Type type = getMethodType(desc);

@@ -14,6 +14,10 @@ was added, changed, deprecated, removed, fix and security fixes.
 ## [Unreleased]
 
 
+### Added
+- @Scan annotation to enable package scanning to load services
+- Ability to support DI framework injection and qualifier annotations
+
 ## [0.0.1] - 2015-11-23
 ### Added
 - Initial release
@@ -62,3 +66,10 @@ was added, changed, deprecated, removed, fix and security fixes.
 - Changed SpringIntegrationTestRunner to SpringIntegrationTest
 - Host of fixes for issue relating to test class wiring
 
+## [0.0.5] - 2015-12-25
+### Added
+- Shaded third-party dependencies
+- Added support for Dependency Injection Framework specific annotations
+
+### Changed
+- TestInjector contract now takes FieldDescriptor

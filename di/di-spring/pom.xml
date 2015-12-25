@@ -21,13 +21,15 @@
     <parent>
         <groupId>com.fitbur.testify</groupId>
         <artifactId>di</artifactId>
-        <version>0.0.4</version>
+        <version>0.0.5</version>
     </parent>
+
     <artifactId>di-spring</artifactId>
+
     <dependencies>
         <dependency>
             <groupId>com.fitbur.testify</groupId>
-            <artifactId>api</artifactId>
+            <artifactId>core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

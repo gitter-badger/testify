@@ -15,13 +15,13 @@
  */
 package com.fitbur.testify.unit;
 
+import static com.fitbur.guava.common.base.Preconditions.checkState;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestVerifier;
 import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import static com.google.common.base.Preconditions.checkState;
 import static java.lang.reflect.Modifier.isFinal;
 import java.util.Collection;
 import java.util.HashMap;

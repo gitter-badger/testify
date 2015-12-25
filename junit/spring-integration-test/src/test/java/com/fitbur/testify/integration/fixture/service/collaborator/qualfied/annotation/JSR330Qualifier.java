@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify;
+package com.fitbur.testify.integration.fixture.service.collaborator.qualfied.annotation;
 
-import com.fitbur.testify.descriptor.FieldDescriptor;
+import static java.lang.annotation.ElementType.*;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import javax.inject.Qualifier;
 
 /**
- * An interface that defines custom test injectors. Implementations of this
- * interface are responsible for injecting test classes with relevant instances
- * of objects based on certain business logic.
- *
  *
  * @author saden
  */
-public interface TestInjector {
-
-    void inject(FieldDescriptor descriptor);
+@Qualifier
+@Target({FIELD, METHOD, TYPE, PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface JSR330Qualifier {
 }

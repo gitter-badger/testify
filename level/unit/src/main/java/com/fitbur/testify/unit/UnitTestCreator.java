@@ -26,6 +26,8 @@ import com.fitbur.testify.unit.injector.UnitNameFakeInjector;
 import com.fitbur.testify.unit.injector.UnitTypeFakeInjector;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * Unit test creator which looks at the test descriptors, reifies the
@@ -49,28 +51,25 @@ public class UnitTestCreator {
         Object[] arguments = new Object[parameterDescriptors.size()];
         Collection<FieldDescriptor> descriptors = fieldDescriptors.values();
 
+        UnitIndexFakeInjector indexInjector = new UnitIndexFakeInjector(testContext, testReifier, arguments);
+        UnitNameFakeInjector nameInjector = new UnitNameFakeInjector(testContext, testReifier, arguments);
+        UnitTypeFakeInjector typeInjector = new UnitTypeFakeInjector(testContext, testReifier, arguments);
+
+        Set<FieldDescriptor> fakeDescriptors = descriptors.parallelStream()
+                .filter(p -> p.hasAnnotation(Fake.class))
+                .collect(toSet());
+
         //process fields with a custom index first
-        descriptors.parallelStream()
-                .filter(p -> p.getAnnotation(Fake.class).isPresent())
-                .filter(p -> p.getAnnotation(Fake.class).get().index() != -1)
-                .map(p -> new UnitIndexFakeInjector(testContext, testReifier, p, arguments))
-                .forEach(UnitIndexFakeInjector::inject);
+        fakeDescriptors.parallelStream()
+                .forEach(indexInjector::inject);
 
         //process fields with custom names second
-        descriptors.parallelStream()
-                .filter(p -> p.getAnnotation(Fake.class).isPresent())
-                .filter(p -> !p.getAnnotation(Fake.class).get().name().isEmpty())
-                .map(p -> new UnitNameFakeInjector(testContext, testReifier, p, arguments))
-                .forEach(UnitNameFakeInjector::inject);
+        fakeDescriptors.parallelStream()
+                .forEach(nameInjector::inject);
 
-        //finally try to do type based injection
-        descriptors.parallelStream()
-                .filter(p -> p.getAnnotation(Fake.class).isPresent())
-                .filter(p -> p.getAnnotation(Fake.class).get().index() == -1
-                        && p.getAnnotation(Fake.class).get().name().isEmpty()
-                )
-                .map(p -> new UnitTypeFakeInjector(testContext, testReifier, p, arguments))
-                .forEach(UnitTypeFakeInjector::inject);
+        //finally process fields based on their type
+        fakeDescriptors.parallelStream()
+                .forEach(typeInjector::inject);
 
         testReifier.reifyCut(testContext.getCutDescriptor(), arguments);
     }

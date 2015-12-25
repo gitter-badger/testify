@@ -15,6 +15,7 @@
  */
 package com.fitbur.testify.unit.injector;
 
+import com.fitbur.testify.Fake;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestInjector;
 import com.fitbur.testify.TestReifier;
@@ -36,21 +37,26 @@ public class UnitTypeFakeInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
-    private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
     public UnitTypeFakeInjector(TestContext context,
             TestReifier testReifier,
-            FieldDescriptor fieldDescriptor,
             Object[] arguments) {
         this.context = context;
         this.testReifier = testReifier;
-        this.fieldDescriptor = fieldDescriptor;
         this.arguments = arguments;
     }
 
     @Override
-    public void inject() {
+    public void inject(FieldDescriptor fieldDescriptor) {
+        Fake fake = fieldDescriptor.getAnnotation(Fake.class).get();
+        String fakeName = fake.name();
+        Integer fakeIndex = fake.index();
+
+        if (!fakeName.isEmpty() || fakeIndex != -1) {
+            return;
+        }
+
         Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = context.getParamaterDescriptors();
 
         Type fieldType = fieldDescriptor.getGenericType();
@@ -73,7 +79,8 @@ public class UnitTypeFakeInjector implements TestInjector {
                 }
 
                 Type paramType = paramDescriptor.getGenericType();
-                if (paramType.equals(fieldType)) {
+
+                if (fieldType.equals(paramType)) {
                     arguments[paramIndex] = testReifier.reifyField(fieldDescriptor, paramDescriptor);
                     break;
                 }

@@ -15,6 +15,8 @@
  */
 package com.fitbur.testify.integration.injector;
 
+import static com.fitbur.guava.common.base.Preconditions.checkState;
+import com.fitbur.guava.common.reflect.TypeToken;
 import com.fitbur.testify.Fake;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestInjector;
@@ -22,8 +24,6 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import static com.google.common.base.Preconditions.checkState;
-import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -40,37 +40,39 @@ public class IntegrationIndexFakeInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
-    private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
     public IntegrationIndexFakeInjector(TestContext context,
             TestReifier testReifier,
-            FieldDescriptor fieldDescriptor,
             Object[] arguments) {
         this.context = context;
         this.testReifier = testReifier;
-        this.fieldDescriptor = fieldDescriptor;
         this.arguments = arguments;
     }
 
     @Override
-    public void inject() {
+    public void inject(FieldDescriptor descriptor) {
+        Fake fake = descriptor.getAnnotation(Fake.class).get();
+        Integer index = fake.index();
+
+        if (index == -1) {
+            return;
+        }
+
         Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = context.getParamaterDescriptors();
 
-        Fake fake = fieldDescriptor.getAnnotation(Fake.class).get();
-        Integer fakeIndex = fake.index();
         Optional<ParameterDescriptor> optional = parameterDescriptors.values()
                 .parallelStream()
-                .filter(p -> fakeIndex.equals(p.getIndex()))
+                .filter(p -> index.equals(p.getIndex()))
                 .findFirst();
 
         ParameterDescriptor paramDescriptor = optional.get();
         Parameter parameter = paramDescriptor.getParameter();
 
         String testClassName = context.getTestClassName();
-        Type fieldType = fieldDescriptor.getGenericType();
-        String fieldTypeName = fieldDescriptor.getTypeName();
-        String fieldName = fieldDescriptor.getName();
+        Type fieldType = descriptor.getGenericType();
+        String fieldTypeName = descriptor.getTypeName();
+        String fieldName = descriptor.getName();
         Type paramType = parameter.getParameterizedType();
         TypeToken token = TypeToken.of(fieldType);
 
@@ -78,17 +80,17 @@ public class IntegrationIndexFakeInjector implements TestInjector {
                 "Can not fake field '%s#%s'. Test class field type '%s' and class "
                 + "under test constructor parameter type '%s' at index '%d' do "
                 + "not match.",
-                testClassName, fieldName, fieldTypeName, paramType, fakeIndex
+                testClassName, fieldName, fieldTypeName, paramType, index
         );
 
-        checkState(arguments[fakeIndex] == null,
+        checkState(arguments[index] == null,
                 "Can not fake field '%s#%s'. Multipe test class fields are "
                 + "annotated with @Fake(index=%d). Please insure the @Fake "
                 + "annotations have unqiue indexes.",
-                testClassName, fieldName, fakeIndex
+                testClassName, fieldName, index
         );
 
-        arguments[fakeIndex] = testReifier.reifyField(fieldDescriptor, paramDescriptor);
+        arguments[index] = testReifier.reifyField(descriptor, paramDescriptor);
     }
 
 }

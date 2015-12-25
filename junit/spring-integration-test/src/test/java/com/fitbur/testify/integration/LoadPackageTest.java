@@ -15,13 +15,11 @@
  */
 package com.fitbur.testify.integration;
 
-import com.fitbur.testify.Module;
-import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
-import com.fitbur.testify.integration.fixture.service.collaborator.Greeting;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.inject.Inject;
+import com.fitbur.testify.Cut;
+import com.fitbur.testify.Real;
+import com.fitbur.testify.Scan;
+import com.fitbur.testify.integration.fixture.service.GreetingService;
+import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,23 +29,18 @@ import org.junit.runner.RunWith;
  * @author saden
  */
 @RunWith(SpringIntegrationTest.class)
-@Module(SpringIntegrationConfig.class)
-public class ServiceCollectionTest {
+@Scan("com.fitbur.testify.integration.fixture")
+public class LoadPackageTest {
 
-    @Inject
-    List<Greeting> greetingsList;
+    @Cut
+    GreetingService cut;
 
-    @Inject
-    Set<Greeting> greetingsSet;
-
-    @Inject
-    Map<String, Greeting> greetingsMap;
+    @Real
+    Hello hello;
 
     @Test
     public void verifyInjection() {
-        assertThat(greetingsList).isNotEmpty();
-        assertThat(greetingsSet).isNotEmpty();
-        assertThat(greetingsMap).isNotEmpty();
-
+        assertThat(cut).isNotNull();
+        assertThat(hello).isSameAs(cut.getHello());
     }
 }

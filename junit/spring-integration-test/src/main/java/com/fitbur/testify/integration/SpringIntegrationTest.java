@@ -15,16 +15,21 @@
  */
 package com.fitbur.testify.integration;
 
+import com.fitbur.asm.ClassReader;
+import static com.fitbur.guava.common.base.Preconditions.checkState;
+import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.analyzer.CutClassAnalyzer;
 import com.fitbur.testify.analyzer.TestClassAnalyzer;
 import com.fitbur.testify.descriptor.CutDescriptor;
+import com.fitbur.testify.di.ServiceAnnotations;
 import com.fitbur.testify.di.spring.SpringServiceLocator;
 import com.fitbur.testify.need.NeedProvider;
-import static com.google.common.base.Preconditions.checkState;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.internal.runners.model.EachTestNotifier;
 import org.junit.runner.Description;
@@ -35,14 +40,14 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
-import org.objectweb.asm.ClassReader;
-import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.slf4j.bridge.SLF4JBridgeHandler.install;
 import static org.slf4j.bridge.SLF4JBridgeHandler.isInstalled;
 import static org.slf4j.bridge.SLF4JBridgeHandler.removeHandlersForRootLogger;
 import static org.slf4j.bridge.SLF4JBridgeHandler.uninstall;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * A JUnit spring integration test runner. This class is the main entry point
@@ -88,13 +93,13 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
                 TestContext context = new TestContext(name, javaClass, LOGGER);
 
                 ClassReader testReader = new ClassReader(javaClass.getName());
-                testReader.accept(new TestClassAnalyzer(context), EXPAND_FRAMES);
+                testReader.accept(new TestClassAnalyzer(context), ClassReader.SKIP_DEBUG);
 
                 CutDescriptor cutDescriptor = context.getCutDescriptor();
 
                 if (cutDescriptor != null) {
                     ClassReader cutReader = new ClassReader(context.getCutDescriptor().getField().getType().getName());
-                    cutReader.accept(new CutClassAnalyzer(context), EXPAND_FRAMES);
+                    cutReader.accept(new CutClassAnalyzer(context), ClassReader.SKIP_DEBUG);
                 }
 
                 return context;
@@ -127,8 +132,13 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
             install();
         }
 
+        ServiceAnnotations serviceAnnotations = new ServiceAnnotations();
+        serviceAnnotations.addInjectors(Inject.class, Autowired.class, Real.class);
+        serviceAnnotations.addNamedQualifier(Named.class, Qualifier.class);
+        serviceAnnotations.addCustomQualfier(javax.inject.Qualifier.class, Qualifier.class);
+
         SpringIntegrationTestRunListener listener
-                = new SpringIntegrationTestRunListener(testContext, LOGGER);
+                = new SpringIntegrationTestRunListener(testContext, serviceAnnotations, LOGGER);
 
         notifier.addListener(listener);
         EachTestNotifier testNotifier = new EachTestNotifier(notifier, description);
@@ -138,7 +148,7 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
             Statement statement = this.classBlock(notifier);
             statement.evaluate();
         } catch (AssumptionViolatedException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.warn(e.getMessage());
             testNotifier.fireTestIgnored();
         } catch (IllegalStateException e) {
             LOGGER.error("{}", e.getMessage());
@@ -150,6 +160,7 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
         } catch (Throwable e) {
             LOGGER.error(e.getMessage());
             testNotifier.addFailure(e);
+            notifier.pleaseStop();
         } finally {
             notifier.fireTestRunFinished(new Result());
             //XXX: notifier is a singleton so we have to remove it or otherwise

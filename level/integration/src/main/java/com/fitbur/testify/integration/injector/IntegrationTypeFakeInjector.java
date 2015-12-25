@@ -15,13 +15,14 @@
  */
 package com.fitbur.testify.integration.injector;
 
+import com.fitbur.guava.common.reflect.TypeToken;
+import com.fitbur.testify.Fake;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestInjector;
 import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
@@ -39,51 +40,56 @@ public class IntegrationTypeFakeInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
-    private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
     public IntegrationTypeFakeInjector(TestContext context,
             TestReifier testReifier,
-            FieldDescriptor fieldDescriptor,
             Object[] arguments) {
         this.context = context;
         this.testReifier = testReifier;
-        this.fieldDescriptor = fieldDescriptor;
         this.arguments = arguments;
     }
 
     @Override
-    public void inject() {
-        Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = context.getParamaterDescriptors();
-        Field field = fieldDescriptor.getField();
+    public void inject(FieldDescriptor descriptor) {
+        Fake fake = descriptor.getAnnotation(Fake.class).get();
+        String fakeName = fake.name();
+        Integer fakeIndex = fake.index();
 
-        Type fieldType = fieldDescriptor.getGenericType();
+        if (!fakeName.isEmpty() || fakeIndex != -1) {
+            return;
+        }
+
+        Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = context.getParamaterDescriptors();
+        Field field = descriptor.getField();
+
+        Type fieldType = descriptor.getGenericType();
         String fieldName = field.getName();
         DescriptorKey descriptorKey = new DescriptorKey(fieldType, fieldName);
 
         //if there is a parameter descriptor that matches the field then lets use that
         if (parameterDescriptors.containsKey(descriptorKey)) {
-            ParameterDescriptor descriptor = parameterDescriptors.get(descriptorKey);
-            Integer index = descriptor.getIndex();
+            ParameterDescriptor parameterDescriptor = parameterDescriptors.get(descriptorKey);
+            Integer index = parameterDescriptor.getIndex();
 
-            Object instance = testReifier.reifyField(fieldDescriptor, descriptor);
+            Object instance = testReifier.reifyField(descriptor, parameterDescriptor);
             arguments[index] = instance;
         } else {
             TypeToken token = TypeToken.of(fieldType);
 
             //otherwise find the right parameter based on the type of the field
             Collection<ParameterDescriptor> descriptors = parameterDescriptors.values();
-            for (ParameterDescriptor descriptor : descriptors) {
-                Parameter parameter = descriptor.getParameter();
+            for (ParameterDescriptor paramDescriptor : descriptors) {
+                Parameter parameter = paramDescriptor.getParameter();
                 Type paramType = parameter.getParameterizedType();
-                Integer index = descriptor.getIndex();
+                Integer index = paramDescriptor.getIndex();
 
                 if (arguments[index] != null) {
                     continue;
                 }
 
                 if (token.isSubtypeOf(paramType)) {
-                    Object instance = testReifier.reifyField(fieldDescriptor, descriptor);
+                    Object instance = testReifier.reifyField(descriptor, paramDescriptor);
                     arguments[index] = instance;
                     break;
                 }

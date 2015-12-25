@@ -15,13 +15,13 @@
  */
 package com.fitbur.testify.need.hsql;
 
+import static com.fitbur.guava.common.base.Preconditions.checkState;
 import com.fitbur.testify.di.ServiceDescriptor;
 import com.fitbur.testify.di.ServiceDescriptorBuilder;
 import com.fitbur.testify.di.ServiceLocator;
 import static com.fitbur.testify.di.ServiceScope.SINGLETON;
 import com.fitbur.testify.need.NeedDescriptor;
 import com.fitbur.testify.need.NeedProvider;
-import static com.google.common.base.Preconditions.checkState;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import static java.lang.String.format;

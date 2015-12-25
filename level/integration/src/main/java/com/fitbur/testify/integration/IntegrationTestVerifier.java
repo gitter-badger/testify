@@ -15,13 +15,13 @@
  */
 package com.fitbur.testify.integration;
 
+import static com.fitbur.guava.common.base.Preconditions.checkState;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestVerifier;
 import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
 import com.fitbur.testify.need.Need;
-import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Class.forName;
 import static java.lang.reflect.Modifier.isFinal;
 import static java.security.AccessController.doPrivileged;

@@ -22,7 +22,7 @@
 
     <groupId>com.fitbur.testify</groupId>
     <artifactId>parent</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
     <packaging>pom</packaging>
     
     <name>Testify</name>
@@ -76,13 +76,13 @@
         <testng.version>6.9.6</testng.version>
         <mockito.verson>2.0.31-beta</mockito.verson>
         <assertj.version>3.2.0</assertj.version>
-        <asm.version>5.0.4</asm.version>
         <javax.inject.version>1</javax.inject.version>
         <jansi.version>1.11</jansi.version>
         <slf4j.version>1.7.12</slf4j.version>
         <logback.version>1.1.3</logback.version>
-        <guava.version>19.0-rc2</guava.version>
         <spring.version>4.2.3.RELEASE</spring.version>
+        <external.guava>0.5.4</external.guava>
+        <external.asm>0.5.3-SNAPSHOT</external.asm>
     </properties>
 
     <prerequisites>
@@ -282,8 +282,8 @@
                         <skip>${skipTests}</skip>
                         <skipTests>${skipTests}</skipTests>
                         <threads>4</threads>
-                        <historyInputLocation>${project.build.directory/pit.history</historyInputLocation>
-                        <historyOutputLocation>${project.build.directory/pit.history</historyOutputLocation>
+                        <historyInputLocation>${project.build.directory}/pit.history</historyInputLocation>
+                        <historyOutputLocation>${project.build.directory}/pit.history</historyOutputLocation>
                         <targetClasses>
                             <param>com.fitbur.*</param>
                         </targetClasses>
@@ -401,10 +401,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
     </dependencies>
 
     <dependencyManagement>
@@ -440,9 +436,14 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
+                <groupId>com.fitbur.external</groupId>
+                <artifactId>external-guava</artifactId>
+                <version>${external.guava}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fitbur.external</groupId>
+                <artifactId>external-asm</artifactId>
+                <version>${external.asm}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -15,6 +15,8 @@
  */
 package com.fitbur.testify.integration.injector;
 
+import static com.fitbur.guava.common.base.Preconditions.checkArgument;
+import com.fitbur.guava.common.reflect.TypeToken;
 import com.fitbur.testify.Fake;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestInjector;
@@ -22,8 +24,6 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import static com.google.common.base.Preconditions.checkArgument;
-import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -39,30 +39,32 @@ public class IntegrationNameFakeInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
-    private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
     public IntegrationNameFakeInjector(TestContext context,
             TestReifier testReifier,
-            FieldDescriptor fieldDescriptor,
             Object[] arguments) {
         this.context = context;
         this.testReifier = testReifier;
-        this.fieldDescriptor = fieldDescriptor;
         this.arguments = arguments;
     }
 
     @Override
-    public void inject() {
+    public void inject(FieldDescriptor descriptor) {
+        Fake fake = descriptor.getAnnotation(Fake.class).get();
+        String fakeName = fake.name();
+
+        if (fakeName.isEmpty()) {
+            return;
+        }
+
         Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = context.getParamaterDescriptors();
         String testClassName = context.getTestClassName();
-        Type fieldType = fieldDescriptor.getGenericType();
-        String fieldTypeName = fieldDescriptor.getTypeName();
-        String fieldName = fieldDescriptor.getName();
+        Type fieldType = descriptor.getGenericType();
+        String fieldTypeName = descriptor.getTypeName();
+        String fieldName = descriptor.getName();
         String cutTypeName = context.getCutDescriptor().getTypeName();
 
-        Fake fake = fieldDescriptor.getAnnotation(Fake.class).get();
-        String fakeName = fake.name();
         DescriptorKey descriptorKey = new DescriptorKey(fieldType, fakeName);
 
         ParameterDescriptor paramDescriptor = parameterDescriptors.get(descriptorKey);
@@ -92,7 +94,8 @@ public class IntegrationNameFakeInjector implements TestInjector {
                 + "same name of '%s'",
                 testClassName, fieldName, fakeName);
 
-        arguments[paramIndex] = testReifier.reifyField(fieldDescriptor, paramDescriptor);
+        arguments[paramIndex] = testReifier.reifyField(descriptor, paramDescriptor);
+
     }
 
 }

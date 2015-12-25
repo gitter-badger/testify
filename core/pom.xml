@@ -21,8 +21,9 @@
     <parent>
         <groupId>com.fitbur.testify</groupId>
         <artifactId>parent</artifactId>
-        <version>0.0.4</version>
+        <version>0.0.5</version>
     </parent>
+    
     <artifactId>core</artifactId>
 
     <dependencies>
@@ -32,9 +33,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-debug-all</artifactId>
-            <version>${asm.version}</version>
+            <groupId>com.fitbur.external</groupId>
+            <artifactId>external-asm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fitbur.external</groupId>
+            <artifactId>external-guava</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -71,12 +75,6 @@
             <artifactId>jansi</artifactId>
             <version>${jansi.version}</version>
         </dependency>
-        <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
-            <version>${javax.inject.version}</version>
-        </dependency>
-       
     </dependencies>
-   
+
 </project>

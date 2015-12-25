@@ -13,19 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify;
+package com.fitbur.testify.integration.fixture.service.collaborator.qualfied;
 
-import com.fitbur.testify.descriptor.FieldDescriptor;
+import com.fitbur.testify.integration.fixture.service.collaborator.Greeting;
+import com.fitbur.testify.integration.fixture.service.collaborator.qualfied.annotation.SpringQualifier;
+import org.springframework.stereotype.Component;
 
 /**
- * An interface that defines custom test injectors. Implementations of this
- * interface are responsible for injecting test classes with relevant instances
- * of objects based on certain business logic.
- *
  *
  * @author saden
  */
-public interface TestInjector {
+@SpringQualifier
+@Component
+public class SpringQualifiedHello implements Greeting {
 
-    void inject(FieldDescriptor descriptor);
+    @Override
+    public String greet() {
+        return "SpringQualifiedHello";
+    }
 }

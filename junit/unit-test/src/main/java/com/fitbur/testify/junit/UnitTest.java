@@ -15,6 +15,8 @@
  */
 package com.fitbur.testify.junit;
 
+import com.fitbur.asm.ClassReader;
+import static com.fitbur.guava.common.base.Preconditions.checkState;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.analyzer.CutClassAnalyzer;
 import com.fitbur.testify.analyzer.TestClassAnalyzer;
@@ -22,7 +24,6 @@ import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.unit.UnitTestCreator;
 import com.fitbur.testify.unit.UnitTestReifier;
 import com.fitbur.testify.unit.UnitTestVerifier;
-import static com.google.common.base.Preconditions.checkState;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.internal.AssumptionViolatedException;
@@ -35,7 +36,6 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
-import org.objectweb.asm.ClassReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;

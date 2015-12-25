@@ -15,6 +15,7 @@
  */
 package com.fitbur.testify.unit.injector;
 
+import static com.fitbur.guava.common.base.Preconditions.checkState;
 import com.fitbur.testify.Fake;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestInjector;
@@ -22,7 +23,6 @@ import com.fitbur.testify.TestReifier;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import static com.google.common.base.Preconditions.checkState;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -39,25 +39,27 @@ public class UnitIndexFakeInjector implements TestInjector {
 
     private final TestContext context;
     private final TestReifier testReifier;
-    private final FieldDescriptor fieldDescriptor;
     private final Object[] arguments;
 
     public UnitIndexFakeInjector(TestContext context,
             TestReifier testReifier,
-            FieldDescriptor fieldDescriptor,
             Object[] arguments) {
         this.context = context;
         this.testReifier = testReifier;
-        this.fieldDescriptor = fieldDescriptor;
         this.arguments = arguments;
     }
 
     @Override
-    public void inject() {
+    public void inject(FieldDescriptor descriptor) {
+        Fake fake = descriptor.getAnnotation(Fake.class).get();
+        Integer fakeIndex = fake.index();
+
+        if (fake.index() == -1) {
+            return;
+        }
+
         Map<DescriptorKey, ParameterDescriptor> parameterDescriptors = context.getParamaterDescriptors();
 
-        Fake fake = fieldDescriptor.getAnnotation(Fake.class).get();
-        Integer fakeIndex = fake.index();
         Optional<ParameterDescriptor> optional = parameterDescriptors.values()
                 .parallelStream()
                 .filter(p -> fakeIndex.equals(p.getIndex()))
@@ -67,16 +69,16 @@ public class UnitIndexFakeInjector implements TestInjector {
         Parameter parameter = paramDescriptor.getParameter();
 
         String testClassName = context.getTestClassName();
-        Type fieldType = fieldDescriptor.getGenericType();
-        String fieldTypeName = fieldDescriptor.getTypeName();
-        String fieldName = fieldDescriptor.getName();
-        Type parameterType = parameter.getParameterizedType();
+        Type fieldType = descriptor.getGenericType();
+        String fieldTypeName = descriptor.getTypeName();
+        String fieldName = descriptor.getName();
+        Type paramType = parameter.getParameterizedType();
 
-        checkState(fieldType.equals(parameterType),
+        checkState(fieldType.equals(paramType),
                 "Can not fake field '%s#%s'. Test class field type '%s' and class "
                 + "under test constructor parameter type '%s' at index '%d' do "
                 + "not match.",
-                testClassName, fieldName, fieldTypeName, parameterType, fakeIndex
+                testClassName, fieldName, fieldTypeName, paramType, fakeIndex
         );
 
         checkState(arguments[fakeIndex] == null,
@@ -86,7 +88,8 @@ public class UnitIndexFakeInjector implements TestInjector {
                 testClassName, fieldName, fakeIndex
         );
 
-        arguments[fakeIndex] = testReifier.reifyField(fieldDescriptor, paramDescriptor);
+        arguments[fakeIndex] = testReifier.reifyField(descriptor, paramDescriptor);
+
     }
 
 }
