@@ -23,65 +23,8 @@
         <artifactId>parent</artifactId>
         <version>0.0.5-SNAPSHOT</version>
     </parent>
+    
     <artifactId>core</artifactId>
-
-    <properties>
-        <plugin.shade>2.4.2</plugin.shade>
-    </properties>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>${plugin.shade}</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.fitbur</groupId>
-                        <artifactId>build-tools</artifactId>
-                        <version>0.0.2</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
-                    <createDependencyReducedPom>true</createDependencyReducedPom>
-                    <createSourcesJar>true</createSourcesJar>
-                    <shadeSourcesContent>true</shadeSourcesContent>
-                    <artifactSet>
-                        <includes>
-                            <exclude>com.google.guava:*</exclude>
-                            <exclude>org.ow2.asm:*</exclude>
-                        </includes>
-                    </artifactSet>
-                    <relocations>
-                        <relocation>
-                            <pattern>org.objectweb</pattern>
-                            <shadedPattern>com.fitbur</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>com.google</pattern>
-                            <shadedPattern>com.fitbur.guava</shadedPattern>
-                        </relocation>
-                    </relocations>
-                    <transformers>
-                        <transformer implementation="com.fitbur.build.tools.shade.ServiceResourceTransformer" />
-                        <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer" />
-                        <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
-                            <addHeader>false</addHeader>
-                        </transformer>
-                    </transformers>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
     <dependencies>
         <dependency>
@@ -90,9 +33,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-debug-all</artifactId>
-            <version>${asm.version}</version>
+            <groupId>com.fitbur.external</groupId>
+            <artifactId>external-asm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fitbur.external</groupId>
+            <artifactId>external-guava</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -123,10 +69,6 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
         </dependency>
         <dependency>
             <groupId>org.fusesource.jansi</groupId>

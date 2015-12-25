@@ -15,10 +15,15 @@
  */
 package com.fitbur.testify.analyzer;
 
+import com.fitbur.asm.ClassVisitor;
+import com.fitbur.asm.MethodVisitor;
+import static com.fitbur.asm.Opcodes.ASM5;
+import com.fitbur.asm.Type;
+import static com.fitbur.asm.Type.getMethodType;
+import static com.fitbur.guava.common.base.Preconditions.checkState;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Class.forName;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
@@ -26,11 +31,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Arrays;
 import static java.util.stream.Stream.of;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.MethodVisitor;
-import static org.objectweb.asm.Opcodes.ASM5;
-import org.objectweb.asm.Type;
-import static org.objectweb.asm.Type.getMethodType;
 
 /**
  * A class visitor implementation that performs analysis on the class under
