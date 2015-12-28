@@ -15,14 +15,12 @@
  */
 package com.fitbur.testify.analyzer;
 
-import com.fitbur.asm.AnnotationVisitor;
 import com.fitbur.asm.ClassVisitor;
 import com.fitbur.asm.FieldVisitor;
 import com.fitbur.asm.MethodVisitor;
 import static com.fitbur.asm.Opcodes.ASM5;
 import com.fitbur.asm.Type;
 import static com.fitbur.asm.Type.getMethodType;
-import static com.fitbur.asm.Type.getType;
 import static com.fitbur.guava.common.base.Preconditions.checkState;
 import com.fitbur.testify.Cut;
 import com.fitbur.testify.TestContext;
@@ -30,8 +28,6 @@ import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.MethodDescriptor;
-import com.fitbur.testify.need.Need;
-import com.fitbur.testify.need.Needs;
 import static java.lang.Class.forName;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -55,27 +51,6 @@ public class TestClassAnalyzer extends ClassVisitor {
     public TestClassAnalyzer(TestContext context) {
         super(ASM5);
         this.context = context;
-    }
-
-    @Override
-    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-        Type type = getType(desc);
-        String typeClassName = type.getClassName();
-        Class<?> testClass = context.getTestClass();
-
-        if (typeClassName.equals(Need.class.getName())) {
-            Need need = testClass.getDeclaredAnnotation(Need.class);
-            context.addNeed(need);
-        }
-
-        if (type.getClassName().equals(Needs.class.getName())) {
-            Needs needs = testClass.getDeclaredAnnotation(Needs.class);
-            for (Need needVal : needs.value()) {
-                context.addNeed(needVal);
-            }
-        }
-
-        return null;
     }
 
     @Override

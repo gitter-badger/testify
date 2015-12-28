@@ -13,9 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.integration;
+package com.fitbur.testify.system;
 
+import com.fitbur.bytebuddy.ByteBuddy;
+import com.fitbur.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import static com.fitbur.bytebuddy.implementation.MethodDelegation.to;
+import static com.fitbur.bytebuddy.matcher.ElementMatchers.isDeclaredBy;
+import static com.fitbur.bytebuddy.matcher.ElementMatchers.not;
 import static com.fitbur.guava.common.base.Preconditions.checkState;
+import com.fitbur.testify.Module;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.di.ServiceAnnotations;
@@ -24,13 +30,26 @@ import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.NeedContext;
 import com.fitbur.testify.need.NeedDescriptor;
 import com.fitbur.testify.need.NeedProvider;
+import com.fitbur.testify.system.interceptor.AnnotationInterceptor;
+import io.undertow.Handlers;
+import io.undertow.Undertow;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.PathHandler;
+import io.undertow.server.handlers.RedirectHandler;
+import io.undertow.servlet.Servlets;
+import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.DeploymentManager;
+import io.undertow.servlet.api.ServletContainerInitializerInfo;
+import io.undertow.servlet.handlers.DefaultServlet;
+import io.undertow.servlet.util.ImmediateInstanceFactory;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
+import javax.servlet.ServletContainerInitializer;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.slf4j.Logger;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.web.SpringServletContainerInitializer;
 
 /**
  * A JUnit run listener that listens for test case execution life-cycle and
@@ -38,15 +57,16 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  *
  * @author saden
  */
-public class SpringIntegrationTestRunListener extends RunListener {
+public class SpringSystemTestRunListener extends RunListener {
 
     private final TestContext testContext;
     private final ServiceAnnotations serviceAnnotations;
     private final Logger logger;
     private SpringServiceLocator serviceLocator;
     private Set<NeedContext> needContexts;
+    private Undertow server;
 
-    SpringIntegrationTestRunListener(TestContext testContext, ServiceAnnotations serviceAnnotations, Logger logger) {
+    SpringSystemTestRunListener(TestContext testContext, ServiceAnnotations serviceAnnotations, Logger logger) {
         this.testContext = testContext;
         this.serviceAnnotations = serviceAnnotations;
         this.logger = logger;
@@ -55,24 +75,69 @@ public class SpringIntegrationTestRunListener extends RunListener {
     @Override
     public void testStarted(Description description) throws Exception {
         logger.info("Running {}", description.getMethodName());
-        String testClassName = testContext.getTestClassName();
         Object testInstance = testContext.getTestInstance();
+        SpringSystemDescriptor systemDescriptor = new SpringSystemDescriptor();
+        ByteBuddy byteBuddy = new ByteBuddy();
 
-        IntegrationTestVerifier verifier = new IntegrationTestVerifier(testContext, logger);
-        AnnotationConfigApplicationContext appContext = new AnnotationConfigApplicationContext();
-        appContext.setId(testClassName);
-        appContext.setAllowBeanDefinitionOverriding(true);
-        appContext.setAllowCircularReferences(false);
-        appContext.register(SpringIntegrationPostProcessor.class);
+        AnnotationInterceptor interceptor
+                = new AnnotationInterceptor(testContext,
+                        systemDescriptor,
+                        SpringSystemPostProcessor.class);
 
-        this.serviceLocator = new SpringServiceLocator(appContext, serviceAnnotations);
+        Set<Class<?>> handles = testContext.getAnnotations(Module.class)
+                .stream()
+                .sequential()
+                .distinct()
+                .map(Module::value)
+                .map(p -> {
+                    return byteBuddy.subclass(p)
+                            .method(not(isDeclaredBy(Object.class)))
+                            .intercept(to(interceptor).filter(not(isDeclaredBy(Object.class)))).make()
+                            .load(getClass().getClassLoader(), ClassLoadingStrategy.Default.WRAPPER)
+                            .getLoaded();
+
+                }).collect(toSet());
+
+        SpringServletContainerInitializer initializer = new SpringServletContainerInitializer();
+        ImmediateInstanceFactory<SpringServletContainerInitializer> factory = new ImmediateInstanceFactory<>(initializer);
+        Class<? extends ServletContainerInitializer> type = SpringServletContainerInitializer.class;
+
+        ServletContainerInitializerInfo info
+                = new ServletContainerInitializerInfo(type, factory, handles);
+        String name = testContext.getName();
+
+        DeploymentInfo deploymentInfo = Servlets.deployment()
+                .addServletContainerInitalizer(info)
+                .setClassLoader(SpringSystemTestRunListener.class.getClassLoader())
+                .setContextPath("/")
+                .setDeploymentName(name)
+                .addServlet(Servlets.servlet(name, DefaultServlet.class));
+
+        DeploymentManager manager = Servlets.defaultContainer()
+                .addDeployment(deploymentInfo);
+
+        manager.deploy();
+        HttpHandler httpHandler = manager.start();
+
+        RedirectHandler defaultHandler = Handlers.redirect("/");
+        PathHandler pathHandler = Handlers.path(defaultHandler);
+        pathHandler.addPrefixPath("/", httpHandler);
+
+        this.server = Undertow.builder()
+                .addHttpListener(0, "localhost", pathHandler)
+                .build();
+
+        server.start();
+
+        SystemTestVerifier verifier = new SystemTestVerifier(testContext, logger);
+        this.serviceLocator = new SpringServiceLocator(systemDescriptor.getServletAppContext(), serviceAnnotations);
 
         this.needContexts = testContext.getAnnotations(Need.class).parallelStream().map(p -> {
             Class<? extends NeedProvider> providerClass = p.value();
             try {
                 NeedProvider provider = providerClass.newInstance();
                 NeedDescriptor descriptor
-                        = new SpringIntegrationNeedDescriptor(p, testContext, serviceLocator);
+                        = new SpringSystemNeedDescriptor(p, testContext, serviceLocator);
                 Object context = provider.configure(descriptor);
                 provider.init(descriptor, context);
 
@@ -83,10 +148,10 @@ public class SpringIntegrationTestRunListener extends RunListener {
             }
         }).collect(toSet());
 
-        IntegrationTestReifier reifier
-                = new IntegrationTestReifier(testContext, serviceLocator, testInstance);
-        IntegrationTestCreator creator
-                = new IntegrationTestCreator(testContext, reifier, serviceLocator);
+        SystemTestReifier reifier
+                = new SystemTestReifier(testContext, serviceLocator, testInstance);
+        SystemTestCreator creator
+                = new SystemTestCreator(testContext, reifier, serviceLocator);
 
         //if we are not testing a specific cut class we can still inject
         //services for testing purpose. this is useful for testing things
@@ -135,7 +200,7 @@ public class SpringIntegrationTestRunListener extends RunListener {
     }
 
     private void done(Description description) {
-        serviceLocator.destroy();
+        server.stop();
 
         needContexts.parallelStream().forEach(p -> {
             p.getProvider().destroy(p.getDescriptor(), p.getConfig());

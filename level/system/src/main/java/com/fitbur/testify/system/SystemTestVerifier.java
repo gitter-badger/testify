@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.integration;
+package com.fitbur.testify.system;
 
 import static com.fitbur.guava.common.base.Preconditions.checkState;
 import com.fitbur.testify.TestContext;
@@ -40,12 +40,12 @@ import org.slf4j.Logger;
  *
  * @author saden
  */
-public class IntegrationTestVerifier implements TestVerifier {
+public class SystemTestVerifier implements TestVerifier {
 
     private final TestContext testContext;
     private final Logger logger;
 
-    public IntegrationTestVerifier(TestContext context, Logger logger) {
+    public SystemTestVerifier(TestContext context, Logger logger) {
         this.testContext = context;
         this.logger = logger;
     }

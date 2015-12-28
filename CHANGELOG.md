@@ -12,11 +12,10 @@ was added, changed, deprecated, removed, fix and security fixes.
 - Security - Lists security fixes to security vulnerabilities
 
 ## [Unreleased]
-
-
 ### Added
 - @Scan annotation to enable package scanning to load services
 - Ability to support DI framework injection and qualifier annotations
+- Spring JUnit System Test support
 
 ## [0.0.1] - 2015-11-23
 ### Added

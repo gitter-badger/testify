@@ -20,7 +20,7 @@ import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.MethodDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
-import com.fitbur.testify.need.Need;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import static java.util.Collections.unmodifiableMap;
@@ -32,6 +32,7 @@ import java.util.Optional;
 import static java.util.Optional.ofNullable;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Stream.of;
 import org.slf4j.Logger;
 
 /**
@@ -45,7 +46,6 @@ public class TestContext {
     private final Class<?> testClass;
     private final Map<DescriptorKey, FieldDescriptor> fieldDescriptors = new LinkedHashMap<>();
     private final Set<MethodDescriptor> methodDescriptors = new LinkedHashSet<>();
-    private final Set<Need> needs = new LinkedHashSet<>();
     private final Map<DescriptorKey, ParameterDescriptor> paramaterDescriptors = new LinkedHashMap<>();
 
     private Object testInstance;
@@ -131,14 +131,6 @@ public class TestContext {
                 .findFirst();
     }
 
-    public void addNeed(Need need) {
-        needs.add(need);
-    }
-
-    public Set<Need> getNeeds() {
-        return needs;
-    }
-
     public void setCutDescriptor(CutDescriptor descriptor) {
         this.cutDescriptor = descriptor;
     }
@@ -177,6 +169,18 @@ public class TestContext {
 
     public int getConstructorCount() {
         return constructorCount;
+    }
+
+    public Set<? extends Annotation> getAnnotations() {
+        return of(testClass.getDeclaredAnnotations()).collect(toSet());
+    }
+
+    public <T extends Annotation> Set<T> getAnnotations(Class<T> annotationType) {
+        return of(testClass.getDeclaredAnnotationsByType(annotationType)).collect(toSet());
+    }
+
+    public <T extends Annotation> boolean hasAnnotation(Class<T> annotationType) {
+        return testClass.isAnnotationPresent(annotationType);
     }
 
 }

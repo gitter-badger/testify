@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.integration;
+package com.fitbur.testify.system;
 
 import com.fitbur.testify.Fake;
 import com.fitbur.testify.Module;
@@ -24,10 +24,10 @@ import com.fitbur.testify.descriptor.DescriptorKey;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
 import com.fitbur.testify.di.ServiceLocator;
-import com.fitbur.testify.integration.injector.IntegrationIndexFakeInjector;
-import com.fitbur.testify.integration.injector.IntegrationNameFakeInjector;
-import com.fitbur.testify.integration.injector.IntegrationRealServiceInjector;
-import com.fitbur.testify.integration.injector.IntegrationTypeFakeInjector;
+import com.fitbur.testify.system.injector.SystemIndexFakeInjector;
+import com.fitbur.testify.system.injector.SystemNameFakeInjector;
+import com.fitbur.testify.system.injector.SystemRealServiceInjector;
+import com.fitbur.testify.system.injector.SystemTypeFakeInjector;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -41,13 +41,13 @@ import static java.util.stream.Stream.of;
  *
  * @author saden
  */
-public class IntegrationTestCreator {
+public class SystemTestCreator {
 
     private final TestContext context;
     private final TestReifier testReifier;
     private final ServiceLocator locator;
 
-    public IntegrationTestCreator(TestContext testContext, TestReifier testReifier, ServiceLocator locator) {
+    public SystemTestCreator(TestContext testContext, TestReifier testReifier, ServiceLocator locator) {
         this.context = testContext;
         this.testReifier = testReifier;
         this.locator = locator;
@@ -64,7 +64,6 @@ public class IntegrationTestCreator {
                 .collect(toSet());
 
         Class<?> testClass = context.getTestClass();
-
         of(testClass.getDeclaredAnnotationsByType(Module.class))
                 .map(Module::value)
                 .distinct()
@@ -75,9 +74,9 @@ public class IntegrationTestCreator {
                 .distinct()
                 .forEachOrdered(locator::scanPackage);
 
-        IntegrationIndexFakeInjector indexInjector = new IntegrationIndexFakeInjector(context, testReifier, arguments);
-        IntegrationNameFakeInjector nameInjector = new IntegrationNameFakeInjector(context, testReifier, arguments);
-        IntegrationTypeFakeInjector typeInjector = new IntegrationTypeFakeInjector(context, testReifier, arguments);
+        SystemIndexFakeInjector indexInjector = new SystemIndexFakeInjector(context, testReifier, arguments);
+        SystemNameFakeInjector nameInjector = new SystemNameFakeInjector(context, testReifier, arguments);
+        SystemTypeFakeInjector typeInjector = new SystemTypeFakeInjector(context, testReifier, arguments);
 
         //process fields with a custom index first
         fakeDescriptors.parallelStream()
@@ -93,7 +92,7 @@ public class IntegrationTestCreator {
 
         locator.reload();
 
-        IntegrationRealServiceInjector realInjector = new IntegrationRealServiceInjector(context, locator, testReifier, arguments);
+        SystemRealServiceInjector realInjector = new SystemRealServiceInjector(context, locator, testReifier, arguments);
         descriptors.parallelStream()
                 .forEach(realInjector::inject);
 
