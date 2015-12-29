@@ -31,10 +31,7 @@ before_install:
 
 after_success:
     - codecov
-    - |
-        if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-            ./deploy.sh
-        fi
+    - ./deploy.sh
 
 env:
   global:
