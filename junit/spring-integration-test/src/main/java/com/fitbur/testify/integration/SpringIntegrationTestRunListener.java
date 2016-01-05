@@ -24,6 +24,11 @@ import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.NeedContext;
 import com.fitbur.testify.need.NeedDescriptor;
 import com.fitbur.testify.need.NeedProvider;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.Optional;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import org.junit.runner.Description;
@@ -74,6 +79,26 @@ public class SpringIntegrationTestRunListener extends RunListener {
                 NeedDescriptor descriptor
                         = new SpringIntegrationNeedDescriptor(p, testContext, serviceLocator);
                 Object context = provider.configure(descriptor);
+                Optional<Method> configMethod = testContext.getConfigMethod(context.getClass())
+                        .map(m -> m.getMethod());
+
+                if (configMethod.isPresent()) {
+                    AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                        Method method = configMethod.get();
+                        try {
+                            method.setAccessible(true);
+                            method.invoke(descriptor.getTestInstance(), context);
+                        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                            checkState(false, "Call to config method '%s' in test class '%s' failed.",
+                                    method.getName(), descriptor.getTestClassName());
+                        }
+
+                        return null;
+                    });
+                }
+
+                serviceLocator.addConstant(descriptor.getTestClassName(), context);
+
                 provider.init(descriptor, context);
 
                 return new NeedContext(provider, descriptor, context);
@@ -138,7 +163,7 @@ public class SpringIntegrationTestRunListener extends RunListener {
         serviceLocator.destroy();
 
         needContexts.parallelStream().forEach(p -> {
-            p.getProvider().destroy(p.getDescriptor(), p.getConfig());
+            p.getProvider().destroy(p.getDescriptor(), p.getContext());
         });
 
     }

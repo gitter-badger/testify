@@ -13,54 +13,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.need;
+package com.fitbur.testify.app;
 
 import java.util.Objects;
 
 /**
- * A small context object that contains need contextual information. This
- * context is used in conjunction with {@link NeedProvider} to manage the
- * life-cycle of a need.
+ * A small context object that contains server contextual information. This
+ * context is used in conjunction with {@link ServerProvider} to manage the
+ * life-cycle of a server.
  *
  * @author saden
  */
-public class NeedContext {
+public class ServerContext {
 
-    private final NeedProvider provider;
-    private final NeedDescriptor descriptor;
-    private final Object context;
+    private final ServerProvider provider;
+    private final ServerDescriptor descriptor;
+    private final Object config;
 
-    public NeedContext(NeedProvider provider, NeedDescriptor descriptor, Object context) {
+    public ServerContext(ServerProvider provider, ServerDescriptor descriptor, Object config) {
         this.provider = provider;
         this.descriptor = descriptor;
-        this.context = context;
+        this.config = config;
     }
 
     /**
-     * Get the need provider.
+     * Get the server provider.
      *
-     * @return the need provider
+     * @return the server provider
      */
-    public NeedProvider getProvider() {
+    public ServerProvider getProvider() {
         return provider;
     }
 
     /**
-     * Get the need descriptor.
+     * Get the server descriptor.
      *
-     * @return the need descriptor.
+     * @return the server descriptor.
      */
-    public NeedDescriptor getDescriptor() {
+    public ServerDescriptor getDescriptor() {
         return descriptor;
     }
 
     /**
-     * Get the need configuration context object.
+     * Get the server configuration object.
      *
-     * @return the need context configuration.
+     * @return the server configuration.
      */
-    public Object getContext() {
-        return context;
+    public Object getConfig() {
+        return config;
     }
 
     @Override
@@ -68,7 +68,7 @@ public class NeedContext {
         int hash = 5;
         hash = 71 * hash + Objects.hashCode(this.provider);
         hash = 71 * hash + Objects.hashCode(this.descriptor);
-        hash = 71 * hash + Objects.hashCode(this.context);
+        hash = 71 * hash + Objects.hashCode(this.config);
         return hash;
     }
 
@@ -83,19 +83,19 @@ public class NeedContext {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final NeedContext other = (NeedContext) obj;
+        final ServerContext other = (ServerContext) obj;
         if (!Objects.equals(this.provider, other.provider)) {
             return false;
         }
         if (!Objects.equals(this.descriptor, other.descriptor)) {
             return false;
         }
-        return Objects.equals(this.context, other.context);
+        return Objects.equals(this.config, other.config);
     }
 
     @Override
     public String toString() {
-        return "NeedContext{" + "provider=" + provider + ", descriptor=" + descriptor + ", context=" + context + '}';
+        return "ServerContext{" + "provider=" + provider + ", descriptor=" + descriptor + ", config=" + config + '}';
     }
 
 }

@@ -49,17 +49,17 @@ public interface NeedProvider<T> {
      * </p>
      *
      * @param descriptor the need descriptor
-     * @param config the configuration object
+     * @param context the configuration context object
      */
-    void init(NeedDescriptor descriptor, T config);
+    void init(NeedDescriptor descriptor, T context);
 
     /**
      * Destroy the need with the given descriptor and configuration.
      *
      * @param descriptor the need descriptor
-     * @param config the configuration object
+     * @param context the configuration context object
      */
-    default void destroy(NeedDescriptor descriptor, T config) {
+    default void destroy(NeedDescriptor descriptor, T context) {
     }
 
 }

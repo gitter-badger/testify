@@ -30,7 +30,9 @@ import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.NeedContext;
 import com.fitbur.testify.need.NeedDescriptor;
 import com.fitbur.testify.need.NeedProvider;
+import com.fitbur.testify.app.ServerDescriptor;
 import com.fitbur.testify.system.interceptor.AnnotationInterceptor;
+import com.fitbur.testify.system.support.UndertowSystemTestServer;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
@@ -42,6 +44,7 @@ import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.api.ServletContainerInitializerInfo;
 import io.undertow.servlet.handlers.DefaultServlet;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
+import java.net.URI;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import javax.servlet.ServletContainerInitializer;
@@ -106,10 +109,12 @@ public class SpringSystemTestRunListener extends RunListener {
                 = new ServletContainerInitializerInfo(type, factory, handles);
         String name = testContext.getName();
 
+        URI uri = URI.create("http://0.0.0.0:0/");
+
         DeploymentInfo deploymentInfo = Servlets.deployment()
                 .addServletContainerInitalizer(info)
                 .setClassLoader(SpringSystemTestRunListener.class.getClassLoader())
-                .setContextPath("/")
+                .setContextPath(uri.getPath())
                 .setDeploymentName(name)
                 .addServlet(Servlets.servlet(name, DefaultServlet.class));
 
@@ -119,15 +124,17 @@ public class SpringSystemTestRunListener extends RunListener {
         manager.deploy();
         HttpHandler httpHandler = manager.start();
 
-        RedirectHandler defaultHandler = Handlers.redirect("/");
+        RedirectHandler defaultHandler = Handlers.redirect(uri.getPath());
         PathHandler pathHandler = Handlers.path(defaultHandler);
-        pathHandler.addPrefixPath("/", httpHandler);
+        pathHandler.addPrefixPath(uri.getPath(), httpHandler);
 
         this.server = Undertow.builder()
-                .addHttpListener(0, "localhost", pathHandler)
+                .addHttpListener(uri.getPort(), uri.getHost(), pathHandler)
                 .build();
 
         server.start();
+
+        ServerDescriptor serverContext = new UndertowSystemTestServer(uri, server).create();
 
         SystemTestVerifier verifier = new SystemTestVerifier(testContext, logger);
         this.serviceLocator = new SpringServiceLocator(systemDescriptor.getServletAppContext(), serviceAnnotations);
@@ -203,9 +210,10 @@ public class SpringSystemTestRunListener extends RunListener {
         server.stop();
 
         needContexts.parallelStream().forEach(p -> {
-            p.getProvider().destroy(p.getDescriptor(), p.getConfig());
+            p.getProvider().destroy(p.getDescriptor(), p.getContext());
         });
 
     }
+
 
 }

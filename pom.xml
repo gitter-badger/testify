@@ -39,6 +39,7 @@
         <module>level</module>
         <module>junit</module>
         <module>need</module>
+        <module>server</module>
         <module>examples</module>
     </modules>
     

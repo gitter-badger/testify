@@ -303,6 +303,11 @@ public class SpringServiceLocator implements ServiceLocator {
     }
 
     @Override
+    public void addConstant(String name, Object instance) {
+        ((DefaultListableBeanFactory) context.getBeanFactory()).registerSingleton(name, instance);
+    }
+
+    @Override
     public void removeService(ServiceDescriptor descriptor) {
         ((BeanDefinitionRegistry) context).removeBeanDefinition(descriptor.getName());
     }

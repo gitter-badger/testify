@@ -16,80 +16,33 @@
 package com.fitbur.testify.need.hsql;
 
 import static com.fitbur.guava.common.base.Preconditions.checkState;
-import com.fitbur.testify.di.ServiceDescriptor;
-import com.fitbur.testify.di.ServiceDescriptorBuilder;
-import com.fitbur.testify.di.ServiceLocator;
-import static com.fitbur.testify.di.ServiceScope.SINGLETON;
 import com.fitbur.testify.need.NeedDescriptor;
 import com.fitbur.testify.need.NeedProvider;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import static java.lang.String.format;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Optional;
+import org.hsqldb.jdbc.JDBCDataSource;
 
 /**
  * An in memory implementation of a HSQL test need provider.
  *
  * @author saden
  */
-public class InMemoryHSQL implements NeedProvider<HikariConfig> {
+public class InMemoryHSQL implements NeedProvider<JDBCDataSource> {
 
     @Override
-    public HikariConfig configure(NeedDescriptor descriptor) {
-        HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(format("jdbc:hsqldb:mem:%s", descriptor.getTestClassName()));
-        hikariConfig.setDriverClassName("org.hsqldb.jdbc.JDBCDriver");
-        hikariConfig.setUsername("sa");
-        hikariConfig.setPassword("");
+    public JDBCDataSource configure(NeedDescriptor descriptor) {
+        JDBCDataSource dataSource = new JDBCDataSource();
+        dataSource.setUrl(format("jdbc:hsqldb:mem:%s", descriptor.getTestClassName()));
+        dataSource.setUser("sa");
+        dataSource.setPassword("");
 
-        Optional<Method> configMethod = descriptor.getConfigMethod(HikariConfig.class);
-        if (configMethod.isPresent()) {
-            AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-                Method method = configMethod.get();
-
-                try {
-                    method.setAccessible(true);
-                    method.invoke(descriptor.getTestInstance(), hikariConfig);
-                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                    checkState(false, "Call to config method '%s' in test class '%s' failed.",
-                            method.getName(), descriptor.getTestClassName());
-                }
-                return null;
-            });
-        }
-
-        Optional<? extends ServiceLocator> locator = descriptor.getServiceLocator();
-        if (locator.isPresent()) {
-            ServiceLocator serviceLocator = locator.get();
-
-            ServiceDescriptor serviceDescriptor = new ServiceDescriptorBuilder()
-                    .name(descriptor.getTestClassName())
-                    .type(HikariDataSource.class)
-                    .scope(SINGLETON)
-                    .arguments(hikariConfig)
-                    .lazy(true)
-                    .discoverable(true)
-                    .injectable(false)
-                    .primary(true)
-                    .build();
-
-            serviceLocator.addService(serviceDescriptor);
-        }
-
-        return hikariConfig;
+        return dataSource;
     }
 
     @Override
-    public void init(NeedDescriptor descriptor, HikariConfig config) {
-        HikariDataSource dataSource = new HikariDataSource(config);
-
+    public void init(NeedDescriptor descriptor, JDBCDataSource dataSource) {
         try {
             try (Connection connection = dataSource.getConnection()) {
                 Statement statement = connection.createStatement();
@@ -105,8 +58,7 @@ public class InMemoryHSQL implements NeedProvider<HikariConfig> {
     }
 
     @Override
-    public void destroy(NeedDescriptor descriptor, HikariConfig config) {
-        HikariDataSource dataSource = new HikariDataSource(config);
+    public void destroy(NeedDescriptor descriptor, JDBCDataSource dataSource) {
         try {
             try (Connection connection = dataSource.getConnection()) {
                 Statement statement = connection.createStatement();
@@ -118,15 +70,6 @@ public class InMemoryHSQL implements NeedProvider<HikariConfig> {
         } catch (SQLException e) {
             checkState(false, "Need provider '%' failed shutdown the database.\n%s",
                     this.getClass().getSimpleName(), e.getMessage());
-        }
-
-        Optional<? extends ServiceLocator> serviceLocator = descriptor.getServiceLocator();
-
-        if (serviceLocator.isPresent()) {
-            ServiceLocator locator = serviceLocator.get();
-            if (locator.isActive()) {
-                locator.removeService(descriptor.getTestClassName());
-            }
         }
     }
 
