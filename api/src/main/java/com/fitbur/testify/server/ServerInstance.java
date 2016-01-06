@@ -13,29 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.app;
+package com.fitbur.testify.server;
+
+import java.net.URI;
 
 /**
- * A contract that defines methods for creating and destroying a server.
+ * A contract that defines methods for getting information about the running
+ * server as well as managing its lifecycle.
  *
  * @author saden
+ * @param <T> the underlying server implementation type.
  */
-public interface ServerProvider {
+public interface ServerInstance<T> {
 
     /**
-     * <p>
-     * Instantiate the server.
-     * </p>
+     * The base URI of the server instance.
      *
-     * @return the server descriptor
+     * @return the base URI.
      */
-    ServerDescriptor init();
+    URI getBaseURI();
 
     /**
-     * Destroy the server with the given descriptor.
+     * Get the underlying server implementation.
      *
-     * @param descriptor the need descriptor
+     * @return the underlying server implementation.
      */
-    default void destroy(ServerDescriptor descriptor) {
+    T getServer();
+
+    /**
+     * Start the server.
+     */
+    void start();
+
+    /**
+     * Stop the server.
+     */
+    void stop();
+
+    /**
+     * Restart the server.
+     */
+    default void restart() {
     }
+
 }

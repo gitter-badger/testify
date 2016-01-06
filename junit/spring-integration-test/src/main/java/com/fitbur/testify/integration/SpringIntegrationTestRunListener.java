@@ -63,7 +63,6 @@ public class SpringIntegrationTestRunListener extends RunListener {
         String testClassName = testContext.getTestClassName();
         Object testInstance = testContext.getTestInstance();
 
-        IntegrationTestVerifier verifier = new IntegrationTestVerifier(testContext, logger);
         AnnotationConfigApplicationContext appContext = new AnnotationConfigApplicationContext();
         appContext.setId(testClassName);
         appContext.setAllowBeanDefinitionOverriding(true);
@@ -78,7 +77,7 @@ public class SpringIntegrationTestRunListener extends RunListener {
                 NeedProvider provider = providerClass.newInstance();
                 NeedDescriptor descriptor
                         = new SpringIntegrationNeedDescriptor(p, testContext, serviceLocator);
-                Object context = provider.configure(descriptor);
+                Object context = provider.configuration(descriptor);
                 Optional<Method> configMethod = testContext.getConfigMethod(context.getClass())
                         .map(m -> m.getMethod());
 
@@ -101,7 +100,7 @@ public class SpringIntegrationTestRunListener extends RunListener {
 
                 provider.init(descriptor, context);
 
-                return new NeedContext(provider, descriptor, context);
+                return new NeedContext(provider, descriptor, serviceLocator, context);
             } catch (InstantiationException | IllegalAccessException ex) {
                 checkState(false, "Need provider '%s' could not be instanticated.", providerClass.getSimpleName());
                 return null;
@@ -127,6 +126,7 @@ public class SpringIntegrationTestRunListener extends RunListener {
             creator.cut();
         }
 
+        IntegrationTestVerifier verifier = new IntegrationTestVerifier(testContext, logger);
         verifier.wiring();
 
     }
@@ -160,11 +160,11 @@ public class SpringIntegrationTestRunListener extends RunListener {
     }
 
     private void done(Description description) {
-        serviceLocator.destroy();
-
         needContexts.parallelStream().forEach(p -> {
             p.getProvider().destroy(p.getDescriptor(), p.getContext());
         });
+
+        serviceLocator.destroy();
 
     }
 

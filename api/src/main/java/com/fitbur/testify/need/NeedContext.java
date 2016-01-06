@@ -15,7 +15,10 @@
  */
 package com.fitbur.testify.need;
 
+import com.fitbur.testify.di.ServiceLocator;
 import java.util.Objects;
+import java.util.Optional;
+import static java.util.Optional.ofNullable;
 
 /**
  * A small context object that contains need contextual information. This
@@ -28,11 +31,16 @@ public class NeedContext {
 
     private final NeedProvider provider;
     private final NeedDescriptor descriptor;
+    private final ServiceLocator locator;
     private final Object context;
 
-    public NeedContext(NeedProvider provider, NeedDescriptor descriptor, Object context) {
+    public NeedContext(NeedProvider provider,
+            NeedDescriptor descriptor,
+            ServiceLocator locator,
+            Object context) {
         this.provider = provider;
         this.descriptor = descriptor;
+        this.locator = locator;
         this.context = context;
     }
 
@@ -52,6 +60,15 @@ public class NeedContext {
      */
     public NeedDescriptor getDescriptor() {
         return descriptor;
+    }
+
+    /**
+     * Get an optional service locator associated with the need.
+     *
+     * @return an optional containing the service locator, an empty otherwise
+     */
+    Optional<? extends ServiceLocator> getServiceLocator() {
+        return ofNullable(locator);
     }
 
     /**

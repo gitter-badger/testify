@@ -32,7 +32,7 @@ import org.hsqldb.jdbc.JDBCDataSource;
 public class InMemoryHSQL implements NeedProvider<JDBCDataSource> {
 
     @Override
-    public JDBCDataSource configure(NeedDescriptor descriptor) {
+    public JDBCDataSource configuration(NeedDescriptor descriptor) {
         JDBCDataSource dataSource = new JDBCDataSource();
         dataSource.setUrl(format("jdbc:hsqldb:mem:%s", descriptor.getTestClassName()));
         dataSource.setUser("sa");

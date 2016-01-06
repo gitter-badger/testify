@@ -21,33 +21,25 @@ import static com.fitbur.bytebuddy.implementation.MethodDelegation.to;
 import static com.fitbur.bytebuddy.matcher.ElementMatchers.isDeclaredBy;
 import static com.fitbur.bytebuddy.matcher.ElementMatchers.not;
 import static com.fitbur.guava.common.base.Preconditions.checkState;
-import com.fitbur.testify.Module;
+import com.fitbur.testify.App;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.di.ServiceAnnotations;
+import com.fitbur.testify.di.ServiceLocator;
 import com.fitbur.testify.di.spring.SpringServiceLocator;
 import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.NeedContext;
 import com.fitbur.testify.need.NeedDescriptor;
 import com.fitbur.testify.need.NeedProvider;
-import com.fitbur.testify.app.ServerDescriptor;
+import com.fitbur.testify.server.ServerContext;
+import com.fitbur.testify.server.ServerInstance;
+import com.fitbur.testify.server.ServerProvider;
+import com.fitbur.testify.server.undertow.UndertowServerProvider;
 import com.fitbur.testify.system.interceptor.AnnotationInterceptor;
-import com.fitbur.testify.system.support.UndertowSystemTestServer;
-import io.undertow.Handlers;
-import io.undertow.Undertow;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.PathHandler;
-import io.undertow.server.handlers.RedirectHandler;
-import io.undertow.servlet.Servlets;
-import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.api.DeploymentManager;
-import io.undertow.servlet.api.ServletContainerInitializerInfo;
-import io.undertow.servlet.handlers.DefaultServlet;
-import io.undertow.servlet.util.ImmediateInstanceFactory;
-import java.net.URI;
+import com.fitbur.testify.system.interceptor.InterceptorContext;
+import java.util.HashSet;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
-import javax.servlet.ServletContainerInitializer;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
@@ -62,12 +54,12 @@ import org.springframework.web.SpringServletContainerInitializer;
  */
 public class SpringSystemTestRunListener extends RunListener {
 
+    private final static ByteBuddy BYTE_BUDDY = new ByteBuddy();
     private final TestContext testContext;
     private final ServiceAnnotations serviceAnnotations;
     private final Logger logger;
-    private SpringServiceLocator serviceLocator;
     private Set<NeedContext> needContexts;
-    private Undertow server;
+    private ServerContext serverContext;
 
     SpringSystemTestRunListener(TestContext testContext, ServiceAnnotations serviceAnnotations, Logger logger) {
         this.testContext = testContext;
@@ -79,76 +71,68 @@ public class SpringSystemTestRunListener extends RunListener {
     public void testStarted(Description description) throws Exception {
         logger.info("Running {}", description.getMethodName());
         Object testInstance = testContext.getTestInstance();
-        SpringSystemDescriptor systemDescriptor = new SpringSystemDescriptor();
-        ByteBuddy byteBuddy = new ByteBuddy();
 
-        AnnotationInterceptor interceptor
-                = new AnnotationInterceptor(testContext,
-                        systemDescriptor,
-                        SpringSystemPostProcessor.class);
-
-        Set<Class<?>> handles = testContext.getAnnotations(Module.class)
-                .stream()
-                .sequential()
-                .distinct()
-                .map(Module::value)
+        this.serverContext = testContext.getAnnotation(App.class)
                 .map(p -> {
-                    return byteBuddy.subclass(p)
-                            .method(not(isDeclaredBy(Object.class)))
-                            .intercept(to(interceptor).filter(not(isDeclaredBy(Object.class)))).make()
-                            .load(getClass().getClassLoader(), ClassLoadingStrategy.Default.WRAPPER)
-                            .getLoaded();
+                    Class<?> appType = p.value();
+                    Class<? extends ServerProvider> providerType = p.provider();
+                    try {
+                        ServerProvider provider;
+                        if (providerType.equals(ServerProvider.class)) {
+                            provider = UndertowServerProvider.class.newInstance();
+                        } else {
+                            provider = providerType.newInstance();
 
-                }).collect(toSet());
+                        }
 
-        SpringServletContainerInitializer initializer = new SpringServletContainerInitializer();
-        ImmediateInstanceFactory<SpringServletContainerInitializer> factory = new ImmediateInstanceFactory<>(initializer);
-        Class<? extends ServletContainerInitializer> type = SpringServletContainerInitializer.class;
+                        InterceptorContext interceptorContext = new InterceptorContext();
+                        AnnotationInterceptor interceptor
+                                = new AnnotationInterceptor(testContext,
+                                        interceptorContext,
+                                        SpringSystemPostProcessor.class);
 
-        ServletContainerInitializerInfo info
-                = new ServletContainerInitializerInfo(type, factory, handles);
-        String name = testContext.getName();
+                        Class<?> proxyAppType = BYTE_BUDDY.subclass(appType)
+                                .method(not(isDeclaredBy(Object.class)))
+                                .intercept(to(interceptor).filter(not(isDeclaredBy(Object.class)))).make()
+                                .load(getClass().getClassLoader(), ClassLoadingStrategy.Default.WRAPPER)
+                                .getLoaded();
 
-        URI uri = URI.create("http://0.0.0.0:0/");
+                        Set<Class<?>> handles = new HashSet<>();
+                        handles.add(proxyAppType);
 
-        DeploymentInfo deploymentInfo = Servlets.deployment()
-                .addServletContainerInitalizer(info)
-                .setClassLoader(SpringSystemTestRunListener.class.getClassLoader())
-                .setContextPath(uri.getPath())
-                .setDeploymentName(name)
-                .addServlet(Servlets.servlet(name, DefaultServlet.class));
+                        SpringSystemServerDescriptor descriptor
+                                = new SpringSystemServerDescriptor(p,
+                                        testContext,
+                                        SpringServletContainerInitializer.class,
+                                        handles
+                                );
 
-        DeploymentManager manager = Servlets.defaultContainer()
-                .addDeployment(deploymentInfo);
+                        Object context = provider.configuration(descriptor);
+                        ServerInstance instance = provider.init(descriptor, context);
+                        instance.start();
+                        SpringServiceLocator serviceLocator
+                                = new SpringServiceLocator(interceptorContext.getServletAppContext(),
+                                        serviceAnnotations);
 
-        manager.deploy();
-        HttpHandler httpHandler = manager.start();
+                        return new ServerContext(provider, descriptor, instance, serviceLocator, context);
+                    } catch (InstantiationException | IllegalAccessException ex) {
+                        checkState(false, "Server provider '%s' could not be instanticated.", providerType.getSimpleName());
+                        return null;
+                    }
+                }).get();
 
-        RedirectHandler defaultHandler = Handlers.redirect(uri.getPath());
-        PathHandler pathHandler = Handlers.path(defaultHandler);
-        pathHandler.addPrefixPath(uri.getPath(), httpHandler);
-
-        this.server = Undertow.builder()
-                .addHttpListener(uri.getPort(), uri.getHost(), pathHandler)
-                .build();
-
-        server.start();
-
-        ServerDescriptor serverContext = new UndertowSystemTestServer(uri, server).create();
-
-        SystemTestVerifier verifier = new SystemTestVerifier(testContext, logger);
-        this.serviceLocator = new SpringServiceLocator(systemDescriptor.getServletAppContext(), serviceAnnotations);
+        ServiceLocator serviceLocator = serverContext.getLocator();
 
         this.needContexts = testContext.getAnnotations(Need.class).parallelStream().map(p -> {
             Class<? extends NeedProvider> providerClass = p.value();
             try {
                 NeedProvider provider = providerClass.newInstance();
                 NeedDescriptor descriptor
-                        = new SpringSystemNeedDescriptor(p, testContext, serviceLocator);
-                Object context = provider.configure(descriptor);
+                        = new SpringSystemNeedDescriptor(p, testContext);
+                Object context = provider.configuration(descriptor);
                 provider.init(descriptor, context);
 
-                return new NeedContext(provider, descriptor, context);
+                return new NeedContext(provider, descriptor, serverContext.getLocator(), context);
             } catch (InstantiationException | IllegalAccessException ex) {
                 checkState(false, "Need provider '%s' could not be instanticated.", providerClass.getSimpleName());
                 return null;
@@ -174,6 +158,7 @@ public class SpringSystemTestRunListener extends RunListener {
             creator.cut();
         }
 
+        SystemTestVerifier verifier = new SystemTestVerifier(testContext, logger);
         verifier.wiring();
 
     }
@@ -207,13 +192,11 @@ public class SpringSystemTestRunListener extends RunListener {
     }
 
     private void done(Description description) {
-        server.stop();
-
         needContexts.parallelStream().forEach(p -> {
             p.getProvider().destroy(p.getDescriptor(), p.getContext());
         });
 
+        serverContext.getInstance().stop();
     }
-
 
 }

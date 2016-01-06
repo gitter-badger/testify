@@ -15,23 +15,85 @@
  */
 package com.fitbur.testify.server.undertow;
 
-import com.fitbur.testify.app.ServerDescriptor;
-import com.fitbur.testify.app.ServerProvider;
+import com.fitbur.testify.App;
+import com.fitbur.testify.server.ServerDescriptor;
+import com.fitbur.testify.server.ServerInstance;
+import com.fitbur.testify.server.ServerProvider;
+import io.undertow.Handlers;
+import io.undertow.Undertow;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.PathHandler;
+import io.undertow.server.handlers.RedirectHandler;
+import io.undertow.servlet.Servlets;
+import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.DeploymentManager;
+import io.undertow.servlet.api.ServletContainerInitializerInfo;
+import io.undertow.servlet.handlers.DefaultServlet;
+import io.undertow.servlet.util.ImmediateInstanceFactory;
+import java.net.URI;
+import java.util.Set;
+import javax.servlet.ServletContainerInitializer;
 
 /**
- *
+ * An Undertow server provider implementation.
  * @author saden
  */
-public class UndertowServerProvider implements ServerProvider {
+public class UndertowServerProvider implements ServerProvider<DeploymentInfo> {
 
     @Override
-    public ServerDescriptor init() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public DeploymentInfo configuration(ServerDescriptor descriptor) {
+        try {
+            App app = descriptor.getApp();
+            Set<Class<?>> handles = descriptor.getHandlesType();
+            String name = descriptor.getTestClassName();
+            Class<? extends ServletContainerInitializer> servletType = descriptor.getServletContainerInitializer();
+            ServletContainerInitializer servlet = servletType.newInstance();
+            ImmediateInstanceFactory<ServletContainerInitializer> factory = new ImmediateInstanceFactory<>(servlet);
+            URI uri = URI.create("http://0.0.0.0:0/");
+            ServletContainerInitializerInfo initInfo
+                    = new ServletContainerInitializerInfo(servletType, factory, handles);
+
+            DeploymentInfo deploymentInfo = Servlets.deployment()
+                    .addServletContainerInitalizer(initInfo)
+                    .setClassLoader(descriptor.getTestClass().getClassLoader())
+                    .setHostName(uri.getHost())
+                    .setContextPath(uri.getPath())
+                    .setDeploymentName(name)
+                    .addServlet(Servlets.servlet(name, DefaultServlet.class));
+
+            return deploymentInfo;
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
-    public void destroy(ServerDescriptor descriptor) {
-        ServerProvider.super.destroy(descriptor); //To change body of generated methods, choose Tools | Templates.
+    public ServerInstance init(ServerDescriptor descriptor, DeploymentInfo deploymentInfo) {
+        try {
+            DeploymentManager manager = Servlets.defaultContainer()
+                    .addDeployment(deploymentInfo);
+
+            manager.deploy();
+            HttpHandler httpHandler = manager.start();
+
+            RedirectHandler defaultHandler = Handlers.redirect(deploymentInfo.getContextPath());
+            PathHandler pathHandler = Handlers.path(defaultHandler);
+            pathHandler.addPrefixPath(deploymentInfo.getContextPath(), httpHandler);
+
+            Undertow undertow = Undertow.builder()
+                    .addHttpListener(0, deploymentInfo.getHostName(), pathHandler)
+                    .build();
+
+            return new UndertowServerInstance(undertow, deploymentInfo);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+
+    }
+
+    @Override
+    public void destroy(ServerDescriptor descriptor, ServerInstance instance, DeploymentInfo context) {
+        instance.stop();
     }
 
 }

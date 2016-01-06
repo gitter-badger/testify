@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.app;
+package com.fitbur.testify.server;
 
+import com.fitbur.testify.di.ServiceLocator;
 import java.util.Objects;
 
 /**
@@ -28,11 +29,19 @@ public class ServerContext {
 
     private final ServerProvider provider;
     private final ServerDescriptor descriptor;
+    private final ServerInstance instance;
+    private final ServiceLocator locator;
     private final Object config;
 
-    public ServerContext(ServerProvider provider, ServerDescriptor descriptor, Object config) {
+    public ServerContext(ServerProvider provider,
+            ServerDescriptor descriptor,
+            ServerInstance serverInstance,
+            ServiceLocator locator,
+            Object config) {
         this.provider = provider;
         this.descriptor = descriptor;
+        this.instance = serverInstance;
+        this.locator = locator;
         this.config = config;
     }
 
@@ -63,12 +72,32 @@ public class ServerContext {
         return config;
     }
 
+    /**
+     * Get the server instance.
+     *
+     * @return the server instance.
+     */
+    public ServerInstance getInstance() {
+        return instance;
+    }
+
+    /**
+     * Get the server service locator.
+     *
+     * @return the server service locator.
+     */
+    public ServiceLocator getLocator() {
+        return locator;
+    }
+
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 71 * hash + Objects.hashCode(this.provider);
-        hash = 71 * hash + Objects.hashCode(this.descriptor);
-        hash = 71 * hash + Objects.hashCode(this.config);
+        int hash = 7;
+        hash = 17 * hash + Objects.hashCode(this.provider);
+        hash = 17 * hash + Objects.hashCode(this.descriptor);
+        hash = 17 * hash + Objects.hashCode(this.instance);
+        hash = 17 * hash + Objects.hashCode(this.locator);
+        hash = 17 * hash + Objects.hashCode(this.config);
         return hash;
     }
 
@@ -90,12 +119,24 @@ public class ServerContext {
         if (!Objects.equals(this.descriptor, other.descriptor)) {
             return false;
         }
+        if (!Objects.equals(this.instance, other.instance)) {
+            return false;
+        }
+        if (!Objects.equals(this.locator, other.locator)) {
+            return false;
+        }
         return Objects.equals(this.config, other.config);
     }
 
     @Override
     public String toString() {
-        return "ServerContext{" + "provider=" + provider + ", descriptor=" + descriptor + ", config=" + config + '}';
+        return "ServerContext{"
+                + "provider=" + provider
+                + ", descriptor=" + descriptor
+                + ", instance=" + instance
+                + ", locator=" + locator
+                + ", config=" + config
+                + '}';
     }
 
 }

@@ -23,6 +23,7 @@ import com.fitbur.testify.descriptor.ParameterDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 import java.util.LinkedHashMap;
@@ -175,12 +176,30 @@ public class TestContext {
         return of(testClass.getDeclaredAnnotations()).collect(toSet());
     }
 
+    public <T extends Annotation> Optional<T> getAnnotation(Class<T> annotationType) {
+        return ofNullable(testClass.getDeclaredAnnotation(annotationType));
+    }
+
     public <T extends Annotation> Set<T> getAnnotations(Class<T> annotationType) {
         return of(testClass.getDeclaredAnnotationsByType(annotationType)).collect(toSet());
     }
 
-    public <T extends Annotation> boolean hasAnnotation(Class<T> annotationType) {
-        return testClass.isAnnotationPresent(annotationType);
+    public <T extends Annotation> boolean hasAnnotation(Class<T> type) {
+        return testClass.getDeclaredAnnotation(type) != null;
+    }
+
+    public boolean hasAnyAnnotation(Class<? extends Annotation>... type) {
+        return of(type)
+                .parallel()
+                .distinct()
+                .anyMatch(p -> testClass.getDeclaredAnnotation(p) != null);
+    }
+
+    public boolean hasAnnotations(Collection<Class<? extends Annotation>> annotations) {
+        return of(testClass.getDeclaredAnnotations())
+                .parallel()
+                .distinct()
+                .anyMatch(p -> annotations.contains(p.annotationType()));
     }
 
 }

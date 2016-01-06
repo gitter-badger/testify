@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.system;
+package com.fitbur.testify.system.interceptor;
 
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
- * A descriptor class that contains servlet context information.
+ * Context object for storing intercepted configuration.
  *
  * @author saden
  */
-public class SpringSystemDescriptor {
+public class InterceptorContext {
 
     private Class<?>[] servletConfigClasses;
     private ConfigurableApplicationContext servletAppContext;

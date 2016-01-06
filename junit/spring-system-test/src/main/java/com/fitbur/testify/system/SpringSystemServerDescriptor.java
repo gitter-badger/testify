@@ -13,35 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.integration;
+package com.fitbur.testify.system;
 
+import com.fitbur.testify.App;
 import com.fitbur.testify.TestContext;
-import com.fitbur.testify.di.spring.SpringServiceLocator;
-import com.fitbur.testify.need.Need;
-import com.fitbur.testify.need.NeedDescriptor;
+import com.fitbur.testify.server.ServerDescriptor;
+import java.util.Set;
+import org.springframework.web.SpringServletContainerInitializer;
 
 /**
- * Spring need descriptor.
+ * A spring system test server descriptor.
  *
  * @author saden
  */
-public class SpringIntegrationNeedDescriptor implements NeedDescriptor {
+public class SpringSystemServerDescriptor implements ServerDescriptor {
 
-    private final Need need;
+    private final App app;
     private final TestContext testContext;
-    private final SpringServiceLocator serviceLocator;
+    private final Class<SpringServletContainerInitializer> initializer;
+    private final Set<Class<?>> handles;
 
-    public SpringIntegrationNeedDescriptor(Need need,
+    SpringSystemServerDescriptor(App app,
             TestContext testContext,
-            SpringServiceLocator serviceLocator) {
-        this.need = need;
+            Class<SpringServletContainerInitializer> initializer,
+            Set<Class<?>> handles) {
+        this.app = app;
         this.testContext = testContext;
-        this.serviceLocator = serviceLocator;
+        this.initializer = initializer;
+        this.handles = handles;
+
     }
 
     @Override
-    public Need getNeed() {
-        return need;
+    public App getApp() {
+        return app;
     }
 
     @Override
@@ -57,6 +62,16 @@ public class SpringIntegrationNeedDescriptor implements NeedDescriptor {
     @Override
     public String getTestClassName() {
         return testContext.getTestClassName();
+    }
+
+    @Override
+    public Set<Class<?>> getHandlesType() {
+        return handles;
+    }
+
+    @Override
+    public Class<SpringServletContainerInitializer> getServletContainerInitializer() {
+        return initializer;
     }
 
 }

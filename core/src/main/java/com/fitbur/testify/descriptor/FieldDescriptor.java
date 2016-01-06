@@ -18,6 +18,7 @@ package com.fitbur.testify.descriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import static java.util.Optional.empty;
@@ -100,16 +101,20 @@ public class FieldDescriptor {
     }
 
     public <T extends Annotation> boolean hasAnnotation(Class<T> type) {
-        return field.isAnnotationPresent(type);
+        return field.getDeclaredAnnotation(type) != null;
     }
 
     public boolean hasAnyAnnotation(Class<? extends Annotation>... type) {
-        return of(type).parallel().anyMatch(field::isAnnotationPresent);
+        return of(type)
+                .parallel()
+                .distinct()
+                .anyMatch(p -> field.getDeclaredAnnotation(p) != null);
     }
 
-    public boolean hasAnnotations(Set<Class<? extends Annotation>> annotations) {
+    public boolean hasAnnotations(Collection<Class<? extends Annotation>> annotations) {
         return of(field.getDeclaredAnnotations())
                 .parallel()
+                .distinct()
                 .anyMatch(p -> annotations.contains(p.annotationType()));
     }
 

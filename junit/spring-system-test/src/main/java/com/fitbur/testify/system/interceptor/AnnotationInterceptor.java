@@ -20,7 +20,6 @@ import com.fitbur.bytebuddy.implementation.bind.annotation.RuntimeType;
 import com.fitbur.bytebuddy.implementation.bind.annotation.SuperCall;
 import static com.fitbur.guava.common.collect.ObjectArrays.concat;
 import com.fitbur.testify.TestContext;
-import com.fitbur.testify.system.SpringSystemDescriptor;
 import com.fitbur.testify.system.SpringSystemPostProcessor;
 import java.util.concurrent.Callable;
 import org.springframework.web.context.WebApplicationContext;
@@ -35,11 +34,11 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 public class AnnotationInterceptor {
 
     private final TestContext testContext;
-    private final SpringSystemDescriptor interceptorContext;
+    private final InterceptorContext interceptorContext;
     private final Class<?>[] components;
 
     public AnnotationInterceptor(TestContext testContext,
-            SpringSystemDescriptor interceptorContext, Class<?>... components) {
+            InterceptorContext interceptorContext, Class<?>... components) {
         this.testContext = testContext;
         this.interceptorContext = interceptorContext;
         this.components = components;

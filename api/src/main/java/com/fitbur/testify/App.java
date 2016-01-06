@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.app;
+package com.fitbur.testify;
 
+import com.fitbur.testify.server.ServerProvider;
 import java.lang.annotation.Documented;
 import static java.lang.annotation.ElementType.TYPE;
 import java.lang.annotation.Retention;
@@ -22,8 +23,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
 
 /**
- * An annotation for specifying a server class that should be loaded for a test
- * class.
+ * An annotation for specifying an application to load along with the
+ * application provider used to load it.
  *
  * @author saden
  */
@@ -33,10 +34,18 @@ import java.lang.annotation.Target;
 public @interface App {
 
     /**
-     * Specifies a server implementation provider used to loaded a server.
+     * The class of the application that will be loaded.
      *
-     * @return a server class.
+     * @return the application class.
      */
-    Class<? extends ServerProvider> server();
+    Class<?> value();
+
+    /**
+     * Specifies a provider implementation provider used to loaded the
+     * application.
+     *
+     * @return a provider class.
+     */
+    Class<? extends ServerProvider> provider() default ServerProvider.class;
 
 }
