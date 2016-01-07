@@ -39,6 +39,7 @@
         <module>level</module>
         <module>junit</module>
         <module>need</module>
+        <module>server</module>
         <module>examples</module>
     </modules>
     
@@ -48,6 +49,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.version>3.0.5</maven.version>
+        <maven.current.year>2015</maven.current.year>
         
         <!-- IDE Hints -->
         <netbeans.compile.on.save>none</netbeans.compile.on.save>
@@ -302,6 +304,8 @@
                     <version>${plugin.license}</version>
                     <executions>
                         <execution>
+                            <id>license-check</id>
+                            <phase>validate</phase>
                             <goals>
                                 <goal>check</goal>
                             </goals>
@@ -318,7 +322,7 @@
                         <header>license.txt</header>
                         <properties>
                             <owner>${project.organization.name}</owner>
-                            <year>${project.inceptionYear}</year>
+                            <year>${maven.current.year}</year>
                         </properties>
                         <headerDefinitions>
                             <headerDefinition>java_header_style.xml</headerDefinition>
@@ -421,12 +425,6 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito.verson}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-context</artifactId>
-                <version>${spring.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>

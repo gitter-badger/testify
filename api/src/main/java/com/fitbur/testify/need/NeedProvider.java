@@ -26,13 +26,14 @@ public interface NeedProvider<T> {
     /**
      * <p>
      * Method that must be implemented to configure a need. Configuring a need
-     * typically involves creating a need configuration object and calling the
-     * configuration method in the test class to allow further configuration.
+     * typically involves creating a need configuration object so that a test
+     * class method annotated with {@link com.fitbur.testify.Config} can be
+     * called to further fine tune need.
      * </p>
      * <p>
      * Note that implementation of this method should not do any work beyond
-     * configuring the need. It should not perform instantiation of the need as
-     * that should be handled in
+     * returning a mutable configuration object. It should not perform
+     * instantiation of the need as that should be handled in
      * {@link #init(com.fitbur.testify.need.NeedDescriptor, java.lang.Object)}
      * method.
      * </p>
@@ -40,7 +41,7 @@ public interface NeedProvider<T> {
      * @param descriptor the need descriptor
      * @return the need configuration object
      */
-    T configure(NeedDescriptor descriptor);
+    T configuration(NeedDescriptor descriptor);
 
     /**
      * <p>
@@ -49,17 +50,17 @@ public interface NeedProvider<T> {
      * </p>
      *
      * @param descriptor the need descriptor
-     * @param config the configuration object
+     * @param context the configuration context object
      */
-    void init(NeedDescriptor descriptor, T config);
+    void init(NeedDescriptor descriptor, T context);
 
     /**
      * Destroy the need with the given descriptor and configuration.
      *
      * @param descriptor the need descriptor
-     * @param config the configuration object
+     * @param context the configuration context object
      */
-    default void destroy(NeedDescriptor descriptor, T config) {
+    default void destroy(NeedDescriptor descriptor, T context) {
     }
 
 }

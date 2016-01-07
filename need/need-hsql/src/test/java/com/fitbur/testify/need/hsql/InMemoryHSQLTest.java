@@ -22,12 +22,12 @@ import com.fitbur.testify.integration.SpringIntegrationTest;
 import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.hsql.fixture.DatabaseConfig;
 import com.fitbur.testify.need.hsql.fixture.entity.UserEntity;
-import com.zaxxer.hikari.HikariConfig;
 import java.io.Serializable;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hsqldb.jdbc.JDBCDataSource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,7 +44,8 @@ public class InMemoryHSQLTest {
     SessionFactory factory;
 
     @Config
-    public void configure(HikariConfig hikariConfig) {
+    public void configure(JDBCDataSource dataSource) {
+        assertThat(dataSource).isNotNull();
     }
 
     @Test

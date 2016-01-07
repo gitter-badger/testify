@@ -23,10 +23,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
 
 /**
- * An annotation for specifying a module class that should be loaded by the test
- * class. This is useful for integration and system tests which utilize a
- * dependency injection framework to load modules (i.e. Spring JavaConfig, and
- * HK2's Binder and Guice's Module).
+ * An annotation for specifying a module or application class that should be
+ * loaded by the test class. This is useful for integration and system tests to
+ * load a module or an entire application for testing purpose.
  *
  * @author saden
  */
@@ -43,8 +42,8 @@ public @interface Module {
      * <p>
      * Please note that to encourage simplicity and modular design loading of
      * modules is limited to a single module class. If you absolutely need to
-     * load multiple modules Module annotation is repeatable and you may
-     * additional @Module annotation to your test class.
+     * load multiple modules this annotation is repeatable and you may add
+     * additional @Module annotations to your test class.
      * </p>
      *
      * @return a module class.

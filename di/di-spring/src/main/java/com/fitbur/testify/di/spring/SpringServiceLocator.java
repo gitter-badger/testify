@@ -43,8 +43,11 @@ import static org.springframework.beans.factory.config.BeanDefinition.ROLE_APPLI
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import static org.springframework.beans.factory.support.AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR;
 import static org.springframework.beans.factory.support.AbstractBeanDefinition.AUTOWIRE_NO;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigRegistry;
 
 /**
  * A spring implementation of test service locator. It provides the ability to
@@ -55,13 +58,12 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  */
 public class SpringServiceLocator implements ServiceLocator {
 
-    public final AnnotationConfigApplicationContext context;
+    private final ConfigurableApplicationContext context;
     private final ServiceAnnotations serviceAnnotations;
 
-    public SpringServiceLocator(AnnotationConfigApplicationContext context,
-            ServiceAnnotations serviceAnnotations) {
+    public SpringServiceLocator(ConfigurableApplicationContext context, ServiceAnnotations annotations) {
         this.context = context;
-        this.serviceAnnotations = serviceAnnotations;
+        this.serviceAnnotations = annotations;
     }
 
     @Override
@@ -88,7 +90,7 @@ public class SpringServiceLocator implements ServiceLocator {
     }
 
     @Override
-    public AnnotationConfigApplicationContext getContext() {
+    public ConfigurableApplicationContext getContext() {
         return context;
     }
 
@@ -237,7 +239,7 @@ public class SpringServiceLocator implements ServiceLocator {
 
     @Override
     public void addService(Class<?> type) {
-        context.register(type);
+        ((AnnotationConfigRegistry) context).register(type);
     }
 
     @Override
@@ -296,28 +298,33 @@ public class SpringServiceLocator implements ServiceLocator {
                 checkState(false, "Scope '{}' is not supported by Spring IoC.", scope.name());
 
         }
+        ((DefaultListableBeanFactory) context.getBeanFactory())
+                .registerBeanDefinition(descriptor.getName(), bean);
+    }
 
-        context.registerBeanDefinition(descriptor.getName(), bean);
+    @Override
+    public void addConstant(String name, Object instance) {
+        ((DefaultListableBeanFactory) context.getBeanFactory()).registerSingleton(name, instance);
     }
 
     @Override
     public void removeService(ServiceDescriptor descriptor) {
-        context.removeBeanDefinition(descriptor.getName());
+        ((BeanDefinitionRegistry) context).removeBeanDefinition(descriptor.getName());
     }
 
     @Override
     public void removeService(String name) {
-        context.removeBeanDefinition(name);
+        ((BeanDefinitionRegistry) context).removeBeanDefinition(name);
     }
 
     @Override
     public void addModule(Class<?> type) {
-        context.register(type);
+        ((AnnotationConfigRegistry) context).register(type);
     }
 
     @Override
     public void scanPackage(String packageName) {
-        context.scan(packageName);
+        ((AnnotationConfigRegistry) context).scan(packageName);
     }
 
     @Override

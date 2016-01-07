@@ -108,7 +108,7 @@ public class IntegrationTestVerifier implements TestVerifier {
             }
 
             //insure need providers have default constructors.
-            testContext.getNeeds().parallelStream().map(Need::value).forEach(p -> {
+            testContext.getAnnotations(Need.class).parallelStream().map(Need::value).forEach(p -> {
                 try {
                     p.getDeclaredConstructor();
                 } catch (NoSuchMethodException e) {

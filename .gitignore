@@ -12,3 +12,4 @@ buildNumber.properties
 **/secrets.tar
 /examples/junit-unittest/nbproject/
 /examples/junit-spring-integrationtest/nbproject/
+/junit/spring-system-test/nbproject/
