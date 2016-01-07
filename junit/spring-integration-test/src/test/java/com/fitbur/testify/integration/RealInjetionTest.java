@@ -13,39 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.server;
+package com.fitbur.testify.integration;
 
-import java.net.URI;
+import com.fitbur.testify.Module;
+import com.fitbur.testify.Real;
+import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
+import com.fitbur.testify.integration.fixture.service.GreetingService;
+import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
- * A contract that defines methods for getting information about the running
- * server as well as managing its lifecycle.
  *
  * @author saden
  */
-public interface ServerInstance {
+@RunWith(SpringIntegrationTest.class)
+@Module(SpringIntegrationConfig.class)
+public class RealInjetionTest {
 
-    /**
-     * The base URI of the server instance.
-     *
-     * @return the base URI.
-     */
-    URI getBaseURI();
+    @Real
+    GreetingService greetingService;
 
-    /**
-     * Start the server.
-     */
-    void start();
-
-    /**
-     * Stop the server.
-     */
-    void stop();
-
-    /**
-     * Restart the server.
-     */
-    default void restart() {
+    @Test
+    public void verifyInjection() {
+        assertThat(greetingService).isNotNull();
     }
-
 }

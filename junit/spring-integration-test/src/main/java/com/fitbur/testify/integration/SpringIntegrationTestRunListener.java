@@ -96,7 +96,7 @@ public class SpringIntegrationTestRunListener extends RunListener {
                     });
                 }
 
-                serviceLocator.addConstant(descriptor.getTestClassName(), context);
+                serviceLocator.addConstant(context.getClass().getSimpleName(), context);
 
                 provider.init(descriptor, context);
 
@@ -112,19 +112,18 @@ public class SpringIntegrationTestRunListener extends RunListener {
         IntegrationTestCreator creator
                 = new IntegrationTestCreator(testContext, reifier, serviceLocator);
 
-        //if we are not testing a specific cut class we can still inject
-        //services for testing purpose. this is useful for testing things
-        //like JPA entities which aren't really services.
-        if (testContext.getCutDescriptor() == null) {
-            Set<FieldDescriptor> real = testContext.getFieldDescriptors()
-                    .values()
-                    .parallelStream()
-                    .filter(p -> p.hasAnnotations(serviceAnnotations.getInjectors()))
-                    .collect(toSet());
-            creator.real(real);
-        } else {
+        if (testContext.getCutDescriptor() != null) {
             creator.cut();
         }
+
+        Set<FieldDescriptor> real = testContext.getFieldDescriptors()
+                .values()
+                .parallelStream()
+                .filter(p -> !p.getInstance().isPresent())
+                .filter(p -> p.hasAnnotations(serviceAnnotations.getInjectors()))
+                .collect(toSet());
+
+        creator.real(real);
 
         IntegrationTestVerifier verifier = new IntegrationTestVerifier(testContext, logger);
         verifier.wiring();
@@ -156,7 +155,6 @@ public class SpringIntegrationTestRunListener extends RunListener {
     @Override
     public void testIgnored(Description description) throws Exception {
         logger.warn("Ignored {}", description.getMethodName());
-        this.done(description);
     }
 
     private void done(Description description) {

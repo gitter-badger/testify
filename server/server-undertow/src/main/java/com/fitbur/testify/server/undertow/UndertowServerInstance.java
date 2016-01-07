@@ -35,7 +35,7 @@ import org.xnio.channels.AcceptingChannel;
  *
  * @author saden
  */
-public class UndertowServerInstance implements ServerInstance<Undertow> {
+public class UndertowServerInstance implements ServerInstance {
 
     private final Undertow undertow;
     private final DeploymentInfo deploymentInfo;
@@ -66,11 +66,6 @@ public class UndertowServerInstance implements ServerInstance<Undertow> {
     @Override
     public void stop() {
         undertow.stop();
-    }
-
-    @Override
-    public Undertow getServer() {
-        return undertow;
     }
 
     @Override

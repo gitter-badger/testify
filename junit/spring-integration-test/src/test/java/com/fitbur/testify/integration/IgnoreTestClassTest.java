@@ -22,6 +22,7 @@ import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
 import com.fitbur.testify.integration.fixture.service.GreetingService;
 import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -29,9 +30,10 @@ import org.junit.runner.RunWith;
  *
  * @author saden
  */
+@Ignore
 @RunWith(SpringIntegrationTest.class)
 @Module(SpringIntegrationConfig.class)
-public class LoadModuleTest {
+public class IgnoreTestClassTest {
 
     @Cut
     GreetingService cut;

@@ -37,7 +37,12 @@ import com.fitbur.testify.server.ServerProvider;
 import com.fitbur.testify.server.undertow.UndertowServerProvider;
 import com.fitbur.testify.system.interceptor.AnnotationInterceptor;
 import com.fitbur.testify.system.interceptor.InterceptorContext;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import org.junit.runner.Description;
@@ -108,11 +113,33 @@ public class SpringSystemTestRunListener extends RunListener {
                                 );
 
                         Object context = provider.configuration(descriptor);
+                        Optional<Method> configMethod = testContext.getConfigMethod(context.getClass())
+                                .map(m -> m.getMethod());
+
+                        if (configMethod.isPresent()) {
+                            AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                                Method method = configMethod.get();
+                                try {
+                                    method.setAccessible(true);
+                                    method.invoke(descriptor.getTestInstance(), context);
+                                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                                    checkState(false, "Call to config method '%s' in test class '%s' failed.",
+                                            method.getName(), descriptor.getTestClassName());
+                                }
+
+                                return null;
+                            });
+                        }
+
                         ServerInstance instance = provider.init(descriptor, context);
                         instance.start();
+
                         SpringServiceLocator serviceLocator
                                 = new SpringServiceLocator(interceptorContext.getServletAppContext(),
                                         serviceAnnotations);
+
+                        serviceLocator.addConstant(context.getClass().getSimpleName(), context);
+                        serviceLocator.addConstant(instance.getClass().getSimpleName(), instance);
 
                         return new ServerContext(provider, descriptor, instance, serviceLocator, context);
                     } catch (InstantiationException | IllegalAccessException ex) {
@@ -130,9 +157,29 @@ public class SpringSystemTestRunListener extends RunListener {
                 NeedDescriptor descriptor
                         = new SpringSystemNeedDescriptor(p, testContext);
                 Object context = provider.configuration(descriptor);
+                Optional<Method> configMethod = testContext.getConfigMethod(context.getClass())
+                        .map(m -> m.getMethod());
+
+                if (configMethod.isPresent()) {
+                    AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                        Method method = configMethod.get();
+                        try {
+                            method.setAccessible(true);
+                            method.invoke(descriptor.getTestInstance(), context);
+                        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                            checkState(false, "Call to config method '%s' in test class '%s' failed.",
+                                    method.getName(), descriptor.getTestClassName());
+                        }
+
+                        return null;
+                    });
+                }
+
+                serviceLocator.addConstant(context.getClass().getSimpleName(), context);
+
                 provider.init(descriptor, context);
 
-                return new NeedContext(provider, descriptor, serverContext.getLocator(), context);
+                return new NeedContext(provider, descriptor, serviceLocator, context);
             } catch (InstantiationException | IllegalAccessException ex) {
                 checkState(false, "Need provider '%s' could not be instanticated.", providerClass.getSimpleName());
                 return null;
@@ -144,19 +191,18 @@ public class SpringSystemTestRunListener extends RunListener {
         SystemTestCreator creator
                 = new SystemTestCreator(testContext, reifier, serviceLocator);
 
-        //if we are not testing a specific cut class we can still inject
-        //services for testing purpose. this is useful for testing things
-        //like JPA entities which aren't really services.
-        if (testContext.getCutDescriptor() == null) {
-            Set<FieldDescriptor> real = testContext.getFieldDescriptors()
-                    .values()
-                    .parallelStream()
-                    .filter(p -> p.hasAnnotations(serviceAnnotations.getInjectors()))
-                    .collect(toSet());
-            creator.real(real);
-        } else {
+        if (testContext.getCutDescriptor() != null) {
             creator.cut();
         }
+
+        Set<FieldDescriptor> real = testContext.getFieldDescriptors()
+                .values()
+                .parallelStream()
+                .filter(p -> !p.getInstance().isPresent())
+                .filter(p -> p.hasAnnotations(serviceAnnotations.getInjectors()))
+                .collect(toSet());
+
+        creator.real(real);
 
         SystemTestVerifier verifier = new SystemTestVerifier(testContext, logger);
         verifier.wiring();
@@ -188,7 +234,6 @@ public class SpringSystemTestRunListener extends RunListener {
     @Override
     public void testIgnored(Description description) throws Exception {
         logger.warn("Ignored {}", description.getMethodName());
-        this.done(description);
     }
 
     private void done(Description description) {
