@@ -63,6 +63,18 @@ public class IntegrationTestCreator {
                 .filter(p -> p.getAnnotation(Fake.class).isPresent())
                 .collect(toSet());
 
+        Class<?> testClass = context.getTestClass();
+
+        of(testClass.getDeclaredAnnotationsByType(Module.class))
+                .map(Module::value)
+                .distinct()
+                .forEachOrdered(locator::addModule);
+
+        of(testClass.getDeclaredAnnotationsByType(Scan.class))
+                .map(Scan::value)
+                .distinct()
+                .forEachOrdered(locator::scanPackage);
+
         IntegrationIndexFakeInjector indexInjector = new IntegrationIndexFakeInjector(context, testReifier, arguments);
         IntegrationNameFakeInjector nameInjector = new IntegrationNameFakeInjector(context, testReifier, arguments);
         IntegrationTypeFakeInjector typeInjector = new IntegrationTypeFakeInjector(context, testReifier, arguments);
@@ -78,17 +90,6 @@ public class IntegrationTestCreator {
         //finally process fields based on their type
         fakeDescriptors.parallelStream()
                 .forEach(typeInjector::inject);
-
-        Class<?> testClass = context.getTestClass();
-        of(testClass.getDeclaredAnnotationsByType(Module.class))
-                .map(Module::value)
-                .distinct()
-                .forEachOrdered(locator::addModule);
-
-        of(testClass.getDeclaredAnnotationsByType(Scan.class))
-                .map(Scan::value)
-                .distinct()
-                .forEachOrdered(locator::scanPackage);
 
         locator.reload();
 

@@ -21,7 +21,20 @@
     <parent>
         <groupId>com.fitbur.testify</groupId>
         <artifactId>level</artifactId>
-        <version>0.0.5</version>
+        <version>0.0.6</version>
     </parent>
     <artifactId>system</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.fitbur.testify</groupId>
+            <artifactId>core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>

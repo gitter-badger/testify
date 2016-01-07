@@ -15,10 +15,6 @@
  */
 package com.fitbur.testify.need;
 
-import com.fitbur.testify.di.ServiceLocator;
-import java.lang.reflect.Method;
-import java.util.Optional;
-
 /**
  * A descriptor class passed to {@link NeedProvider} to instantiate a need
  * instance.
@@ -55,20 +51,4 @@ public interface NeedDescriptor {
      */
     String getTestClassName();
 
-    /**
-     * Get an optional service locator associated with the need.
-     *
-     * @return an optional containing the service locator, an empty otherwise
-     */
-    Optional<? extends ServiceLocator> getServiceLocator();
-
-    /**
-     * Get an optional configuration method on the test class with the given
-     * parameter types used to configure the need.
-     *
-     * @param parameterTypes the configuration method parameter types
-     * @return optional containing the configuration method, an empty otherwise
-     *
-     */
-    Optional<Method> getConfigMethod(Class... parameterTypes);
 }

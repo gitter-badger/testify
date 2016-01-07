@@ -14,10 +14,6 @@ was added, changed, deprecated, removed, fix and security fixes.
 ## [Unreleased]
 
 
-### Added
-- @Scan annotation to enable package scanning to load services
-- Ability to support DI framework injection and qualifier annotations
-
 ## [0.0.1] - 2015-11-23
 ### Added
 - Initial release
@@ -71,5 +67,17 @@ was added, changed, deprecated, removed, fix and security fixes.
 - Shaded third-party dependencies
 - Added support for Dependency Injection Framework specific annotations
 
+### Fixed
+ - Issue #9 - Shade Guava and include it in the Distributed
+
 ### Changed
 - TestInjector contract now takes FieldDescriptor
+
+## [0.0.6] - 2016-01-06
+### Added
+- @Scan annotation to enable package scanning to load services
+- Ability to support DI framework injection and qualifier annotations
+- Spring JUnit System Test support
+
+### Fixed
+- Issue #18 - Testify Doesn't Handle @Ignore

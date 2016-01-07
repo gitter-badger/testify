@@ -138,6 +138,14 @@ public interface ServiceLocator {
     void addService(ServiceDescriptor descriptor);
 
     /**
+     * Add a service with the given name and instance.
+     *
+     * @param name the name of the service
+     * @param instance the service instance
+     */
+    void addConstant(String name, Object instance);
+
+    /**
      * Remove a service with the given descriptor.
      *
      * @param descriptor the service descriptor

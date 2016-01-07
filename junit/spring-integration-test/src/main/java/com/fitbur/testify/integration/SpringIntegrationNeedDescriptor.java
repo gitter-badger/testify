@@ -16,13 +16,9 @@
 package com.fitbur.testify.integration;
 
 import com.fitbur.testify.TestContext;
-import com.fitbur.testify.di.ServiceLocator;
 import com.fitbur.testify.di.spring.SpringServiceLocator;
 import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.NeedDescriptor;
-import java.lang.reflect.Method;
-import java.util.Optional;
-import static java.util.Optional.ofNullable;
 
 /**
  * Spring need descriptor.
@@ -61,16 +57,6 @@ public class SpringIntegrationNeedDescriptor implements NeedDescriptor {
     @Override
     public String getTestClassName() {
         return testContext.getTestClassName();
-    }
-
-    @Override
-    public Optional<? extends ServiceLocator> getServiceLocator() {
-        return ofNullable(serviceLocator);
-    }
-
-    @Override
-    public Optional<Method> getConfigMethod(Class... parameterTypes) {
-        return testContext.getConfigMethod(parameterTypes).map(p -> p.getMethod());
     }
 
 }

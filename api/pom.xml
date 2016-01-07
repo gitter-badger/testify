@@ -21,7 +21,7 @@
     <parent>
         <groupId>com.fitbur.testify</groupId>
         <artifactId>parent</artifactId>
-        <version>0.0.5</version>
+        <version>0.0.6</version>
     </parent>
     <artifactId>api</artifactId>
     <name>api</name>
@@ -43,6 +43,11 @@
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
             <version>1</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
         </dependency>
     </dependencies>
 </project>

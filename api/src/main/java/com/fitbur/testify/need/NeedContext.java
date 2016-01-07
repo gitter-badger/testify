@@ -15,7 +15,10 @@
  */
 package com.fitbur.testify.need;
 
+import com.fitbur.testify.di.ServiceLocator;
 import java.util.Objects;
+import java.util.Optional;
+import static java.util.Optional.ofNullable;
 
 /**
  * A small context object that contains need contextual information. This
@@ -28,12 +31,17 @@ public class NeedContext {
 
     private final NeedProvider provider;
     private final NeedDescriptor descriptor;
-    private final Object config;
+    private final ServiceLocator locator;
+    private final Object context;
 
-    public NeedContext(NeedProvider provider, NeedDescriptor descriptor, Object config) {
+    public NeedContext(NeedProvider provider,
+            NeedDescriptor descriptor,
+            ServiceLocator locator,
+            Object context) {
         this.provider = provider;
         this.descriptor = descriptor;
-        this.config = config;
+        this.locator = locator;
+        this.context = context;
     }
 
     /**
@@ -55,12 +63,21 @@ public class NeedContext {
     }
 
     /**
-     * Get the need configuration object.
+     * Get an optional service locator associated with the need.
      *
-     * @return the need configuration.
+     * @return an optional containing the service locator, an empty otherwise
      */
-    public Object getConfig() {
-        return config;
+    Optional<? extends ServiceLocator> getServiceLocator() {
+        return ofNullable(locator);
+    }
+
+    /**
+     * Get the need configuration context object.
+     *
+     * @return the need context configuration.
+     */
+    public Object getContext() {
+        return context;
     }
 
     @Override
@@ -68,7 +85,7 @@ public class NeedContext {
         int hash = 5;
         hash = 71 * hash + Objects.hashCode(this.provider);
         hash = 71 * hash + Objects.hashCode(this.descriptor);
-        hash = 71 * hash + Objects.hashCode(this.config);
+        hash = 71 * hash + Objects.hashCode(this.context);
         return hash;
     }
 
@@ -90,12 +107,12 @@ public class NeedContext {
         if (!Objects.equals(this.descriptor, other.descriptor)) {
             return false;
         }
-        return Objects.equals(this.config, other.config);
+        return Objects.equals(this.context, other.context);
     }
 
     @Override
     public String toString() {
-        return "NeedContext{" + "provider=" + provider + ", descriptor=" + descriptor + ", config=" + config + '}';
+        return "NeedContext{" + "provider=" + provider + ", descriptor=" + descriptor + ", context=" + context + '}';
     }
 
 }

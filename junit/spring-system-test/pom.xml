@@ -21,7 +21,85 @@
     <parent>
         <groupId>com.fitbur.testify.junit</groupId>
         <artifactId>junit</artifactId>
-        <version>0.0.5</version>
+        <version>0.0.6</version>
     </parent>
+
     <artifactId>spring-system-test</artifactId>
+
+    <properties>
+        <servlet.api.version>3.1.0</servlet.api.version>
+        <undertow.version>1.3.10.Final</undertow.version>
+        <external.bytebuddy.version>0.5.5</external.bytebuddy.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.fitbur.testify</groupId>
+            <artifactId>core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fitbur.testify</groupId>
+            <artifactId>di-spring</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fitbur.testify</groupId>
+            <artifactId>system</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fitbur.testify</groupId>
+            <artifactId>server-undertow</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>${servlet.api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-core</artifactId>
+            <version>${undertow.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-servlet</artifactId>
+            <version>${undertow.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+            <version>1.2.5.RELEASE</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.fitbur.external</groupId>
+            <artifactId>external-bytebuddy</artifactId>
+            <version>${external.bytebuddy.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+            <version>0.7.7</version>
+        </dependency>
+      
+    </dependencies>
+
 </project>

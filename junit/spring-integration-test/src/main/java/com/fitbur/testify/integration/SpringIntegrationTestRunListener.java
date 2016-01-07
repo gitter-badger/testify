@@ -20,9 +20,15 @@ import com.fitbur.testify.TestContext;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.di.ServiceAnnotations;
 import com.fitbur.testify.di.spring.SpringServiceLocator;
+import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.NeedContext;
 import com.fitbur.testify.need.NeedDescriptor;
 import com.fitbur.testify.need.NeedProvider;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.Optional;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import org.junit.runner.Description;
@@ -57,7 +63,6 @@ public class SpringIntegrationTestRunListener extends RunListener {
         String testClassName = testContext.getTestClassName();
         Object testInstance = testContext.getTestInstance();
 
-        IntegrationTestVerifier verifier = new IntegrationTestVerifier(testContext, logger);
         AnnotationConfigApplicationContext appContext = new AnnotationConfigApplicationContext();
         appContext.setId(testClassName);
         appContext.setAllowBeanDefinitionOverriding(true);
@@ -66,16 +71,36 @@ public class SpringIntegrationTestRunListener extends RunListener {
 
         this.serviceLocator = new SpringServiceLocator(appContext, serviceAnnotations);
 
-        this.needContexts = testContext.getNeeds().parallelStream().map(p -> {
+        this.needContexts = testContext.getAnnotations(Need.class).parallelStream().map(p -> {
             Class<? extends NeedProvider> providerClass = p.value();
             try {
                 NeedProvider provider = providerClass.newInstance();
                 NeedDescriptor descriptor
                         = new SpringIntegrationNeedDescriptor(p, testContext, serviceLocator);
-                Object context = provider.configure(descriptor);
+                Object context = provider.configuration(descriptor);
+                Optional<Method> configMethod = testContext.getConfigMethod(context.getClass())
+                        .map(m -> m.getMethod());
+
+                if (configMethod.isPresent()) {
+                    AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                        Method method = configMethod.get();
+                        try {
+                            method.setAccessible(true);
+                            method.invoke(descriptor.getTestInstance(), context);
+                        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                            checkState(false, "Call to config method '%s' in test class '%s' failed.",
+                                    method.getName(), descriptor.getTestClassName());
+                        }
+
+                        return null;
+                    });
+                }
+
+                serviceLocator.addConstant(context.getClass().getSimpleName(), context);
+
                 provider.init(descriptor, context);
 
-                return new NeedContext(provider, descriptor, context);
+                return new NeedContext(provider, descriptor, serviceLocator, context);
             } catch (InstantiationException | IllegalAccessException ex) {
                 checkState(false, "Need provider '%s' could not be instanticated.", providerClass.getSimpleName());
                 return null;
@@ -87,20 +112,20 @@ public class SpringIntegrationTestRunListener extends RunListener {
         IntegrationTestCreator creator
                 = new IntegrationTestCreator(testContext, reifier, serviceLocator);
 
-        //if we are not testing a specific cut class we can still inject
-        //services for testing purpose. this is useful for testing things
-        //like JPA entities which aren't really services.
-        if (testContext.getCutDescriptor() == null) {
-            Set<FieldDescriptor> real = testContext.getFieldDescriptors()
-                    .values()
-                    .parallelStream()
-                    .filter(p -> p.hasAnnotations(serviceAnnotations.getInjectors()))
-                    .collect(toSet());
-            creator.real(real);
-        } else {
+        if (testContext.getCutDescriptor() != null) {
             creator.cut();
         }
 
+        Set<FieldDescriptor> real = testContext.getFieldDescriptors()
+                .values()
+                .parallelStream()
+                .filter(p -> !p.getInstance().isPresent())
+                .filter(p -> p.hasAnnotations(serviceAnnotations.getInjectors()))
+                .collect(toSet());
+
+        creator.real(real);
+
+        IntegrationTestVerifier verifier = new IntegrationTestVerifier(testContext, logger);
         verifier.wiring();
 
     }
@@ -130,15 +155,14 @@ public class SpringIntegrationTestRunListener extends RunListener {
     @Override
     public void testIgnored(Description description) throws Exception {
         logger.warn("Ignored {}", description.getMethodName());
-        this.done(description);
     }
 
     private void done(Description description) {
-        serviceLocator.destroy();
-
         needContexts.parallelStream().forEach(p -> {
-            p.getProvider().destroy(p.getDescriptor(), p.getConfig());
+            p.getProvider().destroy(p.getDescriptor(), p.getContext());
         });
+
+        serviceLocator.destroy();
 
     }
 

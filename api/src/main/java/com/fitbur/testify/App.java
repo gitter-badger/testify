@@ -15,6 +15,7 @@
  */
 package com.fitbur.testify;
 
+import com.fitbur.testify.server.ServerProvider;
 import java.lang.annotation.Documented;
 import static java.lang.annotation.ElementType.TYPE;
 import java.lang.annotation.Retention;
@@ -22,20 +23,29 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
 
 /**
- * An annotation for loading and initialize a web resources.
+ * An annotation for specifying an application to load along with the
+ * application provider used to load it.
  *
  * @author saden
  */
 @Documented
 @Retention(RUNTIME)
 @Target({TYPE})
-public @interface Resources {
+public @interface App {
 
     /**
-     * Specifies a list of resource that will be loaded.
+     * The class of the application that will be loaded.
      *
-     * @return an array of resources.
+     * @return the application class.
      */
-    Resource[] value();
+    Class<?> value();
+
+    /**
+     * Specifies a provider implementation provider used to loaded the
+     * application.
+     *
+     * @return a provider class.
+     */
+    Class<? extends ServerProvider> provider() default ServerProvider.class;
 
 }
