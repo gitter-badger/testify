@@ -12,7 +12,15 @@ was added, changed, deprecated, removed, fix and security fixes.
 - Security - Lists security fixes to security vulnerabilities
 
 ## [Unreleased]
+### Changed
+- Removing UnitTestRunListener and moved its code UnitTest JUnit runner class
 
+### Added
+- Support for running unit tests classes in parallel.
+- Added verification check for missing cut class in unit tests
+
+### Fixed
+- Verification message when a CUT class has multiple constructors.
 
 ## [0.0.1] - 2015-11-23
 ### Added

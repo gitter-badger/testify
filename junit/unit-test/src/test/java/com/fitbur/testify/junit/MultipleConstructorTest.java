@@ -16,9 +16,9 @@
 package com.fitbur.testify.junit;
 
 import com.fitbur.testify.Cut;
-import com.fitbur.testify.Fake;
-import com.fitbur.testify.junit.fixture.ImplicitTypeDistinctTypes;
-import com.fitbur.testify.junit.fixture.collaborator.Hello;
+import com.fitbur.testify.junit.fixture.MultipleConstructor;
+import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -27,17 +27,22 @@ import org.junit.runner.RunWith;
  * @author saden
  */
 @RunWith(UnitTest.class)
-public class MissingMockDeclarationTest {
+public class MultipleConstructorTest {
 
     @Cut
-    ImplicitTypeDistinctTypes cut;
+    MultipleConstructor cut;
 
-    @Fake
-    Hello hello;
+    @Before
+    public void verifyInjections() {
+        assertThat(cut).isNotNull();
+    }
 
-    @Test(expected = NullPointerException.class)
-    public void givenMissingMockShouldThrowException() {
-        cut.execute();
+    @Test
+    public void givenNothingClassToExecuteShouldReturnHello() {
+        String greeting = "Hello!";
+        String result = cut.execute();
+
+        assertThat(result).isEqualTo(greeting);
     }
 
 }

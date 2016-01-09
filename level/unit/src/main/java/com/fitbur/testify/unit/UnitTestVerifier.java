@@ -72,10 +72,14 @@ public class UnitTestVerifier implements TestVerifier {
         Collection<FieldDescriptor> fieldDescriptors = testContext.getFieldDescriptors().values();
         CutDescriptor cutDescriptor = testContext.getCutDescriptor();
 
+        checkState(cutDescriptor != null,
+                "Test class '%s' does not declare a @Cut class.",
+                testClassName);
+
         checkState(testContext.getConstructorCount() == 1,
-                "Class under test '%s' has '%d' constructors. Please insure that "
-                + "the class under test has one and only one constructor.",
-                cutDescriptor.getTypeName(), testContext.getConstructorCount());
+                "Class under test '%s' declared in test class '%s' has %s constructors. "
+                + "Please insure that the class under test has one and only one constructor.",
+                cutDescriptor.getTypeName(), testClassName, testContext.getConstructorCount());
 
         fieldDescriptors.parallelStream().forEach(p -> {
 
