@@ -29,6 +29,7 @@
     <packaging>pom</packaging>
     
     <modules>
+        <module>junit-core</module>
         <module>unit-test</module>
         <module>spring-integration-test</module>
         <module>spring-system-test</module>

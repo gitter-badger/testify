@@ -292,6 +292,9 @@
                         <targetTests>
                             <param>com.fitbur.*</param>
                         </targetTests>
+                        <excludedClasses>
+                            <param>com.fitbur.*.*BadTestSetup</param>
+                        </excludedClasses>
                         <exportLineCoverage>true</exportLineCoverage>
                         <outputFormats>
                             <outputFormat>HTML</outputFormat>

@@ -73,11 +73,11 @@ public class UnitTestVerifier implements TestVerifier {
         CutDescriptor cutDescriptor = testContext.getCutDescriptor();
 
         checkState(cutDescriptor != null,
-                "Test class '%s' does not declare a @Cut class.",
+                "Test class '%s' does not define a field annotated with @Cut class.",
                 testClassName);
 
         checkState(testContext.getConstructorCount() == 1,
-                "Class under test '%s' declared in test class '%s' has %s constructors. "
+                "Class under test '%s' defined in test class '%s' has %s constructors. "
                 + "Please insure that the class under test has one and only one constructor.",
                 cutDescriptor.getTypeName(), testClassName, testContext.getConstructorCount());
 
@@ -88,16 +88,17 @@ public class UnitTestVerifier implements TestVerifier {
             String fieldTypeName = p.getTypeName();
 
             checkState(!isFinal(fieldType.getModifiers()),
-                    "Field '%s' in test class '%s' can not be mocked because '%s'"
+                    "Field '%s' in test class '%s' can not be faked because '%s'"
                     + " is a final class.",
                     fieldName, testClassName, fieldTypeName);
 
             checkState(!p.hasAnyAnnotation(Real.class, Inject.class),
-                    "Field '%s' in test class '%s' is not annotated with @Fake. "
-                    + "Note that @Real and @Inject annotations not supported for "
-                    + "unit tests. Please use @Fake instead.",
+                    "Field '%s' in test class '%s' is annotated with @Real or @Inject."
+                    + "@Real and @Inject annotations are not supported for unit tests. "
+                    + "Please use @Fake instead.",
                     fieldName, fieldTypeName
             );
+
         });
     }
 
@@ -113,9 +114,9 @@ public class UnitTestVerifier implements TestVerifier {
             Optional instance = p.getInstance();
             if (!instance.isPresent()) {
                 String paramTypeName = p.getTypeName();
-                logger.warn("Improper wiring detected. Class under test '{}' defined "
-                        + "in '{}' declars constructor argument of type '{}' but '{}' "
-                        + "does not define a field of type '{}' annotated with @Fake.",
+                logger.warn("Class under test '{}' defined in '{}' has a collaborator "
+                        + "type '{}' but test class '{}' does not define a field of "
+                        + "type '{}' annotated with @Fake.",
                         cutClassName, testClassName, paramTypeName, testClassName, paramTypeName);
             }
 

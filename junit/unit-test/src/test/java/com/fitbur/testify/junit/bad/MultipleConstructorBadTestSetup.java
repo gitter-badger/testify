@@ -13,36 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.junit;
+package com.fitbur.testify.junit.bad;
 
 import com.fitbur.testify.Cut;
+import com.fitbur.testify.junit.UnitTest;
 import com.fitbur.testify.junit.fixture.MultipleConstructor;
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
  * @author saden
  */
 @RunWith(UnitTest.class)
-public class MultipleConstructorTest {
+public class MultipleConstructorBadTestSetup {
 
     @Cut
     MultipleConstructor cut;
 
-    @Before
-    public void verifyInjections() {
-        assertThat(cut).isNotNull();
-    }
-
     @Test
-    public void givenNothingClassToExecuteShouldReturnHello() {
-        String greeting = "Hello!";
-        String result = cut.execute();
-
-        assertThat(result).isEqualTo(greeting);
+    public void verifyInjection() {
+        assertThat(cut).isNotNull();
     }
 
 }

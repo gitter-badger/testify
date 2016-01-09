@@ -12,15 +12,20 @@ was added, changed, deprecated, removed, fix and security fixes.
 - Security - Lists security fixes to security vulnerabilities
 
 ## [Unreleased]
-### Changed
-- Removing UnitTestRunListener and moved its code UnitTest JUnit runner class
-
 ### Added
-- Support for running unit tests classes in parallel.
+- Added new junit-core module to share common JUnit classes
+- Added support for running unit test classes in parallel
+- Added support for running spring integration test in parallel
 - Added verification check for missing cut class in unit tests
+- Added ability to test bad test setup cases
+
+### Removed
+- Removed UnitTestRunListener and moved its code to UnitTest
+- Removed SpringIntegrationTestRunListener and moved its code to the SpringIntegrationTest
 
 ### Fixed
-- Verification message when a CUT class has multiple constructors.
+- Fixed verification language to improve readability and consistency
+- Verification message when a CUT class has multiple constructors
 
 ## [0.0.1] - 2015-11-23
 ### Added

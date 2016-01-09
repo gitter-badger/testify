@@ -21,6 +21,7 @@ import com.fitbur.testify.TestContext;
 import com.fitbur.testify.analyzer.CutClassAnalyzer;
 import com.fitbur.testify.analyzer.TestClassAnalyzer;
 import com.fitbur.testify.descriptor.CutDescriptor;
+import com.fitbur.testify.junit.core.JUnitTestNotifier;
 import com.fitbur.testify.unit.UnitTestCreator;
 import com.fitbur.testify.unit.UnitTestReifier;
 import com.fitbur.testify.unit.UnitTestVerifier;
@@ -54,7 +55,6 @@ public class UnitTest extends BlockJUnit4ClassRunner {
 
     static final Logger LOGGER = LoggerFactory.getLogger("testify");
     Map<Class, TestContext> testClassContexts = new ConcurrentHashMap<>();
-    private Object testInstace;
 
     /**
      * Create a new test runner instance for the class under test.
@@ -65,13 +65,6 @@ public class UnitTest extends BlockJUnit4ClassRunner {
      */
     public UnitTest(Class<?> testClass) throws InitializationError {
         super(testClass);
-    }
-
-    @Override
-    protected Object createTest() throws Exception {
-        this.testInstace = super.createTest();
-
-        return testInstace;
     }
 
     public TestContext getTestContext(Class<?> javaClass) {
@@ -111,24 +104,22 @@ public class UnitTest extends BlockJUnit4ClassRunner {
             SLF4JBridgeHandler.install();
         }
 
-        UnitTestNotifier testNotifier
-                = new UnitTestNotifier(notifier, description, LOGGER, testContext);
+        JUnitTestNotifier testNotifier
+                = new JUnitTestNotifier(notifier, description, LOGGER, testContext);
 
         try {
             Statement statement = classBlock(testNotifier);
             statement.evaluate();
         } catch (AssumptionViolatedException e) {
-            LOGGER.error("{}", e.getMessage());
             testNotifier.addFailedAssumption(e);
         } catch (StoppedByUserException e) {
-            LOGGER.error("{}", e.getMessage());
             throw e;
         } catch (IllegalStateException e) {
-            LOGGER.error("{}", e.getMessage());
+            testNotifier.addFailure(e);
             testNotifier.pleaseStop();
         } catch (Throwable e) {
-            LOGGER.error("{}", e.getMessage());
             testNotifier.addFailure(e);
+            testNotifier.pleaseStop();
         } finally {
             //XXX: notifier is a singleton so we have to remove it or otherwise
             //the listener will keep getting added to it and will be called
@@ -157,43 +148,26 @@ public class UnitTest extends BlockJUnit4ClassRunner {
         TestClass testClass = getTestClass();
         Class<?> javaClass = testClass.getJavaClass();
 
-        Object testInstance;
-
         try {
-            testInstance = createTest();
+            Object testInstance = createTest();
+
+            TestContext testContext = testClassContexts.get(javaClass);
+            testContext.setTestInstance(testInstance);
+            UnitTestReifier reifier = new UnitTestReifier(testInstance);
+            UnitTestCreator creator = new UnitTestCreator(testContext, reifier);
+            creator.create();
+            UnitTestVerifier verifier = new UnitTestVerifier(testContext, LOGGER);
+            verifier.wiring();
+
+            Statement statement = methodInvoker(method, testInstance);
+            statement = possiblyExpectingExceptions(method, testInstance, statement);
+            statement = withBefores(method, testInstance, statement);
+            statement = withAfters(method, testInstance, statement);
+            statement = withRules(method, testInstance, statement);
+            return statement;
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-
-        TestContext testContext = testClassContexts.get(javaClass);
-        testContext.setTestInstance(testInstace);
-        UnitTestReifier reifier = new UnitTestReifier(testInstace);
-        UnitTestCreator creator = new UnitTestCreator(testContext, reifier);
-        creator.create();
-        UnitTestVerifier verifier = new UnitTestVerifier(testContext, LOGGER);
-        verifier.wiring();
-
-        Statement statement = methodInvoker(method, testInstance);
-        statement = possiblyExpectingExceptions(method, testInstance, statement);
-        statement = withBefores(method, testInstance, statement);
-        statement = withAfters(method, testInstance, statement);
-        statement = withRules(method, testInstance, statement);
-        return statement;
-    }
-
-    @Override
-    protected void runChild(FrameworkMethod method, RunNotifier notifier) {
-        super.runChild(method, notifier);
-    }
-
-    @Override
-    protected Statement childrenInvoker(RunNotifier notifier) {
-        return super.childrenInvoker(notifier);
-    }
-
-    @Override
-    protected Statement methodInvoker(FrameworkMethod method, Object test) {
-        return super.methodInvoker(method, test);
     }
 
     private Statement withRules(FrameworkMethod method, Object target,

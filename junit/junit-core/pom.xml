@@ -23,31 +23,13 @@
         <artifactId>junit</artifactId>
         <version>0.0.7-SNAPSHOT</version>
     </parent>
-
-    <artifactId>unit-test</artifactId>
+    
+    <artifactId>junit-core</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fitbur.testify.junit</groupId>
-            <artifactId>junit-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.fitbur.testify</groupId>
             <artifactId>core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fitbur.testify</groupId>
-            <artifactId>unit</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

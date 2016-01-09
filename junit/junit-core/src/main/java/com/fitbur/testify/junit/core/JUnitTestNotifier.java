@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.junit;
+package com.fitbur.testify.junit.core;
 
 import com.fitbur.testify.TestContext;
 import org.junit.internal.AssumptionViolatedException;
@@ -25,17 +25,19 @@ import org.junit.runners.model.MultipleFailureException;
 import org.slf4j.Logger;
 
 /**
- * Custom test notifier.
+ * A JUnit test run notifier to handle logging and notification test lifecycle
+ * events.
+ *
  * @author saden
  */
-public class UnitTestNotifier extends RunNotifier {
+public class JUnitTestNotifier extends RunNotifier {
 
     private final RunNotifier notifier;
     private final Description description;
     private final Logger logger;
     private final TestContext testContext;
 
-    public UnitTestNotifier(RunNotifier notifier,
+    public JUnitTestNotifier(RunNotifier notifier,
             Description description,
             Logger logger,
             TestContext testContext) {
@@ -47,17 +49,29 @@ public class UnitTestNotifier extends RunNotifier {
 
     @Override
     public void fireTestAssumptionFailed(Failure failure) {
+        String className = failure.getDescription().getClassName();
         String methodName = failure.getDescription().getMethodName();
-        String traceMessage = failure.getTrace();
-        logger.error("{} Failed\n{}", methodName, traceMessage);
+
+        if (methodName == null) {
+            logger.error("Test Class {} Failed", className);
+        } else {
+            logger.error("Test Method '{}' Failed", methodName);
+        }
+
         notifier.fireTestAssumptionFailed(failure);
     }
 
     @Override
     public void fireTestFailure(Failure failure) {
+        String className = failure.getDescription().getClassName();
         String methodName = failure.getDescription().getMethodName();
-        String traceMessage = failure.getTrace();
-        logger.error("{} Failed\n{}", methodName, traceMessage);
+
+        if (methodName == null) {
+            logger.error("Test Class {} Failed", className);
+        } else {
+            logger.error("Test Method '{}' Failed", methodName);
+        }
+
         notifier.fireTestFailure(failure);
     }
 
@@ -79,15 +93,11 @@ public class UnitTestNotifier extends RunNotifier {
         notifier.fireTestFinished(description);
     }
 
-    public void addFailure(Throwable targetException) {
-        if (targetException instanceof MultipleFailureException) {
-            addMultipleFailureException((MultipleFailureException) targetException);
+    public void addFailure(Throwable e) {
+        if (e instanceof MultipleFailureException) {
+            addMultipleFailureException((MultipleFailureException) e);
         } else {
-            Failure failure = new Failure(description, targetException);
-            String methodName = failure.getDescription().getMethodName();
-            String traceMessage = failure.getTrace();
-            logger.error("{} Failed\n{}", methodName, traceMessage);
-            notifier.fireTestFailure(failure);
+            notifier.fireTestFailure(new Failure(description, e));
         }
     }
 
@@ -98,10 +108,6 @@ public class UnitTestNotifier extends RunNotifier {
     }
 
     public void addFailedAssumption(AssumptionViolatedException e) {
-        Failure failure = new Failure(description, e);
-        String methodName = failure.getDescription().getMethodName();
-        String traceMessage = failure.getTrace();
-        logger.error("{} Failed\n{}", methodName, traceMessage);
         notifier.fireTestAssumptionFailed(new Failure(description, e));
     }
 
