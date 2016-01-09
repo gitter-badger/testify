@@ -151,8 +151,9 @@ public class UnitTest extends BlockJUnit4ClassRunner {
         try {
             Object testInstance = createTest();
 
-            TestContext testContext = testClassContexts.get(javaClass);
+            TestContext testContext = getTestContext(javaClass);
             testContext.setTestInstance(testInstance);
+
             UnitTestReifier reifier = new UnitTestReifier(testInstance);
             UnitTestCreator creator = new UnitTestCreator(testContext, reifier);
             creator.create();

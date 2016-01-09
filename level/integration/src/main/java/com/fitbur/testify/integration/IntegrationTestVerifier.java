@@ -100,9 +100,10 @@ public class IntegrationTestVerifier implements TestVerifier {
             if (testContext.getCutCount() == 0 && fieldDescriptors.isEmpty()) {
                 checkState(false,
                         "Test class '%s' does not define a field annotated with @Cut "
-                        + "nor does it define fields annotated with @Real or @Inject. "
+                        + "nor does it define field(s) annotated with @Real or @Inject. "
                         + "Please insure the test class defines a single field annotated "
-                        + "with @Cut or defines at least one field annotated with @Real or @Inject.",
+                        + "with @Cut or defines at least one field annotated with @Real "
+                        + "or @Inject.",
                         testClassName
                 );
             }
@@ -115,7 +116,7 @@ public class IntegrationTestVerifier implements TestVerifier {
                     checkState(false,
                             "Need provider '%s' defined in test class '%s' does not have a "
                             + "zero argument default constructor. Please insure that the need "
-                            + "provider defines sn accessible zero argument default constructor.",
+                            + "provider defines an accessible zero argument default constructor.",
                             testClassName, p.getSimpleName()
                     );
                 }
@@ -157,7 +158,7 @@ public class IntegrationTestVerifier implements TestVerifier {
                     if (!instance.isPresent()) {
                         String paramTypeName = p.getTypeName();
                         logger.warn("Class under test '{}' defined in '{}' has a collaborator "
-                                + "type '{}' but test class '{}' does not define a field of "
+                                + "of type '{}' but test class '{}' does not define a field of "
                                 + "type '{}' annotated with @Fake, @Real, or @Inject",
                                 cutClassName, testClassName, paramTypeName, testClassName, paramTypeName);
                     }

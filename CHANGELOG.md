@@ -15,7 +15,8 @@ was added, changed, deprecated, removed, fix and security fixes.
 ### Added
 - Added new junit-core module to share common JUnit classes
 - Added support for running unit test classes in parallel
-- Added support for running spring integration test in parallel
+- Added support for running spring integration test classesin parallel
+- Added support for running spring system tests classes in parallel
 - Added verification check for missing cut class in unit tests
 - Added ability to test bad test setup cases
 

@@ -119,15 +119,16 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
 
     @Override
     public void run(RunNotifier notifier) {
-        Description description = getDescription();
-        TestClass testClass = getTestClass();
-        Class<?> javaClass = testClass.getJavaClass();
-        TestContext testContext = getTestContext(javaClass);
         //register slf4j bridge
         if (!SLF4JBridgeHandler.isInstalled()) {
             SLF4JBridgeHandler.removeHandlersForRootLogger();
             SLF4JBridgeHandler.install();
         }
+
+        Description description = getDescription();
+        TestClass testClass = getTestClass();
+        Class<?> javaClass = testClass.getJavaClass();
+        TestContext testContext = getTestContext(javaClass);
 
         JUnitTestNotifier testNotifier
                 = new JUnitTestNotifier(notifier, description, LOGGER, testContext);
@@ -185,6 +186,7 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
         }
 
         TestContext testContext = getTestContext(javaClass);
+        testContext.setTestInstance(testInstance);
         String testClassName = testContext.getTestClassName();
 
         AnnotationConfigApplicationContext appContext = new AnnotationConfigApplicationContext();

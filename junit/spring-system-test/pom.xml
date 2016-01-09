@@ -49,6 +49,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.fitbur.testify.junit</groupId>
+            <artifactId>junit-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.fitbur.testify</groupId>
             <artifactId>server-undertow</artifactId>
             <version>${project.version}</version>

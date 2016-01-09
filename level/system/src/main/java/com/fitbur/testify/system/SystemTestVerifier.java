@@ -83,9 +83,9 @@ public class SystemTestVerifier implements TestVerifier {
 
             if (testContext.getCutCount() == 1) {
                 checkState(testContext.getConstructorCount() == 1,
-                        "Class under test '%s' has '%d' constructors. Please insure that "
-                        + "the class under test has one and only one constructor.",
-                        cutDescriptor.getTypeName(), testContext.getConstructorCount());
+                        "Class under test '%s' defined in test class '%s' has %s constructors. "
+                        + "Please insure that the class under test has one and only one constructor.",
+                        cutDescriptor.getTypeName(), testClassName, testContext.getConstructorCount());
             }
             // insure that only one field has Cut annotation on it.
             if (testContext.getCutCount() > 1) {
@@ -100,9 +100,10 @@ public class SystemTestVerifier implements TestVerifier {
             if (testContext.getCutCount() == 0 && fieldDescriptors.isEmpty()) {
                 checkState(false,
                         "Test class '%s' does not define a field annotated with @Cut "
-                        + "nor does it have fields annotated with @Real or @Inject. "
-                        + "Please insure the test class declares a single field annotated "
-                        + "with @Cut or declares fields annotated with @Real or @Real.",
+                        + "nor does it define field(s) annotated with @Real or @Inject. "
+                        + "Please insure the test class defines a single field annotated "
+                        + "with @Cut or defines at least one field annotated with @Real "
+                        + "or @Inject.",
                         testClassName
                 );
             }
@@ -115,7 +116,7 @@ public class SystemTestVerifier implements TestVerifier {
                     checkState(false,
                             "Need provider '%s' defined in test class '%s' does not have a "
                             + "zero argument default constructor. Please insure that the need "
-                            + "provider defines accessible zero argument default constructor.",
+                            + "provider defines an accessible zero argument default constructor.",
                             testClassName, p.getSimpleName()
                     );
                 }
@@ -156,9 +157,9 @@ public class SystemTestVerifier implements TestVerifier {
                     Optional instance = p.getInstance();
                     if (!instance.isPresent()) {
                         String paramTypeName = p.getTypeName();
-                        logger.warn("Improper wiring detected. Class under test '{}' defined "
-                                + "in '{}' declars constructor argument of type '{}' but '{}' "
-                                + "does not define a field of type '{}' annotated with @Fake or @Real.",
+                        logger.warn("Class under test '{}' defined in '{}' has a collaborator "
+                                + "of type '{}' but test class '{}' does not define a field of "
+                                + "type '{}' annotated with @Fake, @Real, or @Inject",
                                 cutClassName, testClassName, paramTypeName, testClassName, paramTypeName);
                     }
 
