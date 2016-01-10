@@ -21,6 +21,9 @@ addons:
         packages:
             - gnupg
 
+script:
+  mvn verify -B
+
 before_install:
     - ./init.sh
     - pip install --user codecov
