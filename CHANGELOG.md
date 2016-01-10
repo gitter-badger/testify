@@ -12,24 +12,6 @@ was added, changed, deprecated, removed, fix and security fixes.
 - Security - Lists security fixes to security vulnerabilities
 
 ## [Unreleased]
-### Added
-- Support for out-server testing using a client
-- Support for in-server testing
-- API for Client Provider and initial implementation using JerseyClient
-- API for Server Provider and initial implementation using Undertow
-- New junit-core module to share common JUnit classes
-- Support for running unit, integration, system test classes in parallel
-- Verification check for missing cut class in unit tests
-- Ability to test bad test setup cases
-
-### Removed
-- UnitTestRunListener and moved its code to UnitTest
-- SpringIntegrationTestRunListener and moved its code to the SpringIntegrationTest
-- SpringSystemTestRunListener and moved its code to SpringSystemTest
-
-### Fixed
-- Fixed verification language to improve readability and consistency
-- Verification message when a CUT class has multiple constructors
 
 ## [0.0.1] - 2015-11-23
 ### Added
@@ -92,9 +74,29 @@ was added, changed, deprecated, removed, fix and security fixes.
 
 ## [0.0.6] - 2016-01-06
 ### Added
+- Support for in-server testing
+- API for Server Provider and initial implementation using Undertow
 - @Scan annotation to enable package scanning to load services
 - Ability to support DI framework injection and qualifier annotations
 - Spring JUnit System Test support
 
 ### Fixed
 - Issue #18 - Testify Doesn't Handle @Ignore
+
+## [0.0.7] - 2016-01-09
+### Added
+- Support for out-server testing using a http/rest client
+- API for Client Provider and initial implementation using JerseyClient
+- New junit-core module to share common JUnit classes
+- Support for running JUnit unit, integration, system test classes in parallel
+- Verification check for missing cut class in unit tests
+- Ability to test bad test setup cases
+
+### Removed
+- UnitTestRunListener and moved its code to UnitTest
+- SpringIntegrationTestRunListener and moved its code to the SpringIntegrationTest
+- SpringSystemTestRunListener and moved its code to SpringSystemTest
+
+### Fixed
+- Fixed verification language to improve readability and consistency
+- Verification message when a CUT class has multiple constructors
