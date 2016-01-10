@@ -36,8 +36,7 @@ public interface ClientProvider<T, S> {
      * Note that implementation of this method should not do any work beyond
      * returning a mutable configuration object. It should not perform
      * instantiation of the client as that should be handled in
-     * {@link #init(com.fitbur.testify.client.ServerDescriptor, java.lang.Object)}
-     * method.
+     * {@link #init(ClientDescriptor, java.lang.Object)} method.
      * </p>
      *
      * @param descriptor the client descriptor
