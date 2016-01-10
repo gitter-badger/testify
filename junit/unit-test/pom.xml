@@ -46,7 +46,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fitbur.testify</groupId>
+            <groupId>com.fitbur.testify.level</groupId>
             <artifactId>unit</artifactId>
             <version>${project.version}</version>
         </dependency>

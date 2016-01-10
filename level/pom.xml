@@ -23,9 +23,11 @@
         <artifactId>parent</artifactId>
         <version>0.0.7-SNAPSHOT</version>
     </parent>
+    <packaging>pom</packaging>
+
+    <groupId>com.fitbur.testify.level</groupId>
     <artifactId>level</artifactId>
     <name>Level</name>
-    <packaging>pom</packaging>
     
     <modules>
         <module>unit</module>

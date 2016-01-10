@@ -39,12 +39,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fitbur.testify</groupId>
+            <groupId>com.fitbur.testify.di</groupId>
             <artifactId>di-spring</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fitbur.testify</groupId>
+            <groupId>com.fitbur.testify.level</groupId>
             <artifactId>system</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -59,7 +59,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fitbur.testify</groupId>
+            <groupId>com.fitbur.testify.server</groupId>
             <artifactId>server-undertow</artifactId>
             <version>${project.version}</version>
         </dependency>

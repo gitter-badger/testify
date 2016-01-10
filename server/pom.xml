@@ -24,6 +24,8 @@
         <version>0.0.7-SNAPSHOT</version>
     </parent>
     <packaging>pom</packaging>
+    
+    <groupId>com.fitbur.testify.server</groupId>
     <artifactId>server</artifactId>
 
     <name>Server</name>

@@ -23,8 +23,10 @@
         <artifactId>parent</artifactId>
         <version>0.0.7-SNAPSHOT</version>
     </parent>
-    <artifactId>di</artifactId>
     <packaging>pom</packaging>
+
+    <groupId>com.fitbur.testify.di</groupId>
+    <artifactId>di</artifactId>
 
     <name>DI</name>
 
