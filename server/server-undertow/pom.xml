@@ -21,7 +21,7 @@
     <parent>
         <groupId>com.fitbur.testify.server</groupId>
         <artifactId>server</artifactId>
-        <version>0.0.7-SNAPSHOT</version>
+        <version>0.0.7</version>
     </parent>
     <artifactId>server-undertow</artifactId>
 
