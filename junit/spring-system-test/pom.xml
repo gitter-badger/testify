@@ -84,16 +84,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-core</artifactId>
-            <version>${undertow.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-servlet</artifactId>
-            <version>${undertow.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.fitbur.external</groupId>
             <artifactId>external-bytebuddy</artifactId>
             <version>${external.bytebuddy.version}</version>
