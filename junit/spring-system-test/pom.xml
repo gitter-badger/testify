@@ -54,6 +54,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.fitbur.testify.client</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.fitbur.testify</groupId>
             <artifactId>server-undertow</artifactId>
             <version>${project.version}</version>
@@ -89,26 +94,9 @@
             <version>${undertow.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
-            <version>1.2.5.RELEASE</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
             <groupId>com.fitbur.external</groupId>
             <artifactId>external-bytebuddy</artifactId>
             <version>${external.bytebuddy.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy-agent</artifactId>
-            <version>0.7.7</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fitbur.testify.client</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>0.0.7-SNAPSHOT</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
 
