@@ -22,7 +22,7 @@ addons:
             - gnupg
 
 script:
-  mvn verify -B
+  mvn verify -B -Pdevelop
 
 before_install:
     - ./init.sh

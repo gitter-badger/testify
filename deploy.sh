@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-SKIP_TESTS="-DskipTests=true -Dmaven.test.skip=true"
 MAVEN_SETTINGS="--settings settings.xml"
 RELEASE="-Prelease"
 
@@ -23,19 +22,16 @@ if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
     echo "Deploying '$TRAVIS_BRANCH' branch"
     if [ "$TRAVIS_BRANCH" = "master" ]; then
         PROJECT_VERSION=$(mvn -q org.codehaus.mojo:exec-maven-plugin:1.4.0:exec -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive)
-        echo "Staging v$PROJECT_VERSION release artifacts"
-        mvn clean deploy $MAVEN_SETTINGS $RELEASE $SKIP_TESTS -B
-
-        echo "Releasing artifacts"
-        mvn nexus-staging:release $MAVEN_SETTINGS $SKIP_TESTS -B
+        echo "Deploying Release v$PROJECT_VERSION artifacts"
+        mvn clean deploy $MAVEN_SETTINGS $RELEASE -B
+        mvn nexus-staging:release $MAVEN_SETTINGS -B
 
     elif [ "$TRAVIS_BRANCH" = "develop" ]; then
-        echo "Snapshoting v$PROJECT_VERSION"
-        echo "Deploying snapshot artifacts"
-        mvn clean deploy $MAVEN_SETTINGS $RELEASE $SKIP_TESTS -B
+        echo "Deploying Snapshot v$PROJECT_VERSION artifacts"
+        mvn clean deploy $MAVEN_SETTINGS $RELEASE -B
 
     else
-        echo "Branch '$TRAVIS_BRANCH' not a master or develop. Artifacts will not be deployed."
+        echo "Branch '$TRAVIS_BRANCH' not a master or develop. No-Op."
     fi
 
 fi
