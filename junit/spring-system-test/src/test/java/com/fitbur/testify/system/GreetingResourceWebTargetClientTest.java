@@ -16,35 +16,29 @@
 package com.fitbur.testify.system;
 
 import com.fitbur.testify.App;
-import com.fitbur.testify.Cut;
 import com.fitbur.testify.Real;
+import com.fitbur.testify.client.jersey.JerseyClientProvider;
 import com.fitbur.testify.system.fixture.GreeterApplication;
-import com.fitbur.testify.system.fixture.web.resource.GreetingResource;
-import com.fitbur.testify.system.fixture.web.service.GreetingService;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
+import static javax.ws.rs.core.Response.Status.OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.internal.util.MockUtil;
 
 @RunWith(SpringSystemTest.class)
-@App(value = GreeterApplication.class)
-public class GreetingResourceRealTest {
-
-    @Cut
-    GreetingResource cut;
+@App(value = GreeterApplication.class, client = JerseyClientProvider.class)
+public class GreetingResourceWebTargetClientTest {
 
     @Real
-    GreetingService greetingService;
+    WebTarget target;
 
     @Test
     public void verifyInjections() {
-        assertThat(cut).isNotNull();
-        assertThat(greetingService)
-                .isNotNull()
-                .isSameAs(cut.getGreetingService());
-
-        MockUtil util = new MockUtil();
-        assertThat(util.isMock(greetingService)).isFalse();
+        Response result = target.path("/").request().get();
+        assertThat(result).isNotNull();
+        assertThat(result.getStatus()).isEqualTo(OK.getStatusCode());
+        assertThat(result.readEntity(String.class)).isEqualTo("Hello");
     }
 
 }

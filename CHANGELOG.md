@@ -13,16 +13,19 @@ was added, changed, deprecated, removed, fix and security fixes.
 
 ## [Unreleased]
 ### Added
-- Added new junit-core module to share common JUnit classes
-- Added support for running unit test classes in parallel
-- Added support for running spring integration test classesin parallel
-- Added support for running spring system tests classes in parallel
-- Added verification check for missing cut class in unit tests
-- Added ability to test bad test setup cases
+- Support for out-server testing using a client
+- Support for in-server testing
+- API for Client Provider and initial implementation using JerseyClient
+- API for Server Provider and initial implementation using Undertow
+- New junit-core module to share common JUnit classes
+- Support for running unit, integration, system test classes in parallel
+- Verification check for missing cut class in unit tests
+- Ability to test bad test setup cases
 
 ### Removed
-- Removed UnitTestRunListener and moved its code to UnitTest
-- Removed SpringIntegrationTestRunListener and moved its code to the SpringIntegrationTest
+- UnitTestRunListener and moved its code to UnitTest
+- SpringIntegrationTestRunListener and moved its code to the SpringIntegrationTest
+- SpringSystemTestRunListener and moved its code to SpringSystemTest
 
 ### Fixed
 - Fixed verification language to improve readability and consistency

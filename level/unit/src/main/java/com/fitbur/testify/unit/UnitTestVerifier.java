@@ -116,7 +116,7 @@ public class UnitTestVerifier implements TestVerifier {
                 String paramTypeName = p.getTypeName();
                 logger.warn("Class under test '{}' defined in '{}' has a collaborator "
                         + "type '{}' but test class '{}' does not define a field of "
-                        + "type '{}' annotated with @Fake.",
+                        + "type '{}' annotated with @Fake. Null values will be used.",
                         cutClassName, testClassName, paramTypeName, testClassName, paramTypeName);
             }
 

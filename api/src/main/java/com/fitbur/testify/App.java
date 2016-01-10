@@ -15,6 +15,7 @@
  */
 package com.fitbur.testify;
 
+import com.fitbur.testify.client.ClientProvider;
 import com.fitbur.testify.server.ServerProvider;
 import java.lang.annotation.Documented;
 import static java.lang.annotation.ElementType.TYPE;
@@ -24,7 +25,7 @@ import java.lang.annotation.Target;
 
 /**
  * An annotation for specifying an application to load along with the
- * application provider used to load it.
+ * application server used to load it.
  *
  * @author saden
  */
@@ -34,18 +35,27 @@ import java.lang.annotation.Target;
 public @interface App {
 
     /**
-     * The class of the application that will be loaded.
+     * The class of the application that will be deployed.
      *
      * @return the application class.
      */
     Class<?> value();
 
     /**
-     * Specifies a provider implementation provider used to loaded the
-     * application.
+     * The server provider implementation used to deploy the application to. If
+     * not specified the default server will be used.
      *
-     * @return a provider class.
+     * @return a server provider implementation class.
      */
-    Class<? extends ServerProvider> provider() default ServerProvider.class;
+    Class<? extends ServerProvider> server() default ServerProvider.class;
+
+    /**
+     * The client provider implementation used to communicate with server the
+     * application is deployed to. If not specified the default client provider
+     * will be used.
+     *
+     * @return a server provider implementation class.
+     */
+    Class<? extends ClientProvider> client() default ClientProvider.class;
 
 }

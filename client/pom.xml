@@ -20,21 +20,23 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.fitbur.testify</groupId>
-        <artifactId>server</artifactId>
+        <artifactId>parent</artifactId>
         <version>0.0.7-SNAPSHOT</version>
     </parent>
-    <artifactId>server-undertow</artifactId>
+    <packaging>pom</packaging>
+    <artifactId>client</artifactId>
 
-    <properties>
-        <undertow.version>1.3.10.Final</undertow.version>
-    </properties>
+    <name>Client</name>
+
+    <modules>
+        <module>jersey-client</module>
+    </modules>
 
     <dependencies>
         <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-servlet</artifactId>
-            <version>${undertow.version}</version>
+            <groupId>com.fitbur.testify</groupId>
+            <artifactId>api</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
-
 </project>

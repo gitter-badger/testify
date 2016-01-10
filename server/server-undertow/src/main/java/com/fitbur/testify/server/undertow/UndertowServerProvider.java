@@ -28,6 +28,7 @@ import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.api.ServletContainerInitializerInfo;
+import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.handlers.DefaultServlet;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
 import java.net.URI;
@@ -53,13 +54,16 @@ public class UndertowServerProvider implements ServerProvider<DeploymentInfo> {
             ServletContainerInitializerInfo initInfo
                     = new ServletContainerInitializerInfo(servletType, factory, handles);
 
+            ServletInfo servletInfo = Servlets.servlet(name, DefaultServlet.class)
+                    .setAsyncSupported(true);
+
             DeploymentInfo deploymentInfo = Servlets.deployment()
                     .addServletContainerInitalizer(initInfo)
                     .setClassLoader(descriptor.getTestClass().getClassLoader())
                     .setHostName(uri.getHost())
                     .setContextPath(uri.getPath())
                     .setDeploymentName(name)
-                    .addServlet(Servlets.servlet(name, DefaultServlet.class));
+                    .addServlet(servletInfo);
 
             return deploymentInfo;
         } catch (Exception e) {

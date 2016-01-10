@@ -20,7 +20,7 @@ import java.util.Set;
 import javax.servlet.ServletContainerInitializer;
 
 /**
- * A descriptor class that describes the instantiate a server instance.
+ * A descriptor class that describes the server instance.
  *
  * @author saden
  */
@@ -29,12 +29,12 @@ public interface ServerDescriptor {
     /**
      * Get the application annotation.
      *
-     * @return the need annotation.
+     * @return the app annotation.
      */
     App getApp();
 
     /**
-     * Get the test instance the need is for.
+     * Get the test instance the server is for.
      *
      * @return an instance of the test class
      */
@@ -48,14 +48,14 @@ public interface ServerDescriptor {
     Class<?> getTestClass();
 
     /**
-     * Get the name of the test class the need is for.
+     * Get the name of the test class the server is for.
      *
      * @return the test class name
      */
     String getTestClassName();
 
     /**
-     * Get the name of the test class the need is for.
+     * Get the name of the test class the server is for.
      *
      * @return the test class name
      */

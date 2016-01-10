@@ -19,7 +19,7 @@ package com.fitbur.testify.need;
  * A contract that defines methods for creating and destroying a need.
  *
  * @author saden
- * @param <T> need configuration type
+ * @param <T> the need context type
  */
 public interface NeedProvider<T> {
 

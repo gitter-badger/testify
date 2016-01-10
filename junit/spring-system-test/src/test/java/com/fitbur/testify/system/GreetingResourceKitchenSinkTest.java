@@ -18,17 +18,27 @@ package com.fitbur.testify.system;
 import com.fitbur.testify.App;
 import com.fitbur.testify.Cut;
 import com.fitbur.testify.Real;
+import com.fitbur.testify.client.ClientInstance;
+import com.fitbur.testify.client.jersey.JerseyClientProvider;
+import com.fitbur.testify.server.ServerInstance;
+import com.fitbur.testify.server.ServerProvider;
 import com.fitbur.testify.system.fixture.GreeterApplication;
 import com.fitbur.testify.system.fixture.web.resource.GreetingResource;
 import com.fitbur.testify.system.fixture.web.service.GreetingService;
+import io.undertow.Undertow;
+import javax.ws.rs.client.WebTarget;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.internal.util.MockUtil;
 
 @RunWith(SpringSystemTest.class)
-@App(value = GreeterApplication.class)
-public class GreetingResourceRealTest {
+@App(
+        value = GreeterApplication.class,
+        client = JerseyClientProvider.class,
+        server = ServerProvider.class
+)
+public class GreetingResourceKitchenSinkTest {
 
     @Cut
     GreetingResource cut;
@@ -36,15 +46,30 @@ public class GreetingResourceRealTest {
     @Real
     GreetingService greetingService;
 
+    @Real
+    ClientInstance<WebTarget> clientInstance;
+
+    @Real
+    WebTarget webTarget;
+
+    @Real
+    ServerInstance serverInstance;
+
+    @Real
+    Undertow undertow;
+
     @Test
     public void verifyInjections() {
         assertThat(cut).isNotNull();
+
         assertThat(greetingService)
                 .isNotNull()
                 .isSameAs(cut.getGreetingService());
-
-        MockUtil util = new MockUtil();
-        assertThat(util.isMock(greetingService)).isFalse();
+        assertThat(new MockUtil().isMock(greetingService)).isFalse();
+        assertThat(clientInstance).isNotNull();
+        assertThat(webTarget).isNotNull();
+        assertThat(serverInstance).isNotNull();
+        assertThat(undertow).isNotNull();
     }
 
 }

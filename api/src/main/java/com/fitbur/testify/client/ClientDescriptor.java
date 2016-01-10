@@ -13,47 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.server;
+package com.fitbur.testify.client;
 
+import com.fitbur.testify.App;
 import java.net.URI;
 
 /**
- * A contract that defines methods for getting information about the running
- * server as well as managing its lifecycle.
+ * A descriptor class that describes the client instance.
  *
  * @author saden
- * @param <T> the underling server type
  */
-public interface ServerInstance<T> {
+public interface ClientDescriptor {
 
     /**
-     * The server base URI.
+     * Get the application annotation.
+     *
+     * @return the app annotation.
+     */
+    App getApp();
+
+    /**
+     * The base URI of the client.
      *
      * @return the base URI.
      */
-    URI getURI();
+    URI getBaseURI();
 
     /**
-     * The underlying server instance.
+     * Get the test instance the client is for.
      *
-     * @return the server instance
+     * @return an instance of the test class
      */
-    T getServer();
+    Object getTestInstance();
 
     /**
-     * Start the server.
+     * Get the test class.
+     *
+     * @return the test class
      */
-    void start();
+    Class<?> getTestClass();
 
     /**
-     * Stop the server.
+     * Get the name of the test class the client is for.
+     *
+     * @return the test class name
      */
-    void stop();
-
-    /**
-     * Restart the server.
-     */
-    default void restart() {
-    }
+    String getTestClassName();
 
 }

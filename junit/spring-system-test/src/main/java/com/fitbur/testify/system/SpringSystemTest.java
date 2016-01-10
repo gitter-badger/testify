@@ -27,6 +27,10 @@ import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.analyzer.CutClassAnalyzer;
 import com.fitbur.testify.analyzer.TestClassAnalyzer;
+import com.fitbur.testify.client.ClientContext;
+import com.fitbur.testify.client.ClientInstance;
+import com.fitbur.testify.client.ClientProvider;
+import com.fitbur.testify.client.jersey.JerseyClientProvider;
 import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.di.ServiceAnnotations;
@@ -92,6 +96,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
     private ServiceAnnotations serviceAnnotations;
     private Set<NeedContext> needContexts;
     private ServerContext serverContext;
+    private ClientContext clientContext;
 
     /**
      * Create a new test runner instance for the class under test.
@@ -205,6 +210,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
         testContext.setTestInstance(testInstance);
 
         this.serverContext = getServerContext(testContext);
+        this.clientContext = getClientContext(testContext, serverContext);
 
         ServiceLocator serviceLocator = serverContext.getLocator();
 
@@ -243,7 +249,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
     public ServerContext getServerContext(TestContext testContext) {
         return testContext.getAnnotation(App.class).map(p -> {
             Class<?> appType = p.value();
-            Class<? extends ServerProvider> providerType = p.provider();
+            Class<? extends ServerProvider> providerType = p.server();
             try {
                 ServerProvider provider;
                 if (providerType.equals(ServerProvider.class)) {
@@ -297,6 +303,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
                 ServerInstance instance = provider.init(descriptor, context);
                 instance.start();
+                Object server = instance.getServer();
 
                 SpringServiceLocator serviceLocator
                         = new SpringServiceLocator(interceptorContext.getServletAppContext(),
@@ -304,8 +311,64 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
                 serviceLocator.addConstant(context.getClass().getSimpleName(), context);
                 serviceLocator.addConstant(instance.getClass().getSimpleName(), instance);
+                serviceLocator.addConstant(server.getClass().getSimpleName(), server);
 
                 return new ServerContext(provider, descriptor, instance, serviceLocator, context);
+            } catch (Exception e) {
+                checkState(false, "Server provider '%s' could not be instanticated.",
+                        providerType.getSimpleName());
+                return null;
+            }
+        }).get();
+    }
+
+    public ClientContext getClientContext(TestContext testContext, ServerContext serverContext) {
+        return testContext.getAnnotation(App.class).map(p -> {
+            Class<?> appType = p.value();
+            Class<? extends ClientProvider> providerType = p.client();
+            try {
+                ClientProvider provider;
+                if (providerType.equals(ClientProvider.class)) {
+                    provider = JerseyClientProvider.class.newInstance();
+                } else {
+                    provider = providerType.newInstance();
+
+                }
+
+                SpringSystemClientDescriptor descriptor
+                        = new SpringSystemClientDescriptor(p,
+                                testContext,
+                                serverContext.getInstance().getURI()
+                        );
+
+                Object context = provider.configuration(descriptor);
+                Optional<Method> configMethod = testContext.getConfigMethod(context.getClass())
+                        .map(m -> m.getMethod());
+
+                if (configMethod.isPresent()) {
+                    AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                        Method m = configMethod.get();
+                        try {
+                            m.setAccessible(true);
+                            m.invoke(descriptor.getTestInstance(), context);
+                        } catch (Exception e) {
+                            checkState(false, "Call to config method '%s' in test class '%s' failed.",
+                                    m.getName(), descriptor.getTestClassName());
+                        }
+
+                        return null;
+                    });
+                }
+
+                ClientInstance instance = provider.init(descriptor, context);
+                ServiceLocator serviceLocator = serverContext.getLocator();
+                Object client = instance.getClient();
+
+                serviceLocator.addConstant(context.getClass().getSimpleName(), context);
+                serviceLocator.addConstant(instance.getClass().getSimpleName(), instance);
+                serviceLocator.addConstant(client.getClass().getSimpleName(), client);
+
+                return new ClientContext(provider, descriptor, instance, context);
             } catch (Exception e) {
                 checkState(false, "Server provider '%s' could not be instanticated.",
                         providerType.getSimpleName());
@@ -362,6 +425,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
                 p.getProvider().destroy(p.getDescriptor(), p.getContext());
             });
 
+            clientContext.getInstance().closeClient();
             serverContext.getInstance().stop();
         }
     }

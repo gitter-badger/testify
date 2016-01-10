@@ -104,7 +104,12 @@
             <artifactId>byte-buddy-agent</artifactId>
             <version>0.7.7</version>
         </dependency>
-      
+        <dependency>
+            <groupId>com.fitbur.testify.client</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>0.0.7-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 
 </project>

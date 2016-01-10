@@ -23,8 +23,8 @@
         <artifactId>parent</artifactId>
         <version>0.0.7-SNAPSHOT</version>
     </parent>
-    <artifactId>server</artifactId>
     <packaging>pom</packaging>
+    <artifactId>server</artifactId>
 
     <name>Server</name>
 
@@ -35,7 +35,7 @@
     <dependencies>
         <dependency>
             <groupId>com.fitbur.testify</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>api</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

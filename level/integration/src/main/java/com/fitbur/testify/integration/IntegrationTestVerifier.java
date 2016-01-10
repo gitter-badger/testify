@@ -16,6 +16,8 @@
 package com.fitbur.testify.integration;
 
 import static com.fitbur.guava.common.base.Preconditions.checkState;
+import com.fitbur.testify.Fake;
+import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestVerifier;
 import com.fitbur.testify.descriptor.CutDescriptor;
@@ -23,6 +25,7 @@ import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.descriptor.ParameterDescriptor;
 import com.fitbur.testify.need.Need;
 import static java.lang.Class.forName;
+import java.lang.reflect.Field;
 import static java.lang.reflect.Modifier.isFinal;
 import static java.security.AccessController.doPrivileged;
 import java.security.PrivilegedAction;
@@ -123,6 +126,8 @@ public class IntegrationTestVerifier implements TestVerifier {
             });
 
             fieldDescriptors.parallelStream().forEach(p -> {
+
+                Field field = p.getField();
                 Class<?> fieldType = p.getType();
                 String fieldName = p.getName();
                 String fieldTypeName = p.getTypeName();
@@ -131,12 +136,21 @@ public class IntegrationTestVerifier implements TestVerifier {
                         "Field '%s' in test class '%s' can not be configured because '%s'"
                         + " is an array. Please consider using a List instead of arrays.",
                         fieldName, testClassName, fieldTypeName);
+                Fake fake = field.getDeclaredAnnotation(Fake.class);
+                if (fake != null) {
+                    checkState(!isFinal(fieldType.getModifiers()),
+                            "Can not fake field '%s' in test class '%s' because '%s'"
+                            + " is a final class.",
+                            fieldName, testClassName, fieldTypeName);
+                }
 
-                checkState(!isFinal(fieldType.getModifiers()),
-                        "Field '%s' in test class '%s' can not be configured because '%s'"
-                        + " is a final class.",
-                        fieldName, testClassName, fieldTypeName);
-
+                Real real = field.getDeclaredAnnotation(Real.class);
+                if (real != null && real.value()) {
+                    checkState(!isFinal(fieldType.getModifiers()),
+                            "Can not create delegated fake of field '%s' in test class '%s' "
+                            + "because '%s' is a final class.",
+                            fieldName, testClassName, fieldTypeName);
+                }
             });
 
             return null;
@@ -159,7 +173,8 @@ public class IntegrationTestVerifier implements TestVerifier {
                         String paramTypeName = p.getTypeName();
                         logger.warn("Class under test '{}' defined in '{}' has a collaborator "
                                 + "of type '{}' but test class '{}' does not define a field of "
-                                + "type '{}' annotated with @Fake, @Real, or @Inject",
+                                + "type '{}' annotated with @Fake, @Real, or @Inject. The real "
+                                + "instance of the collaborator will be used.",
                                 cutClassName, testClassName, paramTypeName, testClassName, paramTypeName);
                     }
 

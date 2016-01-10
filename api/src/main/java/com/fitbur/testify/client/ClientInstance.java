@@ -13,47 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.server;
+package com.fitbur.testify.client;
 
 import java.net.URI;
 
 /**
- * A contract that defines methods for getting information about the running
- * server as well as managing its lifecycle.
+ * A contract that defines methods for getting information a client.
  *
  * @author saden
- * @param <T> the underling server type
+ * @param <T> the client type
  */
-public interface ServerInstance<T> {
+public interface ClientInstance<T> {
 
     /**
-     * The server base URI.
+     * The base server URI used by the client.
      *
      * @return the base URI.
      */
     URI getURI();
 
     /**
-     * The underlying server instance.
+     * Get a client instance with the base URI configured.
      *
-     * @return the server instance
+     * @return a client instance
      */
-    T getServer();
+    T getClient();
 
     /**
-     * Start the server.
+     * Close the client instance.
      */
-    void start();
-
-    /**
-     * Stop the server.
-     */
-    void stop();
-
-    /**
-     * Restart the server.
-     */
-    default void restart() {
-    }
+    void closeClient();
 
 }

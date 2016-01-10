@@ -34,7 +34,7 @@ import org.mockito.internal.util.MockUtil;
  * @author saden
  */
 @RunWith(SpringSystemTest.class)
-@App(value = GreeterApplication.class, provider = UndertowServerProvider.class)
+@App(value = GreeterApplication.class, server = UndertowServerProvider.class)
 public class ServerInstanceInjectionTest {
 
     @Cut

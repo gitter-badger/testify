@@ -13,35 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.system.fixture;
+package com.fitbur.testify.client.jersey;
 
-import com.fitbur.testify.system.fixture.web.GreeterWebConfig;
-import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
+import com.fitbur.testify.client.ClientInstance;
+import java.net.URI;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.WebTarget;
 
 /**
+ * Jersey implementation of a client instance.
  *
  * @author saden
  */
-public class GreeterApplication extends AbstractAnnotationConfigDispatcherServletInitializer {
+public class JerseyClientInstance implements ClientInstance<WebTarget> {
 
-    @Override
-    protected Class<?>[] getRootConfigClasses() {
-        return null;
+    private final URI baseURI;
+    private final Client client;
+
+    public JerseyClientInstance(URI baseURI, Client client) {
+        this.baseURI = baseURI;
+        this.client = client;
     }
 
     @Override
-    protected Class<?>[] getServletConfigClasses() {
-        return new Class[]{GreeterWebConfig.class};
+    public URI getURI() {
+        return baseURI;
     }
 
     @Override
-    protected String[] getServletMappings() {
-        return new String[]{"/"};
+    public WebTarget getClient() {
+        return client.target(baseURI);
     }
 
     @Override
-    protected String getServletName() {
-        return "GreeterApplication";
+    public void closeClient() {
+        client.close();
     }
 
 }

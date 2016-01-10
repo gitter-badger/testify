@@ -17,7 +17,8 @@ package com.fitbur.testify.system;
 
 import com.fitbur.testify.App;
 import com.fitbur.testify.Cut;
-import com.fitbur.testify.Real;
+import com.fitbur.testify.Fake;
+import com.fitbur.testify.server.undertow.UndertowServerProvider;
 import com.fitbur.testify.system.fixture.GreeterApplication;
 import com.fitbur.testify.system.fixture.web.resource.GreetingResource;
 import com.fitbur.testify.system.fixture.web.service.GreetingService;
@@ -27,13 +28,13 @@ import org.junit.runner.RunWith;
 import org.mockito.internal.util.MockUtil;
 
 @RunWith(SpringSystemTest.class)
-@App(value = GreeterApplication.class)
-public class GreetingResourceRealTest {
+@App(value = GreeterApplication.class, server = UndertowServerProvider.class)
+public class GreetingResourceFakeServerTest {
 
     @Cut
     GreetingResource cut;
 
-    @Real
+    @Fake
     GreetingService greetingService;
 
     @Test
@@ -44,7 +45,7 @@ public class GreetingResourceRealTest {
                 .isSameAs(cut.getGreetingService());
 
         MockUtil util = new MockUtil();
-        assertThat(util.isMock(greetingService)).isFalse();
+        assertThat(util.isMock(greetingService)).isTrue();
     }
 
 }
