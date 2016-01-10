@@ -31,6 +31,6 @@
     <modules>
         <module>example-junit-unittest</module>
         <module>example-junit-spring-integrationtest</module>
-        <module>example-junit-spring-system-test</module>
+        <module>example-junit-spring-systemtest</module>
     </modules>
 </project>
