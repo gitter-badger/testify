@@ -12,6 +12,15 @@ was added, changed, deprecated, removed, fix and security fixes.
 - Security - Lists security fixes to security vulnerabilities
 
 ## [Unreleased]
+### Added
+- Added methods to the NeedDescriptor interface to get service locator and
+test method name
+- A common TestNeedDescriptor implementation to core
+### Removed
+- Spring NeedDescriptor implementations in favor of TestNeedDescriptor
+### Changed
+- NeedProvider init method is now optional
+- Simplified InMemoryHSQL (removed init and destroy code)
 
 ## [0.0.1] - 2015-11-23
 ### Added

@@ -25,6 +25,7 @@ import static com.fitbur.guava.common.base.Preconditions.checkState;
 import com.fitbur.testify.App;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
+import com.fitbur.testify.TestNeedDescriptor;
 import com.fitbur.testify.analyzer.CutClassAnalyzer;
 import com.fitbur.testify.analyzer.TestClassAnalyzer;
 import com.fitbur.testify.client.ClientContext;
@@ -214,7 +215,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
         ServiceLocator serviceLocator = serverContext.getLocator();
 
-        this.needContexts = getNeeds(testContext, serviceLocator);
+        this.needContexts = getNeeds(testContext, method.getName(), serviceLocator);
 
         SystemTestReifier reifier
                 = new SystemTestReifier(testContext, serviceLocator, testInstance);
@@ -377,13 +378,12 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
         }).get();
     }
 
-    public Set<NeedContext> getNeeds(TestContext testContext, ServiceLocator serviceLocator) {
+    public Set<NeedContext> getNeeds(TestContext testContext, String methodName, ServiceLocator serviceLocator) {
         return testContext.getAnnotations(Need.class).parallelStream().map(p -> {
             Class<? extends NeedProvider> providerClass = p.value();
             try {
                 NeedProvider provider = providerClass.newInstance();
-                NeedDescriptor descriptor
-                        = new SpringSystemNeedDescriptor(p, testContext);
+                NeedDescriptor descriptor = new TestNeedDescriptor(p, testContext, methodName, serviceLocator);
                 Object context = provider.configuration(descriptor);
                 Optional<Method> configMethod = testContext.getConfigMethod(context.getClass())
                         .map(m -> m.getMethod());

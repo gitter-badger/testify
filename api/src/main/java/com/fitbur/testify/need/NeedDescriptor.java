@@ -15,6 +15,8 @@
  */
 package com.fitbur.testify.need;
 
+import com.fitbur.testify.di.ServiceLocator;
+
 /**
  * A descriptor class passed to {@link NeedProvider} to instantiate a need
  * instance.
@@ -24,14 +26,14 @@ package com.fitbur.testify.need;
 public interface NeedDescriptor {
 
     /**
-     * Get the need annotation itself.
+     * Get the need annotation.
      *
      * @return the need annotation.
      */
     Need getNeed();
 
     /**
-     * Get the test instance the need is for.
+     * Get the test instance.
      *
      * @return an instance of the test class
      */
@@ -45,10 +47,24 @@ public interface NeedDescriptor {
     Class<?> getTestClass();
 
     /**
-     * Get the name of the test class the need is for.
+     * Get the name of the test class name.
      *
      * @return the test class name
      */
     String getTestClassName();
+
+    /**
+     * Get the name of the test method.
+     *
+     * @return the test class name
+     */
+    String getTestMethodName();
+
+    /**
+     * Get the service locator.
+     *
+     * @return service locator
+     */
+    ServiceLocator getServiceLocator();
 
 }

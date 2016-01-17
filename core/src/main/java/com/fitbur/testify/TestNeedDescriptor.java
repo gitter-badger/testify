@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.integration;
+package com.fitbur.testify;
 
-import com.fitbur.testify.TestContext;
-import com.fitbur.testify.di.spring.SpringServiceLocator;
+import com.fitbur.testify.di.ServiceLocator;
 import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.NeedDescriptor;
 
@@ -25,17 +24,20 @@ import com.fitbur.testify.need.NeedDescriptor;
  *
  * @author saden
  */
-public class SpringIntegrationNeedDescriptor implements NeedDescriptor {
+public class TestNeedDescriptor implements NeedDescriptor {
 
     private final Need need;
     private final TestContext testContext;
-    private final SpringServiceLocator serviceLocator;
+    private final ServiceLocator serviceLocator;
+    private final String methodName;
 
-    public SpringIntegrationNeedDescriptor(Need need,
+    public TestNeedDescriptor(Need need,
             TestContext testContext,
-            SpringServiceLocator serviceLocator) {
+            String methodName,
+            ServiceLocator serviceLocator) {
         this.need = need;
         this.testContext = testContext;
+        this.methodName = methodName;
         this.serviceLocator = serviceLocator;
     }
 
@@ -57,6 +59,16 @@ public class SpringIntegrationNeedDescriptor implements NeedDescriptor {
     @Override
     public String getTestClassName() {
         return testContext.getTestClassName();
+    }
+
+    @Override
+    public String getTestMethodName() {
+        return methodName;
+    }
+
+    @Override
+    public ServiceLocator getServiceLocator() {
+        return serviceLocator;
     }
 
 }

@@ -44,15 +44,13 @@ public interface NeedProvider<T> {
     T configuration(NeedDescriptor descriptor);
 
     /**
-     * <p>
      * Instantiate the need based on the given descriptor and configuration.
-     * Implementations of the need should
-     * </p>
      *
      * @param descriptor the need descriptor
      * @param context the configuration context object
      */
-    void init(NeedDescriptor descriptor, T context);
+    default void init(NeedDescriptor descriptor, T context) {
+    }
 
     /**
      * Destroy the need with the given descriptor and configuration.

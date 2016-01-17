@@ -19,6 +19,7 @@ import com.fitbur.asm.ClassReader;
 import static com.fitbur.guava.common.base.Preconditions.checkState;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
+import com.fitbur.testify.TestNeedDescriptor;
 import com.fitbur.testify.analyzer.CutClassAnalyzer;
 import com.fitbur.testify.analyzer.TestClassAnalyzer;
 import com.fitbur.testify.descriptor.CutDescriptor;
@@ -202,8 +203,7 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
                     Class<? extends NeedProvider> providerClass = p.value();
                     try {
                         NeedProvider provider = providerClass.newInstance();
-                        NeedDescriptor descriptor
-                                = new SpringIntegrationNeedDescriptor(p, testContext, serviceLocator);
+                        NeedDescriptor descriptor = new TestNeedDescriptor(p, testContext, method.getName(), serviceLocator);
                         Object context = provider.configuration(descriptor);
                         Optional<Method> configMethod = testContext.getConfigMethod(context.getClass())
                                 .map(m -> m.getMethod());
