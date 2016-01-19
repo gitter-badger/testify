@@ -13,35 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.need;
+package com.fitbur.testify.need.docker;
 
 import java.lang.annotation.Documented;
 import static java.lang.annotation.ElementType.TYPE;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
 
 /**
- * An annotation for specifying a need class that should be loaded for a test
- * class. This is useful for integration and system tests which require an
- * external resource to be loaded (i.e. an in-memory database).
+ * An annotation for specifying a list of docker containers that should be
+ * started.
  *
  * @author saden
  */
 @Documented
 @Retention(RUNTIME)
 @Target({TYPE})
-@Repeatable(Needs.class)
-public @interface Need {
+public @interface DockerContainers {
 
     /**
-     * Specifies a need implementation class that should be loaded.
+     * Specifies a list of docker container annotations.
      *
-     * @return a need class.
+     * @return an array of docker containers
      */
-    Class<? extends NeedProvider> value();
-
-    NeedScope scope() default NeedScope.METHOD;
-
+    DockerContainer[] value();
 }

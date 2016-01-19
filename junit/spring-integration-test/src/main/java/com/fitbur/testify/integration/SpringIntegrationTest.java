@@ -31,6 +31,7 @@ import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.NeedContext;
 import com.fitbur.testify.need.NeedDescriptor;
 import com.fitbur.testify.need.NeedProvider;
+import com.fitbur.testify.need.NeedScope;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -44,6 +45,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.junit.Ignore;
 import org.junit.internal.AssumptionViolatedException;
+import org.junit.rules.MethodRule;
 import org.junit.rules.RunRules;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -170,6 +172,7 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
         IntegrationTestVerifier verifier = new IntegrationTestVerifier(testContext, LOGGER);
         verifier.dependency();
         verifier.configuration();
+        initNeed(testContext, null, NeedScope.CLASS);
         return super.classBlock(notifier);
     }
 
@@ -197,43 +200,7 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
         appContext.register(SpringIntegrationPostProcessor.class);
 
         serviceLocator = new SpringServiceLocator(appContext, serviceAnnotations);
-        needContexts = testContext.getAnnotations(Need.class)
-                .parallelStream()
-                .map(p -> {
-                    Class<? extends NeedProvider> providerClass = p.value();
-                    try {
-                        NeedProvider provider = providerClass.newInstance();
-                        NeedDescriptor descriptor = new TestNeedDescriptor(p, testContext, method.getName(), serviceLocator);
-                        Object context = provider.configuration(descriptor);
-                        Optional<Method> configMethod = testContext.getConfigMethod(context.getClass())
-                                .map(m -> m.getMethod());
-
-                        if (configMethod.isPresent()) {
-                            AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-                                Method m = configMethod.get();
-                                try {
-                                    m.setAccessible(true);
-                                    m.invoke(descriptor.getTestInstance(), context);
-                                } catch (Exception e) {
-                                    checkState(false, "Call to config method '%s' in test class '%s' failed.",
-                                            m.getName(), descriptor.getTestClassName());
-                                }
-
-                                return null;
-                            });
-                        }
-
-                        serviceLocator.addConstant(context.getClass().getSimpleName(), context);
-
-                        provider.init(descriptor, context);
-
-                        return new NeedContext(provider, descriptor, serviceLocator, context);
-                    } catch (InstantiationException | IllegalAccessException ex) {
-                        checkState(false, "Need provider '%s' could not be instanticated.",
-                                providerClass.getSimpleName());
-                        return null;
-                    }
-                }).collect(toSet());
+        initNeed(testContext, method.getName(), NeedScope.METHOD);
 
         IntegrationTestReifier reifier
                 = new IntegrationTestReifier(testContext, serviceLocator, testInstance);
@@ -265,6 +232,49 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
         return statement;
     }
 
+    private void initNeed(TestContext testContext, String methodName, NeedScope scope) {
+        needContexts = testContext.getAnnotations(Need.class)
+                .parallelStream()
+                .filter(p -> p.scope() == scope)
+                .map(p -> {
+                    Class<? extends NeedProvider> providerClass = p.value();
+                    try {
+                        NeedProvider provider = providerClass.newInstance();
+                        NeedDescriptor descriptor = new TestNeedDescriptor(p, testContext, methodName, serviceLocator);
+                        Object context = provider.configuration(descriptor);
+                        Optional<Method> configMethod = testContext.getConfigMethod(context.getClass())
+                                .map(m -> m.getMethod());
+
+                        if (configMethod.isPresent()) {
+                            AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                                Method m = configMethod.get();
+                                try {
+                                    m.setAccessible(true);
+                                    m.invoke(descriptor.getTestInstance(), context);
+                                } catch (Exception e) {
+                                    checkState(false, "Call to config method '%s' in test class '%s' failed.",
+                                            m.getName(), descriptor.getTestClassName());
+                                }
+
+                                return null;
+                            });
+                        }
+
+                        if (serviceLocator != null) {
+                            serviceLocator.addConstant(context.getClass().getSimpleName(), context);
+                        }
+
+                        provider.init(descriptor, context);
+
+                        return new NeedContext(provider, descriptor, serviceLocator, context);
+                    } catch (InstantiationException | IllegalAccessException ex) {
+                        checkState(false, "Need provider '%s' could not be instanticated.",
+                                providerClass.getSimpleName());
+                        return null;
+                    }
+                }).collect(toSet());
+    }
+
     @Override
     protected void runChild(FrameworkMethod method, RunNotifier notifier) {
         super.runChild(method, notifier);
@@ -289,7 +299,7 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
 
     private Statement withMethodRules(FrameworkMethod method, List<TestRule> testRules,
             Object target, Statement result) {
-        for (org.junit.rules.MethodRule each : getMethodRules(target)) {
+        for (MethodRule each : getMethodRules(target)) {
             if (!testRules.contains(each)) {
                 result = each.apply(result, method, target);
             }
@@ -297,7 +307,7 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
         return result;
     }
 
-    private List<org.junit.rules.MethodRule> getMethodRules(Object target) {
+    private List<MethodRule> getMethodRules(Object target) {
         return rules(target);
     }
 

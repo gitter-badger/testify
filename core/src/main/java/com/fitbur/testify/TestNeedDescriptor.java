@@ -18,6 +18,12 @@ package com.fitbur.testify;
 import com.fitbur.testify.di.ServiceLocator;
 import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.NeedDescriptor;
+import java.lang.annotation.Annotation;
+import java.util.Optional;
+import static java.util.Optional.ofNullable;
+import java.util.Set;
+import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Stream.of;
 
 /**
  * Spring need descriptor.
@@ -69,6 +75,20 @@ public class TestNeedDescriptor implements NeedDescriptor {
     @Override
     public ServiceLocator getServiceLocator() {
         return serviceLocator;
+    }
+
+    @Override
+    public <T extends Annotation> Optional<T> getAnnotation(Class<T> type) {
+        T result = testContext.getTestInstance().getClass().getAnnotation(type);
+
+        return ofNullable(result);
+    }
+
+    @Override
+    public <T extends Annotation> Set<T> getAnnotations(Class<T> type) {
+        T[] result = testContext.getTestInstance().getClass().getAnnotationsByType(type);
+
+        return of(result).collect(toSet());
     }
 
 }
