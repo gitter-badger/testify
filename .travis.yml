@@ -5,6 +5,9 @@ language: java
 jdk:
 - oraclejdk8
 
+services:
+  - docker
+
 notifications:
   email:
   - builds@fitbur.com

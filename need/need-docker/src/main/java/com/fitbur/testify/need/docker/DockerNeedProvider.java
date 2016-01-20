@@ -57,7 +57,7 @@ public class DockerNeedProvider implements NeedProvider<DockerClientConfigBuilde
     @Override
     public void init(NeedDescriptor descriptor, DockerClientConfigBuilder context) {
         try {
-            clientConfig = context.withUri("http://localhost:2375").build();
+            clientConfig = context.withUri("http://localhost:4243").build();
             client = DockerClientBuilder.getInstance(clientConfig).build();
 
             Set<DockerContainer> dockerContainers = descriptor.getAnnotations(DockerContainer.class);
