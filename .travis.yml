@@ -28,7 +28,7 @@ script:
   mvn verify -B -Pdevelop
 
 before_install:
-    - cat /etc/default/docker
+    - sudo cat /etc/default/docker
     - ./init.sh
     - pip install --user codecov
 
