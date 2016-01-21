@@ -26,6 +26,19 @@ import java.util.concurrent.TimeUnit;
 /**
  * An annotations that specifies a docker container that should be started.
  *
+ * <p>
+ * Docker remote API needs to access the Docker daemon remotely. You need to
+ * enable docker tcp Socket. By default the {@link DockerNeedProvider} sets the
+ * docker daemon URL to http://0.0.0.0:2375.
+ * </p>
+ *
+ * @see
+ * <a href="https://docs.docker.com/engine/articles/configuring/">Configuring
+ * and running Docker on various distributions</a>
+ * @see
+ * <a href="https://docs.docker.com/engine/reference/commandline/daemon/">Docker
+ * Daemon Configuration</a>
+ *
  * @author saden
  */
 @Documented

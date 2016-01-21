@@ -51,13 +51,13 @@ public class DockerNeedProvider implements NeedProvider<DockerClientConfigBuilde
 
     @Override
     public DockerClientConfigBuilder configuration(NeedDescriptor descriptor) {
-        return createDefaultConfigBuilder();
+        return createDefaultConfigBuilder().withUri("http://0.0.0.0:2375");
     }
 
     @Override
     public void init(NeedDescriptor descriptor, DockerClientConfigBuilder context) {
         try {
-            clientConfig = context.withUri("http://localhost:4243").build();
+            clientConfig = context.build();
             client = DockerClientBuilder.getInstance(clientConfig).build();
 
             Set<DockerContainer> dockerContainers = descriptor.getAnnotations(DockerContainer.class);
@@ -118,7 +118,7 @@ public class DockerNeedProvider implements NeedProvider<DockerClientConfigBuilde
                     descriptor.getServiceLocator().addConstant(instance.getHostname(), instance);
 
                     ports.parallelStream().forEach(p -> Recurrent.run(() -> {
-                        LOGGER.info("Awaiting port '{}' to become reachable", p);
+                        LOGGER.info("Waiting for port '{}' to be reachable", p);
                         try (Socket socket = new Socket(address, p)) {
                             if (!socket.isConnected()) {
                                 throw new DockerContainerException();

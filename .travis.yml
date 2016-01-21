@@ -3,16 +3,16 @@ sudo: required
 language: java
 
 jdk:
-- oraclejdk8
+    - oraclejdk8
 
 services:
-  - docker
+    - docker
 
 notifications:
-  email:
-  - builds@fitbur.com
-  on-success: change
-  on-failure: always
+    email:
+        - builds@fitbur.com
+    on-success: change
+    on-failure: always
 
 cache:
     apt: true
@@ -25,7 +25,7 @@ addons:
             - gnupg
 
 script:
-  mvn verify -B -Pdevelop
+    mvn verify -B -Pdevelop
 
 before_install:
     - sudo cat /etc/default/docker
@@ -37,5 +37,6 @@ after_success:
     - ./deploy.sh
 
 env:
-  global:
-    secure: JQ2CL1Gtuq7s1xfEn8Z3Xax6CBqellU2tOm8KjvN/75amZwsaPWt9YJQHY73SLVpVAmqHwLE0A5bI/pfRhkrIgGW6urUb0JBWJcsmo198Yg/rg/WBmyQGb7gLDZ8YZ6ci+0W5MFpg5zYCP7q7PFxkAl9fRGblZzN7VEn+fV70WHAOhveWXICxHHcULkQTKYjl8UumDP4Nm+wpyF4MT31OW1YI9lroVi0nk/CDqh+j9kXAceJ6qsYaD/x0pV0j8r23PCmnH2tf9PDX5df0UtW9hCxhyQrV+1r/m8NRKo+cVlCYFfzySum0uonq6ZejrHbFhGs1eHOj5/yf46k+J5/lKIPqoRn+tRYRAk9fPah2hhwdquQLriju4MyGLP5Q20qXwICClJZiGfq8eb0EffCUHyY9pfhl3kGdYOxqCFvfWDwZCMJaEfyuCmsDAIIre7A90MhCn3ERyP075yMkTh8rGH+wAii7Tu1ABUXg5thxC12SYWZtWP+arPmMw4w94iBd15iDqRoWTvU/Jwy2TyP0bLreTs0Ia5pgg4HkwEiND1Yzd7ZYABERqRP6ZJk8qTNBVkfybQAZ8vBsA9D4hfIIObmSkFlY/rr5HQmojJUOaDzQRfCRPp3uqPYFpZraaCnFQohSTqDtIuXN7LaUkmEsAjkAL9WtFkBG8H8KjRT0LM=
+    global:
+        - secure: JQ2CL1Gtuq7s1xfEn8Z3Xax6CBqellU2tOm8KjvN/75amZwsaPWt9YJQHY73SLVpVAmqHwLE0A5bI/pfRhkrIgGW6urUb0JBWJcsmo198Yg/rg/WBmyQGb7gLDZ8YZ6ci+0W5MFpg5zYCP7q7PFxkAl9fRGblZzN7VEn+fV70WHAOhveWXICxHHcULkQTKYjl8UumDP4Nm+wpyF4MT31OW1YI9lroVi0nk/CDqh+j9kXAceJ6qsYaD/x0pV0j8r23PCmnH2tf9PDX5df0UtW9hCxhyQrV+1r/m8NRKo+cVlCYFfzySum0uonq6ZejrHbFhGs1eHOj5/yf46k+J5/lKIPqoRn+tRYRAk9fPah2hhwdquQLriju4MyGLP5Q20qXwICClJZiGfq8eb0EffCUHyY9pfhl3kGdYOxqCFvfWDwZCMJaEfyuCmsDAIIre7A90MhCn3ERyP075yMkTh8rGH+wAii7Tu1ABUXg5thxC12SYWZtWP+arPmMw4w94iBd15iDqRoWTvU/Jwy2TyP0bLreTs0Ia5pgg4HkwEiND1Yzd7ZYABERqRP6ZJk8qTNBVkfybQAZ8vBsA9D4hfIIObmSkFlY/rr5HQmojJUOaDzQRfCRPp3uqPYFpZraaCnFQohSTqDtIuXN7LaUkmEsAjkAL9WtFkBG8H8KjRT0LM=
+        - DOCKER_HOST=tcp://0.0.0.0:2375
