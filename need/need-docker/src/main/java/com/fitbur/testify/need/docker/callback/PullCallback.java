@@ -18,8 +18,10 @@ package com.fitbur.testify.need.docker.callback;
 import com.fitbur.testify.need.docker.DockerContainer;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.model.PullResponseItem;
+import com.github.dockerjava.api.model.ResponseItem;
 import java.io.Closeable;
 import java.io.IOException;
+import static java.lang.String.format;
 import java.util.concurrent.CountDownLatch;
 import org.slf4j.Logger;
 
@@ -47,9 +49,29 @@ public class PullCallback implements ResultCallback<PullResponseItem> {
 
     @Override
     public void onNext(PullResponseItem object) {
-        System.out.println("");
-        System.out.print("Status: " + object.getStatus());
-        System.out.println("");
+        String id = "N/A";
+        long progress = 0;
+
+        if (object.getId() != null) {
+            id = object.getId();
+        }
+        ResponseItem.ProgressDetail details = object.getProgressDetail();
+
+        if (details != null && (details.getCurrent() != 0 && details.getTotal() != 0)) {
+            long current = details.getCurrent();
+            long total = details.getTotal();
+            double percent = current / (double) total;
+            System.out.print(
+                    format("\r%1$s %2$s: progress: %3$.2f%%",
+                            object.getStatus(), id, percent * 100)
+            );
+
+        } else {
+            System.out.print(
+                    format("\r%1$s %2$s",
+                            object.getStatus(), id, progress)
+            );
+        }
     }
 
     @Override
