@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * Docker remote API needs to access the Docker daemon remotely. You need to
  * enable docker tcp Socket. By default the {@link DockerNeedProvider} sets the
- * docker daemon URL to http://0.0.0.0:2375.
+ * docker daemon URL to http://127.0.0.1:2375.
  * </p>
  *
  * @see

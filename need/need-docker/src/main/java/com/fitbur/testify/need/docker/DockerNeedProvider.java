@@ -51,7 +51,7 @@ public class DockerNeedProvider implements NeedProvider<DockerClientConfigBuilde
 
     @Override
     public DockerClientConfigBuilder configuration(NeedDescriptor descriptor) {
-        return createDefaultConfigBuilder().withUri("http://0.0.0.0:2375");
+        return createDefaultConfigBuilder().withUri("http://127.0.0.1:2375");
     }
 
     @Override
