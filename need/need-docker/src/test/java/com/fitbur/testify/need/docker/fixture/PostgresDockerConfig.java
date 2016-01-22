@@ -13,38 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.need.hsql.fixture;
+package com.fitbur.testify.need.docker.fixture;
 
+import com.fitbur.testify.need.NeedInstance;
+import java.net.URI;
 import javax.sql.DataSource;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl;
+import org.postgresql.ds.PGPoolingDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 
 /**
- * Spring based java config for testify database need.
+ * Test Config
  *
  * @author saden
  */
-@Lazy
 @Configuration
-@ComponentScan(basePackageClasses = DatabaseConfig.class)
-public class DatabaseConfig {
+@ComponentScan
+public class PostgresDockerConfig {
 
-//    @Bean
-//    public DataSource configureDataSource(DataSource dataSource) {
-//        HikariConfig config = new HikariConfig();
-//        config.setDataSource(dataSource);
-//        config.addDataSourceProperty("cachePrepStmts", "true");
-//        config.addDataSourceProperty("prepStmtCacheSize", "250");
-//        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-//        config.addDataSourceProperty("useServerPrepStmts", "true");
-//
-//        return new HikariDataSource(config);
-//    }
+    @Bean
+    DataSource dataSourceProvider(NeedInstance instance) {
+        URI uri = instance.findFirstURI().get();
+        PGPoolingDataSource source = new PGPoolingDataSource();
+        source.setDataSourceName("A Data Source");
+        source.setServerName(instance.getHost());
+        source.setPortNumber(instance.findFirstPort().get());
+        source.setDatabaseName("postgres");
+        source.setUser("postgres");
+        source.setPassword("mysecretpassword");
+
+        return source;
+
+    }
+
     @Bean
     LocalSessionFactoryBean localSessionFactoryBeanProvider(DataSource dataSource) {
         LocalSessionFactoryBean bean = new LocalSessionFactoryBean();
@@ -52,8 +57,9 @@ public class DatabaseConfig {
 
         bean.setDataSource(dataSource);
         bean.setConfigLocation(hibernateCfg);
-        bean.setPackagesToScan(DatabaseConfig.class.getPackage().getName());
+        bean.setPackagesToScan(PostgresDockerConfig.class.getPackage().getName());
         bean.setPhysicalNamingStrategy(new PhysicalNamingStrategyStandardImpl());
         return bean;
     }
+
 }

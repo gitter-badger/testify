@@ -63,6 +63,13 @@ public interface NeedDescriptor {
      */
     String getTestMethodName();
 
+//    /**
+//     * Get the need instance.
+//     *
+//     * @return the need instance
+//     */
+//    NeedInstance getNeedInstance();
+
     /**
      * Get the service locator.
      *

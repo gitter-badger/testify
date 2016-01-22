@@ -15,13 +15,16 @@
  */
 package com.fitbur.testify.need.docker;
 
+import com.fitbur.guava.common.collect.ImmutableMap;
 import com.fitbur.testify.need.NeedDescriptor;
+import com.fitbur.testify.need.NeedInstance;
 import com.fitbur.testify.need.NeedProvider;
 import com.fitbur.testify.need.docker.callback.PullCallback;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.command.InspectContainerResponse.NetworkSettings;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig.DockerClientConfigBuilder;
@@ -29,6 +32,7 @@ import static com.github.dockerjava.core.DockerClientConfig.createDefaultConfigB
 import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import static java.util.stream.Collectors.toList;
@@ -44,6 +48,8 @@ import org.slf4j.LoggerFactory;
  */
 public class DockerNeedProvider implements NeedProvider<DockerClientConfigBuilder> {
 
+    public static final String DEFAULT_DAEMON_URI = "http://127.0.0.1:2375";
+
     private final static Logger LOGGER = LoggerFactory.getLogger("docker");
     private DockerClientConfig clientConfig;
     private DockerClient client;
@@ -51,16 +57,17 @@ public class DockerNeedProvider implements NeedProvider<DockerClientConfigBuilde
 
     @Override
     public DockerClientConfigBuilder configuration(NeedDescriptor descriptor) {
-        return createDefaultConfigBuilder().withUri("http://127.0.0.1:2375");
+        return createDefaultConfigBuilder().withUri(DEFAULT_DAEMON_URI);
     }
 
     @Override
-    public void init(NeedDescriptor descriptor, DockerClientConfigBuilder context) {
+    public Map<String, NeedInstance> init(NeedDescriptor descriptor, DockerClientConfigBuilder context) {
         try {
             clientConfig = context.build();
             client = DockerClientBuilder.getInstance(clientConfig).build();
 
             Set<DockerContainer> dockerContainers = descriptor.getAnnotations(DockerContainer.class);
+            ImmutableMap.Builder<String, NeedInstance> needInstances = ImmutableMap.builder();
 
             for (DockerContainer dockerContainer : dockerContainers) {
                 CountDownLatch latch = new CountDownLatch(1);
@@ -105,8 +112,10 @@ public class DockerNeedProvider implements NeedProvider<DockerClientConfigBuilde
                             = client.inspectContainerCmd(containerResponse.getId())
                             .exec();
 
-                    String address = inspectResponse.getNetworkSettings().getIpAddress();
-                    List<Integer> ports = inspectResponse.getNetworkSettings()
+                    NetworkSettings networkSettings = inspectResponse.getNetworkSettings();
+
+                    String address = networkSettings.getIpAddress();
+                    List<Integer> ports = networkSettings
                             .getPorts()
                             .getBindings()
                             .entrySet()
@@ -114,8 +123,8 @@ public class DockerNeedProvider implements NeedProvider<DockerClientConfigBuilde
                             .map(p -> p.getKey().getPort())
                             .collect(toList());
 
-                    ContainerInstance instance = new ContainerInstance(client, inspectResponse);
-                    descriptor.getServiceLocator().addConstant(instance.getHostname(), instance);
+                    ContainerInstance containerInstance = new ContainerInstance(networkSettings);
+                    needInstances.put(inspectResponse.getId(), containerInstance);
 
                     ports.parallelStream().forEach(p -> Recurrent.run(() -> {
                         LOGGER.info("Waiting for port '{}' to be reachable", p);
@@ -131,6 +140,8 @@ public class DockerNeedProvider implements NeedProvider<DockerClientConfigBuilde
                 }
 
             }
+
+            return needInstances.build();
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
@@ -140,7 +151,6 @@ public class DockerNeedProvider implements NeedProvider<DockerClientConfigBuilde
     public void destroy(NeedDescriptor descriptor, DockerClientConfigBuilder context) {
         String containerId = containerResponse.getId();
         client.stopContainerCmd(containerId).exec();
-        client.waitContainerCmd(containerId).exec();
         client.removeContainerCmd(containerId).exec();
     }
 

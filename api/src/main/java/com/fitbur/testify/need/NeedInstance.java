@@ -24,23 +24,15 @@ import java.util.Optional;
  * need as well as managing its lifecycle.
  *
  * @author saden
- * @param <T> the need type
  */
-public interface NeedInstance<T> {
+public interface NeedInstance {
 
     /**
-     * The need ip address.
+     * The need ip address or hostname.
      *
-     * @return the need host
+     * @return the need ip address or hostname.
      */
-    String getIpAddress();
-
-    /**
-     * The need hostname.
-     *
-     * @return the need hostname
-     */
-    String getHostname();
+    String getHost();
 
     /**
      * The need ports.
@@ -54,36 +46,20 @@ public interface NeedInstance<T> {
      *
      * @return the need ports
      */
-    Optional<Integer> getFirstPort();
+    Optional<Integer> findFirstPort();
 
     /**
-     * The need base URI.
+     * Get all the URIs.
      *
-     * @return the base URI, empty optional otherwise.
+     * @return a list of URIs, empty list otherwise.
      */
-    Optional<URI> getURI();
+    List<URI> getURIs();
 
     /**
-     * The underlying need instance.
+     * Find the first need base URI.
      *
-     * @return the need instance
+     * @return the first URI, empty optional otherwise.
      */
-    T getNeed();
-
-    /**
-     * Start the need.
-     */
-    void start();
-
-    /**
-     * Stop the need.
-     */
-    void stop();
-
-    /**
-     * Restart the need.
-     */
-    default void restart() {
-    }
+    Optional<URI> findFirstURI();
 
 }

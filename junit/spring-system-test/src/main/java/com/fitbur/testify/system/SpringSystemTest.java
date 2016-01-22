@@ -41,6 +41,7 @@ import com.fitbur.testify.junit.core.JUnitTestNotifier;
 import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.NeedContext;
 import com.fitbur.testify.need.NeedDescriptor;
+import com.fitbur.testify.need.NeedInstance;
 import com.fitbur.testify.need.NeedProvider;
 import com.fitbur.testify.server.ServerContext;
 import com.fitbur.testify.server.ServerInstance;
@@ -403,11 +404,17 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
                     });
                 }
 
-                serviceLocator.addConstant(context.getClass().getSimpleName(), context);
+                Map<String, NeedInstance> instances = provider.init(descriptor, context);
+                NeedContext needContext
+                        = new NeedContext(provider, descriptor, instances, serviceLocator, context);
 
-                provider.init(descriptor, context);
+                if (serviceLocator != null) {
+                    serviceLocator.addConstant(context.getClass().getSimpleName(), context);
+                    serviceLocator.addConstant(needContext.getClass().getSimpleName(), needContext);
+                    instances.forEach((k, v) -> serviceLocator.addConstant(k, v));
+                }
 
-                return new NeedContext(provider, descriptor, serviceLocator, context);
+                return needContext;
             } catch (InstantiationException | IllegalAccessException ex) {
                 checkState(false, "Need provider '%s' could not be instanticated.",
                         providerClass.getSimpleName());

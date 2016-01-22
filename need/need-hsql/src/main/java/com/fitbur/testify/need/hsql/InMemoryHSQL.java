@@ -15,9 +15,13 @@
  */
 package com.fitbur.testify.need.hsql;
 
+import com.fitbur.guava.common.collect.ImmutableMap;
 import com.fitbur.testify.need.NeedDescriptor;
+import com.fitbur.testify.need.NeedInstance;
 import com.fitbur.testify.need.NeedProvider;
 import static java.lang.String.format;
+import java.net.URI;
+import java.util.Map;
 import org.hsqldb.jdbc.JDBCDataSource;
 
 /**
@@ -36,6 +40,13 @@ public class InMemoryHSQL implements NeedProvider<JDBCDataSource> {
         dataSource.setPassword("");
 
         return dataSource;
+    }
+
+    @Override
+    public Map<String, NeedInstance> init(NeedDescriptor descriptor, JDBCDataSource configuration) {
+        HSQLInstance instnace = new HSQLInstance(URI.create(configuration.getUrl()));
+
+        return ImmutableMap.of(configuration.getDatabaseName(), instnace);
     }
 
 }

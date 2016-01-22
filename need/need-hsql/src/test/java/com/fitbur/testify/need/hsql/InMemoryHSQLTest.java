@@ -20,7 +20,7 @@ import com.fitbur.testify.Module;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.integration.SpringIntegrationTest;
 import com.fitbur.testify.need.Need;
-import com.fitbur.testify.need.hsql.fixture.DatabaseConfig;
+import com.fitbur.testify.need.hsql.fixture.HSQLConfig;
 import com.fitbur.testify.need.hsql.fixture.entity.UserEntity;
 import java.io.Serializable;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -30,12 +30,13 @@ import org.hibernate.Transaction;
 import org.hsqldb.jdbc.JDBCDataSource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 /**
  *
  * @author saden
  */
-@Module(DatabaseConfig.class)
+@Module(HSQLConfig.class)
 @Need(InMemoryHSQL.class)
 @RunWith(SpringIntegrationTest.class)
 public class InMemoryHSQLTest {

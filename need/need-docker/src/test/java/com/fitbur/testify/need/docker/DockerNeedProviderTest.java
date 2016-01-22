@@ -15,12 +15,19 @@
  */
 package com.fitbur.testify.need.docker;
 
+import com.fitbur.testify.Config;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.integration.SpringIntegrationTest;
 import com.fitbur.testify.need.Need;
-import com.fitbur.testify.need.docker.fixture.DockerConfig;
-import java.util.ArrayList;
+import com.fitbur.testify.need.docker.fixture.PostgresDockerConfig;
+import com.fitbur.testify.need.docker.fixture.entity.UserEntity;
+import com.github.dockerjava.core.DockerClientConfig;
+import java.io.Serializable;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -28,18 +35,46 @@ import org.junit.runner.RunWith;
  *
  * @author saden
  */
-@Module(DockerConfig.class)
+@Module(PostgresDockerConfig.class)
 @Need(DockerNeedProvider.class)
 @RunWith(SpringIntegrationTest.class)
 @DockerContainer(value = "postgres")
 public class DockerNeedProviderTest {
 
     @Real
-    ArrayList list;
+    SessionFactory factory;
+
+    @Config
+    public void configure(DockerClientConfig.DockerClientConfigBuilder builder) {
+        assertThat(builder).isNotNull();
+    }
 
     @Test
     public void test() {
-        System.out.println("");
+        try (Session session = factory.openSession()) {
+            Transaction tx = session.beginTransaction();
+            UserEntity entity = new UserEntity(null, "saden", "test", "test");
+            Serializable id = session.save(entity);
+            tx.commit();
+            assertThat(id).isNotNull();
+
+            entity = session.get(UserEntity.class, id);
+            assertThat(entity).isNotNull();
+            javax.transaction.SystemException s;
+        }
     }
 
+    @Test
+    public void test2() {
+        try (Session session = factory.openSession()) {
+            Transaction tx = session.beginTransaction();
+            UserEntity entity = new UserEntity(null, "saden", "test", "test");
+            Serializable id = session.save(entity);
+            tx.commit();
+            assertThat(id).isNotNull();
+
+            entity = session.get(UserEntity.class, id);
+            assertThat(entity).isNotNull();
+        }
+    }
 }

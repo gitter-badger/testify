@@ -16,6 +16,7 @@
 package com.fitbur.testify.need;
 
 import com.fitbur.testify.di.ServiceLocator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import static java.util.Optional.ofNullable;
@@ -31,15 +32,18 @@ public class NeedContext {
 
     private final NeedProvider provider;
     private final NeedDescriptor descriptor;
+    private final Map<String, NeedInstance> instances;
     private final ServiceLocator locator;
     private final Object context;
 
     public NeedContext(NeedProvider provider,
             NeedDescriptor descriptor,
+            Map<String, NeedInstance> instances,
             ServiceLocator locator,
             Object context) {
         this.provider = provider;
         this.descriptor = descriptor;
+        this.instances = instances;
         this.locator = locator;
         this.context = context;
     }
@@ -60,6 +64,15 @@ public class NeedContext {
      */
     public NeedDescriptor getDescriptor() {
         return descriptor;
+    }
+
+    /**
+     * Get an optional containing need instances associated with the need.
+     *
+     * @return an optional containing the need instances, an empty otherwise
+     */
+    Optional<Map<String, ? extends NeedInstance>> getInstances() {
+        return ofNullable(instances);
     }
 
     /**
@@ -85,6 +98,8 @@ public class NeedContext {
         int hash = 5;
         hash = 71 * hash + Objects.hashCode(this.provider);
         hash = 71 * hash + Objects.hashCode(this.descriptor);
+        hash = 71 * hash + Objects.hashCode(this.instances);
+        hash = 71 * hash + Objects.hashCode(this.locator);
         hash = 71 * hash + Objects.hashCode(this.context);
         return hash;
     }
@@ -107,12 +122,24 @@ public class NeedContext {
         if (!Objects.equals(this.descriptor, other.descriptor)) {
             return false;
         }
+        if (!Objects.equals(this.instances, other.instances)) {
+            return false;
+        }
+        if (!Objects.equals(this.locator, other.locator)) {
+            return false;
+        }
         return Objects.equals(this.context, other.context);
     }
 
     @Override
     public String toString() {
-        return "NeedContext{" + "provider=" + provider + ", descriptor=" + descriptor + ", context=" + context + '}';
+        return "NeedContext{"
+                + "provider=" + provider
+                + ", descriptor=" + descriptor
+                + ", instances=" + instances
+                + ", locator=" + locator
+                + ", context=" + context
+                + '}';
     }
 
 }

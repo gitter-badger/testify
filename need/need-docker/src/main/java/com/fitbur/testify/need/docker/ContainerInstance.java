@@ -16,47 +16,34 @@
 package com.fitbur.testify.need.docker;
 
 import com.fitbur.testify.need.NeedInstance;
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.Ports;
+import com.github.dockerjava.api.command.InspectContainerResponse.NetworkSettings;
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 
 /**
- * Need instance.
+ * A NeedInstance implementation to hold docker container need instance
+ * information.
  *
  * @author saden
  */
-public class ContainerInstance implements NeedInstance<InspectContainerResponse> {
+public class ContainerInstance implements NeedInstance {
 
-    private final DockerClient client;
-    private final InspectContainerResponse inspectResponse;
+    private final NetworkSettings networkSettings;
 
-    public ContainerInstance(DockerClient client,
-            InspectContainerResponse inspectResponse) {
-        this.client = client;
-        this.inspectResponse = inspectResponse;
+    public ContainerInstance(NetworkSettings networkSettings) {
+        this.networkSettings = networkSettings;
     }
 
     @Override
-    public String getHostname() {
-        return inspectResponse.getConfig().getHostName();
-    }
-
-    @Override
-    public String getIpAddress() {
-        return inspectResponse.getNetworkSettings().getIpAddress();
+    public String getHost() {
+        return networkSettings.getIpAddress();
     }
 
     @Override
     public List<Integer> getPorts() {
-        return inspectResponse.getNetworkSettings()
+        return networkSettings
                 .getPorts()
                 .getBindings()
                 .entrySet()
@@ -66,47 +53,48 @@ public class ContainerInstance implements NeedInstance<InspectContainerResponse>
     }
 
     @Override
-    public Optional<Integer> getFirstPort() {
+    public Optional<Integer> findFirstPort() {
         return getPorts().stream().findFirst();
     }
 
     @Override
-    public Optional<URI> getURI() {
-        InspectContainerResponse.NetworkSettings networkSettings = inspectResponse.getNetworkSettings();
-        Optional<Map.Entry<ExposedPort, Ports.Binding[]>> result = networkSettings
+    public List<URI> getURIs() {
+        return networkSettings
                 .getPorts()
                 .getBindings()
                 .entrySet()
                 .stream()
-                .findFirst();
+                .map(p -> {
+                    String uri = String.format(
+                            "%s://%s:%d",
+                            p.getKey().getProtocol(),
+                            networkSettings.getIpAddress(),
+                            p.getKey().getPort()
+                    );
 
-        if (result.isPresent()) {
-            Map.Entry<ExposedPort, Ports.Binding[]> entry = result.get();
-            String uri = String.format(
-                    "%s://%s:%d",
-                    entry.getKey().getProtocol(),
-                    networkSettings.getIpAddress(),
-                    entry.getKey().getPort()
-            );
-
-            return of(URI.create(uri));
-        }
-        return empty();
+                    return URI.create(uri);
+                })
+                .collect(toList());
     }
 
     @Override
-    public InspectContainerResponse getNeed() {
-        return inspectResponse;
-    }
+    public Optional<URI> findFirstURI() {
+        return networkSettings
+                .getPorts()
+                .getBindings()
+                .entrySet()
+                .stream()
+                .findFirst()
+                .map(p -> {
+                    String uri = String.format(
+                            "%s://%s:%d",
+                            p.getKey().getProtocol(),
+                            networkSettings.getIpAddress(),
+                            p.getKey().getPort()
+                    );
 
-    @Override
-    public void start() {
-        client.startContainerCmd(inspectResponse.getId()).exec();
-    }
-
-    @Override
-    public void stop() {
-        client.stopContainerCmd(inspectResponse.getId()).exec();
+                    return URI.create(uri);
+                });
     }
 
 }
