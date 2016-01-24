@@ -20,11 +20,13 @@ MVN_SETTINGS="--settings settings.xml"
 PROJECT_VERSION=$(mvn -q org.codehaus.mojo:exec-maven-plugin:1.4.0:exec -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive)
 
 if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-    echo "Deploying '$TRAVIS_BRANCH' branch"
-    if [ "$TRAVIS_BRANCH" = "master" ]; then
-        echo "Releasing Testify v$PROJECT_VERSION artifacts"
+    echo "Deploying '$TRAVIS_BRANCH' Branch"
 
-        mvn -B -Prelease clean deploy $MAVEN_SETTINGS
+    if [ "$TRAVIS_BRANCH" = "master" ]; then
+        echo "Releasing Testify v$PROJECT_VERSION Artifacts"
+
+        mvn -B -Prelease clean deploy $MVN_SETTINGS
+
         if [ $? -eq 0 ]; then
             echo "Deployment Successful"
             exit 0
@@ -34,9 +36,9 @@ if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
         fi
 
     elif [ "$TRAVIS_BRANCH" = "develop" ]; then
-        echo "Staging Testify v$PROJECT_VERSION artifacts"
-        mvn -B -Pstage clean deploy $MAVEN_SETTINGS
-        mvn -B -Pstage nexus-staging:release $MAVEN_SETTINGS
+        echo "Staging Testify v$PROJECT_VERSION Artifacts"
+        mvn -B -Pstage clean deploy $MVN_SETTINGS
+        mvn -B -Pstage nexus-staging:release $MVN_SETTINGS
 
         if [ $? -eq 0 ]; then
             echo "Deployment Successful"
@@ -47,9 +49,8 @@ if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
         fi
 
     else
-        echo "Branch '$TRAVIS_BRANCH' not a master or develop. No-Op."
+        echo "Branch '$TRAVIS_BRANCH' not a master or develop Branch. No-Op."
     fi
-
 fi
 
 echo "All Done! Keep on Testifying!"

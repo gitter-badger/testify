@@ -22,9 +22,7 @@ echo "Building Testify v$PROJECT_VERSION"
 
 mvn verify -B -Pbuild $MVN_SETTINGS
 
-STATUS=$?
-
-if [ $STATUS -eq 0 ]; then
+if [ $? -eq 0 ]; then
     echo "Build Successful"
     exit 0
 else
