@@ -25,10 +25,30 @@
     </parent>
     <groupId>com.fitbur.testify.need</groupId>
     <artifactId>need</artifactId>
-    <name>Need</name>
     <packaging>pom</packaging>
+
+    <name>Need</name>
+
     <modules>
         <module>need-hsql</module>
         <module>need-docker</module>
     </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.fitbur.testify</groupId>
+            <artifactId>core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

@@ -15,6 +15,8 @@
  */
 package com.fitbur.testify.need;
 
+import java.util.Map;
+
 /**
  * A contract that defines methods for creating and destroying a need.
  *
@@ -44,21 +46,31 @@ public interface NeedProvider<T> {
     T configuration(NeedDescriptor descriptor);
 
     /**
-     * Instantiate the need based on the given descriptor and configuration.
+     * Initialize the need with the given descriptor and configuration.
      *
      * @param descriptor the need descriptor
-     * @param context the configuration context object
+     * @param configuration the need configuration context object
+     * @return a map containing unique need instances.
      */
-    default void init(NeedDescriptor descriptor, T context) {
-    }
+    Map<String, NeedInstance> init(NeedDescriptor descriptor, T configuration);
 
     /**
      * Destroy the need with the given descriptor and configuration.
      *
      * @param descriptor the need descriptor
-     * @param context the configuration context object
+     * @param configuration the need configuration context object
      */
-    default void destroy(NeedDescriptor descriptor, T context) {
+    default void destroy(NeedDescriptor descriptor, T configuration) {
+    }
+
+    /**
+     * Clean up of the need with the given descriptor and configuration.
+     *
+     * @param descriptor the need descriptor
+     * @param configuration the need configuration context object
+     */
+    default void clean(NeedDescriptor descriptor, T configuration) {
+
     }
 
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.integration;
+package com.fitbur.testify.di.spring;
 
 import static java.util.stream.Stream.of;
 import org.springframework.beans.BeansException;
@@ -25,7 +25,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
  *
  * @author saden
  */
-public class SpringIntegrationPostProcessor implements BeanFactoryPostProcessor {
+public class SpringLazyBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {

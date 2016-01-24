@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.need.hsql;
+package com.fitbur.testify.integration;
 
 import com.fitbur.testify.Config;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.integration.SpringIntegrationTest;
-import com.fitbur.testify.need.Need;
-import com.fitbur.testify.need.hsql.fixture.DatabaseConfig;
-import com.fitbur.testify.need.hsql.fixture.entity.UserEntity;
+import com.fitbur.testify.need.NeedContainer;
+import com.fitbur.testify.need.NeedScope;
+import com.fitbur.testify.integration.fixture.PostgresDockerConfig;
+import com.fitbur.testify.integration.fixture.entity.UserEntity;
+import com.github.dockerjava.core.DockerClientConfig;
 import java.io.Serializable;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hsqldb.jdbc.JDBCDataSource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,21 +36,21 @@ import org.junit.runner.RunWith;
  *
  * @author saden
  */
-@Module(DatabaseConfig.class)
-@Need(InMemoryHSQL.class)
+@Module(PostgresDockerConfig.class)
 @RunWith(SpringIntegrationTest.class)
-public class InMemoryHSQLTest {
+@NeedContainer(value = "postgres", scope = NeedScope.METHOD)
+public class DockerMethodNeedProviderTest {
 
     @Real
     SessionFactory factory;
 
     @Config
-    public void configure(JDBCDataSource dataSource) {
-        assertThat(dataSource).isNotNull();
+    public void configure(DockerClientConfig.DockerClientConfigBuilder builder) {
+        assertThat(builder).isNotNull();
     }
 
     @Test
-    public void test() {
+    public void givenUserEntitySaveShouldPerisistEntityToPostgres() {
         try (Session session = factory.openSession()) {
             Transaction tx = session.beginTransaction();
             UserEntity entity = new UserEntity(null, "saden", "test", "test");
@@ -59,20 +60,8 @@ public class InMemoryHSQLTest {
 
             entity = session.get(UserEntity.class, id);
             assertThat(entity).isNotNull();
+            javax.transaction.SystemException s;
         }
     }
 
-    @Test
-    public void test2() {
-        try (Session session = factory.openSession()) {
-            Transaction tx = session.beginTransaction();
-            UserEntity entity = new UserEntity(null, "saden", "test", "test");
-            Serializable id = session.save(entity);
-            tx.commit();
-            assertThat(id).isNotNull();
-
-            entity = session.get(UserEntity.class, id);
-            assertThat(entity).isNotNull();
-        }
-    }
 }

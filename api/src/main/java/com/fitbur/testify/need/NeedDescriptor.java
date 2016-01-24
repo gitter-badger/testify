@@ -15,7 +15,9 @@
  */
 package com.fitbur.testify.need;
 
-import com.fitbur.testify.di.ServiceLocator;
+import java.lang.annotation.Annotation;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * A descriptor class passed to {@link NeedProvider} to instantiate a need
@@ -24,13 +26,6 @@ import com.fitbur.testify.di.ServiceLocator;
  * @author saden
  */
 public interface NeedDescriptor {
-
-    /**
-     * Get the need annotation.
-     *
-     * @return the need annotation.
-     */
-    Need getNeed();
 
     /**
      * Get the test instance.
@@ -61,10 +56,20 @@ public interface NeedDescriptor {
     String getTestMethodName();
 
     /**
-     * Get the service locator.
+     * Get annotation of the given type.
      *
-     * @return service locator
+     * @param <T> the annotation type
+     * @param type the annotation class
+     * @return an optional containing annotation, or an empty optional
      */
-    ServiceLocator getServiceLocator();
+    <T extends Annotation> Optional<T> getAnnotation(Class<T> type);
 
+    /**
+     * Get annotations of the given type.
+     *
+     * @param <T> the annotation type
+     * @param type the annotation class
+     * @return a set of annotations, or an empty set
+     */
+    <T extends Annotation> Set<T> getAnnotations(Class<T> type);
 }

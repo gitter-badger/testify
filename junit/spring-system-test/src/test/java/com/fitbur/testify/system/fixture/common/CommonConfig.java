@@ -13,35 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.client;
+package com.fitbur.testify.system.fixture.common;
 
-import java.net.URI;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * A contract that defines methods for getting information a client.
  *
  * @author saden
- * @param <T> the client type
  */
-public interface ClientInstance<T> {
-
-    /**
-     * The base server URI used by the client.
-     *
-     * @return the base URI.
-     */
-    URI getURI();
-
-    /**
-     * Get a client instance with the base URI configured.
-     *
-     * @return a client instance
-     */
-    T getClient();
-
-    /**
-     * Close the client instance.
-     */
-    void close();
+@Configuration
+@ComponentScan
+public class CommonConfig {
 
 }

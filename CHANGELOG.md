@@ -13,14 +13,17 @@ was added, changed, deprecated, removed, fix and security fixes.
 
 ## [Unreleased]
 ### Added
-- Added methods to the NeedDescriptor interface to get service locator and
-test method name
+- Container based Need API
+- Docker Container Need Support
 - A common TestNeedDescriptor implementation to core
+
+### Changed
+- Simplified Need API and added NeedInstance for getting need information.
+- Updated HSQL module to use the new need API
+
 ### Removed
 - Spring NeedDescriptor implementations in favor of TestNeedDescriptor
-### Changed
-- NeedProvider init method is now optional
-- Simplified InMemoryHSQL (removed init and destroy code)
+- Removed HSQL module test cases and copied them to Spring Integration and Spring System modules.
 
 ## [0.0.1] - 2015-11-23
 ### Added

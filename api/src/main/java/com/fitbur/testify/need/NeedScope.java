@@ -13,47 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.server;
-
-import java.net.URI;
+package com.fitbur.testify.need;
 
 /**
- * A contract that defines methods for getting information about the running
- * server as well as managing its lifecycle.
+ * An enumeration used to indicate the scope of a need.
  *
  * @author saden
- * @param <T> the underling server type
  */
-public interface ServerInstance<T> {
-
+public enum NeedScope {
     /**
-     * The server base URI.
-     *
-     * @return the base URI.
+     * Indicates the need is global and should be started and stopped before and
+     * after test suites.
      */
-    URI getURI();
-
+    SUITE,
     /**
-     * The underlying server instance.
-     *
-     * @return the server instance
+     * Indicates the need is per test class and should started before and after
+     * test classes.
      */
-    T getServer();
-
+    CLASS,
     /**
-     * Start the server.
+     * Indicates the need is per test method and should started before and after
+     * test methods.
      */
-    void start();
-
-    /**
-     * Close and stop the server.
-     */
-    void stop();
-
-    /**
-     * Restart the server.
-     */
-    default void restart() {
-    }
-
+    METHOD
 }
