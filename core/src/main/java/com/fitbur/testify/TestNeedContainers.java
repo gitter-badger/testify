@@ -114,6 +114,7 @@ public class TestNeedContainers {
 
     public void inject(ServiceLocator serviceLocator) {
         needContexts.parallelStream().forEach(p -> {
+            p.getProvider().clean(p.getDescriptor(), p.getConfiguration());
             serviceLocator.addConstant(UUID.randomUUID().toString(), p);
             p.getInstances().forEach((k, v) -> serviceLocator.addConstant(k, v));
         });
