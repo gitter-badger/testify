@@ -20,6 +20,7 @@ was added, changed, deprecated, removed, fix and security fixes.
 ### Changed
 - Simplified Need API and added NeedInstance for getting need information.
 - Updated HSQL module to use the new need API
+- Cleaned up Build process.
 
 ### Removed
 - Spring NeedDescriptor implementations in favor of TestNeedDescriptor
