@@ -14,21 +14,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+set -ev
 
-MAVEN_SETTINGS="--settings settings.xml"
-RELEASE="-Prelease"
+MVN_SETTINGS="--settings settings.xml"
+PROJECT_VERSION=$(mvn -q org.codehaus.mojo:exec-maven-plugin:1.4.0:exec -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive)
 
 if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
     echo "Deploying '$TRAVIS_BRANCH' branch"
     if [ "$TRAVIS_BRANCH" = "master" ]; then
-        PROJECT_VERSION=$(mvn -q org.codehaus.mojo:exec-maven-plugin:1.4.0:exec -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive)
-        echo "Deploying Release v$PROJECT_VERSION artifacts"
-        mvn clean deploy $MAVEN_SETTINGS $RELEASE -B
-        mvn nexus-staging:release $MAVEN_SETTINGS -B
+        echo "Releasing Testify v$PROJECT_VERSION artifacts"
+
+        mvn -B -Prelease clean deploy $MAVEN_SETTINGS
+        if [ $? -eq 0 ]; then
+            echo "Deployment Successful"
+            exit 0
+        else
+            echo "Deployment Failed"
+            exit 1
+        fi
 
     elif [ "$TRAVIS_BRANCH" = "develop" ]; then
-        echo "Deploying Snapshot v$PROJECT_VERSION artifacts"
-        mvn clean deploy $MAVEN_SETTINGS $RELEASE -B
+        echo "Staging Testify v$PROJECT_VERSION artifacts"
+        mvn -B -Pstage clean deploy $MAVEN_SETTINGS
+        mvn -B -Pstage nexus-staging:release $MAVEN_SETTINGS
+
+        if [ $? -eq 0 ]; then
+            echo "Deployment Successful"
+            exit 0
+        else
+            echo "Deployment Failed"
+            exit 1
+        fi
 
     else
         echo "Branch '$TRAVIS_BRANCH' not a master or develop. No-Op."
