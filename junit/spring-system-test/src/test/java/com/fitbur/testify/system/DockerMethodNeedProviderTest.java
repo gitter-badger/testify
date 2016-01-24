@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.need.docker;
+package com.fitbur.testify.system;
 
+import com.fitbur.testify.App;
 import com.fitbur.testify.Config;
-import com.fitbur.testify.Module;
 import com.fitbur.testify.Real;
-import com.fitbur.testify.integration.SpringIntegrationTest;
-import com.fitbur.testify.need.Need;
-import com.fitbur.testify.need.docker.fixture.PostgresDockerConfig;
-import com.fitbur.testify.need.docker.fixture.entity.UserEntity;
+import com.fitbur.testify.need.NeedContainer;
+import com.fitbur.testify.need.NeedScope;
+import com.fitbur.testify.system.fixture.DockerContainerApplication;
+import com.fitbur.testify.system.fixture.common.UserEntity;
 import com.github.dockerjava.core.DockerClientConfig;
 import java.io.Serializable;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -35,11 +35,10 @@ import org.junit.runner.RunWith;
  *
  * @author saden
  */
-@Module(PostgresDockerConfig.class)
-@Need(DockerNeedProvider.class)
-@RunWith(SpringIntegrationTest.class)
-@DockerContainer(value = "postgres")
-public class DockerNeedProviderTest {
+@RunWith(SpringSystemTest.class)
+@App(DockerContainerApplication.class)
+@NeedContainer(value = "postgres", scope = NeedScope.METHOD)
+public class DockerMethodNeedProviderTest {
 
     @Real
     SessionFactory factory;
@@ -50,7 +49,7 @@ public class DockerNeedProviderTest {
     }
 
     @Test
-    public void test() {
+    public void givenUserEntitySaveShouldPerisistEntityToPostgres() {
         try (Session session = factory.openSession()) {
             Transaction tx = session.beginTransaction();
             UserEntity entity = new UserEntity(null, "saden", "test", "test");
@@ -64,17 +63,4 @@ public class DockerNeedProviderTest {
         }
     }
 
-    @Test
-    public void test2() {
-        try (Session session = factory.openSession()) {
-            Transaction tx = session.beginTransaction();
-            UserEntity entity = new UserEntity(null, "saden", "test", "test");
-            Serializable id = session.save(entity);
-            tx.commit();
-            assertThat(id).isNotNull();
-
-            entity = session.get(UserEntity.class, id);
-            assertThat(entity).isNotNull();
-        }
-    }
 }

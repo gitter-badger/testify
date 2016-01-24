@@ -24,8 +24,9 @@ import java.util.Optional;
  * need as well as managing its lifecycle.
  *
  * @author saden
+ * @param <T> the underlying need getInstance type
  */
-public interface NeedInstance {
+public interface NeedInstance<T> {
 
     /**
      * The need ip address or hostname.
@@ -61,5 +62,12 @@ public interface NeedInstance {
      * @return the first URI, empty optional otherwise.
      */
     Optional<URI> findFirstURI();
+
+    /**
+     * Get the underlying need getInstance.
+     *
+     * @return the underlying need getInstance
+     */
+    T getInstance();
 
 }

@@ -181,7 +181,7 @@ public class TestContext {
     }
 
     public <T extends Annotation> Set<T> getAnnotations(Class<T> annotationType) {
-        return of(testClass.getDeclaredAnnotationsByType(annotationType)).collect(toSet());
+        return of(testClass.getAnnotationsByType(annotationType)).collect(toSet());
     }
 
     public <T extends Annotation> boolean hasAnnotation(Class<T> type) {

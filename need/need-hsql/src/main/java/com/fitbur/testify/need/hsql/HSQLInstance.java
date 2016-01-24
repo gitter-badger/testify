@@ -22,43 +22,51 @@ import java.util.Optional;
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
 
 /**
- * A NeedInstance implementation to hold HSQL need instance information.
+ * A NeedInstance implementation to hold HSQL need getInstance information.
  *
  * @author saden
  */
-class HSQLInstance implements NeedInstance {
+class HSQLInstance implements NeedInstance<DataSource> {
 
-    private final URI jdbcURI;
+    private final URI uri;
+    private final DataSource dataSource;
 
-    HSQLInstance(URI jdbcURI) {
-        this.jdbcURI = jdbcURI;
+    HSQLInstance(DataSource dataSource, URI uri) {
+        this.dataSource = dataSource;
+        this.uri = uri;
     }
 
     @Override
     public String getHost() {
-        return jdbcURI.getHost();
+        return uri.getHost();
     }
 
     @Override
     public List<Integer> getPorts() {
-        return Stream.of(jdbcURI.getPort()).collect(toList());
+        return Stream.of(uri.getPort()).collect(toList());
     }
 
     @Override
     public Optional<Integer> findFirstPort() {
-        return of(jdbcURI.getPort());
+        return of(uri.getPort());
     }
 
     @Override
     public List<URI> getURIs() {
-        return Stream.of(jdbcURI).collect(toList());
+        return Stream.of(uri).collect(toList());
     }
 
     @Override
     public Optional<URI> findFirstURI() {
-        return of(jdbcURI);
+        return of(uri);
+    }
+
+    @Override
+    public DataSource getInstance() {
+        return dataSource;
     }
 
 }

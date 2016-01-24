@@ -13,41 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.client.jersey;
+package com.fitbur.testify.system.fixture;
 
-import com.fitbur.testify.client.ClientInstance;
-import java.net.URI;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.WebTarget;
+import com.fitbur.testify.system.fixture.docker.DockerContainerWebConfig;
+import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 /**
- * Jersey implementation of a client instance.
  *
  * @author saden
  */
-public class JerseyClientInstance implements ClientInstance<WebTarget> {
+public class DockerContainerApplication extends AbstractAnnotationConfigDispatcherServletInitializer {
 
-    private final URI baseURI;
-    private final Client client;
-
-    public JerseyClientInstance(URI baseURI, Client client) {
-        this.baseURI = baseURI;
-        this.client = client;
+    @Override
+    protected Class<?>[] getRootConfigClasses() {
+        return null;
     }
 
     @Override
-    public URI getURI() {
-        return baseURI;
+    protected Class<?>[] getServletConfigClasses() {
+        return new Class[]{DockerContainerWebConfig.class};
     }
 
     @Override
-    public WebTarget getClient() {
-        return client.target(baseURI);
+    protected String[] getServletMappings() {
+        return new String[]{"/"};
     }
 
     @Override
-    public void close() {
-        client.close();
+    protected String getServletName() {
+        return "DockerContainerApplication";
     }
 
 }

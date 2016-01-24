@@ -15,7 +15,7 @@
  */
 package com.fitbur.testify.need.docker.callback;
 
-import com.fitbur.testify.need.docker.DockerContainer;
+import com.fitbur.testify.need.NeedContainer;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.model.PullResponseItem;
 import com.github.dockerjava.api.model.ResponseItem;
@@ -26,25 +26,25 @@ import java.util.concurrent.CountDownLatch;
 import org.slf4j.Logger;
 
 /**
- * Pull image callback listener.
+ * Pull value callback listener.
  *
  * @author saden
  */
 public class PullCallback implements ResultCallback<PullResponseItem> {
 
-    private final DockerContainer container;
+    private final NeedContainer need;
     private final CountDownLatch latch;
     private final Logger logger;
 
-    public PullCallback(DockerContainer container, CountDownLatch latch, Logger logger) {
-        this.container = container;
+    public PullCallback(NeedContainer need, CountDownLatch latch, Logger logger) {
+        this.need = need;
         this.latch = latch;
         this.logger = logger;
     }
 
     @Override
     public void onStart(Closeable closeable) {
-        logger.info("Pulling '{}:{}' image", container.value(), container.tag());
+        logger.info("Pulling '{}:{}' image", need.value(), need.version());
     }
 
     @Override
@@ -55,39 +55,41 @@ public class PullCallback implements ResultCallback<PullResponseItem> {
         if (object.getId() != null) {
             id = object.getId();
         }
+
         ResponseItem.ProgressDetail details = object.getProgressDetail();
 
         if (details != null && (details.getCurrent() != 0 && details.getTotal() != 0)) {
-            long current = details.getCurrent();
-            long total = details.getTotal();
-            double percent = current / (double) total;
+            double current = details.getCurrent();
+            double total = details.getTotal();
+            double percent = (current / total) * 100;
+
             System.out.print(
-                    format("\r%1$s %2$s: progress: %3$.2f%%",
-                            object.getStatus(), id, percent * 100)
+                    format("%1$s %2$s (%3$.2f%%)\r",
+                            object.getStatus(), id, percent)
             );
 
         } else {
             System.out.print(
-                    format("\r%1$s %2$s",
-                            object.getStatus(), id, progress)
+                    format("%1$s %2$s\r", object.getStatus(), id)
             );
         }
     }
 
     @Override
     public void onError(Throwable throwable) {
-        logger.info("Pull failed due to: '{}'", throwable.getMessage());
+        logger.error("Pull failed due to: '{}'", throwable.getMessage());
     }
 
     @Override
     public void onComplete() {
-        logger.info("Image '{}:{}' pulled", container.value(), container.tag());
+        System.out.println("\n");
+        logger.info("Image '{}:{}' pulled", need.value(), need.version());
         latch.countDown();
     }
 
     @Override
     public void close() throws IOException {
-        logger.debug("Closing pull of '{}:{}' image", container.value(), container.tag());
+        logger.debug("Closing pull of '{}:{}' image", need.value(), need.version());
     }
 
 }

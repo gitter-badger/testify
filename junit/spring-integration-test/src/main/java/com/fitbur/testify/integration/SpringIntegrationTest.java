@@ -19,26 +19,21 @@ import com.fitbur.asm.ClassReader;
 import static com.fitbur.guava.common.base.Preconditions.checkState;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
-import com.fitbur.testify.TestNeedDescriptor;
+import com.fitbur.testify.TestNeedContainers;
+import com.fitbur.testify.TestNeeds;
 import com.fitbur.testify.analyzer.CutClassAnalyzer;
 import com.fitbur.testify.analyzer.TestClassAnalyzer;
 import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.di.ServiceAnnotations;
+import com.fitbur.testify.di.spring.SpringLazyBeanFactoryPostProcessor;
 import com.fitbur.testify.di.spring.SpringServiceLocator;
 import com.fitbur.testify.junit.core.JUnitTestNotifier;
-import com.fitbur.testify.need.Need;
-import com.fitbur.testify.need.NeedContext;
-import com.fitbur.testify.need.NeedDescriptor;
-import com.fitbur.testify.need.NeedInstance;
 import com.fitbur.testify.need.NeedProvider;
 import com.fitbur.testify.need.NeedScope;
-import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import com.fitbur.testify.need.docker.DockerContainerNeedProvider;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import static java.util.stream.Collectors.toSet;
@@ -79,8 +74,11 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
     public Map<Class, SpringServiceLocator> applicationContexts = new ConcurrentHashMap<>();
     public Map<Class, List<NeedProvider>> needProvider = new ConcurrentHashMap<>();
     private ServiceAnnotations serviceAnnotations;
-    private Set<NeedContext> needContexts;
     private SpringServiceLocator serviceLocator;
+    private TestNeedContainers methodTestNeedContainers;
+    private TestNeedContainers classTestNeedContainers;
+    private TestNeeds methodTestNeeds;
+    private TestNeeds classTestNeeds;
 
     /**
      * Create a new test runner instance for the class under test.
@@ -143,6 +141,23 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
         serviceAnnotations.addCustomQualfier(javax.inject.Qualifier.class, Qualifier.class);
 
         try {
+            Object testInstance = createTest();
+            testContext.setTestInstance(testInstance);
+
+            classTestNeeds = new TestNeeds(testContext,
+                    javaClass.getSimpleName(),
+                    NeedScope.CLASS,
+                    null);
+            classTestNeeds.init();
+
+            classTestNeedContainers = new TestNeedContainers(testContext,
+                    javaClass.getSimpleName(),
+                    NeedScope.CLASS,
+                    null,
+                    DockerContainerNeedProvider.class);
+
+            classTestNeedContainers.init();
+
             Statement statement = classBlock(testNotifier);
             statement.evaluate();
         } catch (AssumptionViolatedException e) {
@@ -161,6 +176,12 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
             if (SLF4JBridgeHandler.isInstalled()) {
                 SLF4JBridgeHandler.uninstall();
             }
+
+            if (javaClass.getAnnotation(Ignore.class) == null) {
+                classTestNeeds.destory();
+                classTestNeedContainers.destory();
+            }
+
         }
     }
 
@@ -173,7 +194,7 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
         IntegrationTestVerifier verifier = new IntegrationTestVerifier(testContext, LOGGER);
         verifier.dependency();
         verifier.configuration();
-        initNeed(testContext, null, NeedScope.CLASS);
+
         return super.classBlock(notifier);
     }
 
@@ -198,10 +219,26 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
         appContext.setId(testClassName);
         appContext.setAllowBeanDefinitionOverriding(true);
         appContext.setAllowCircularReferences(false);
-        appContext.register(SpringIntegrationPostProcessor.class);
+        appContext.register(SpringLazyBeanFactoryPostProcessor.class);
 
         serviceLocator = new SpringServiceLocator(appContext, serviceAnnotations);
-        initNeed(testContext, method.getName(), NeedScope.METHOD);
+
+        methodTestNeeds = new TestNeeds(testContext,
+                method.getName(),
+                NeedScope.METHOD,
+                serviceLocator);
+
+        methodTestNeeds.init();
+        methodTestNeeds.inject(serviceLocator);
+
+        methodTestNeedContainers = new TestNeedContainers(testContext,
+                method.getName(),
+                NeedScope.METHOD,
+                serviceLocator,
+                DockerContainerNeedProvider.class);
+
+        methodTestNeedContainers.init();
+        classTestNeedContainers.inject(serviceLocator);
 
         IntegrationTestReifier reifier
                 = new IntegrationTestReifier(testContext, serviceLocator, testInstance);
@@ -233,62 +270,16 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
         return statement;
     }
 
-    private void initNeed(TestContext testContext, String methodName, NeedScope scope) {
-        needContexts = testContext.getAnnotations(Need.class)
-                .parallelStream()
-                .filter(p -> p.scope() == scope)
-                .map(p -> {
-                    Class<? extends NeedProvider> providerClass = p.value();
-                    try {
-                        NeedProvider provider = providerClass.newInstance();
-                        NeedDescriptor descriptor = new TestNeedDescriptor(p, testContext, methodName, serviceLocator);
-                        Object context = provider.configuration(descriptor);
-                        Optional<Method> configMethod = testContext.getConfigMethod(context.getClass())
-                                .map(m -> m.getMethod());
-
-                        if (configMethod.isPresent()) {
-                            AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-                                Method m = configMethod.get();
-                                try {
-                                    m.setAccessible(true);
-                                    m.invoke(descriptor.getTestInstance(), context);
-                                } catch (Exception e) {
-                                    checkState(false, "Call to config method '%s' in test class '%s' failed.",
-                                            m.getName(), descriptor.getTestClassName());
-                                }
-
-                                return null;
-                            });
-                        }
-
-                        Map<String, NeedInstance> instances = provider.init(descriptor, context);
-                        NeedContext needContext
-                                = new NeedContext(provider, descriptor, instances, serviceLocator, context);
-
-                        if (serviceLocator != null) {
-                            serviceLocator.addConstant(context.getClass().getSimpleName(), context);
-                            serviceLocator.addConstant(needContext.getClass().getSimpleName(), needContext);
-                            instances.forEach((k, v) -> serviceLocator.addConstant(k, v));
-                        }
-
-                        return needContext;
-                    } catch (InstantiationException | IllegalAccessException ex) {
-                        checkState(false, "Need provider '%s' could not be instanticated.",
-                                providerClass.getSimpleName());
-                        return null;
-                    }
-                }).collect(toSet());
-    }
-
     @Override
     protected void runChild(FrameworkMethod method, RunNotifier notifier) {
-        super.runChild(method, notifier);
-
-        if (method.getAnnotation(Ignore.class) == null) {
-            needContexts.parallelStream().forEach(p -> {
-                p.getProvider().destroy(p.getDescriptor(), p.getContext());
-            });
-            serviceLocator.destroy();
+        try {
+            super.runChild(method, notifier);
+        } finally {
+            if (method.getAnnotation(Ignore.class) == null) {
+                serviceLocator.destroy();
+                methodTestNeeds.destory();
+                methodTestNeedContainers.destory();
+            }
         }
     }
 

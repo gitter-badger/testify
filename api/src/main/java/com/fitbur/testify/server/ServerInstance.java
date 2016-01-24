@@ -46,7 +46,7 @@ public interface ServerInstance<T> {
     void start();
 
     /**
-     * Stop the server.
+     * Close and stop the server.
      */
     void stop();
 

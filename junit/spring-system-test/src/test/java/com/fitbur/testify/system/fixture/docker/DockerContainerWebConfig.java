@@ -13,33 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.need.docker.fixture;
+package com.fitbur.testify.system.fixture.docker;
 
 import com.fitbur.testify.need.NeedInstance;
+import com.fitbur.testify.system.fixture.common.CommonConfig;
+import com.fitbur.testify.system.fixture.common.SessionFactoryFactoryBean;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import java.net.URI;
 import javax.sql.DataSource;
-import org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl;
-import org.postgresql.ds.PGPoolingDataSource;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.postgresql.ds.PGSimpleDataSource;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 /**
- * Test Config
  *
  * @author saden
  */
 @Configuration
+@EnableWebMvc
+@Import(CommonConfig.class)
 @ComponentScan
-public class PostgresDockerConfig {
+public class DockerContainerWebConfig {
 
     @Bean
-    DataSource dataSourceProvider(NeedInstance instance) {
+    DataSource dataSourceProvider(NeedInstance<InspectContainerResponse> instance) {
         URI uri = instance.findFirstURI().get();
-        PGPoolingDataSource source = new PGPoolingDataSource();
-        source.setDataSourceName("A Data Source");
+        PGSimpleDataSource source = new PGSimpleDataSource();
         source.setServerName(instance.getHost());
         source.setPortNumber(instance.findFirstPort().get());
         source.setDatabaseName("postgres");
@@ -51,15 +56,12 @@ public class PostgresDockerConfig {
     }
 
     @Bean
-    LocalSessionFactoryBean localSessionFactoryBeanProvider(DataSource dataSource) {
-        LocalSessionFactoryBean bean = new LocalSessionFactoryBean();
-        ClassPathResource hibernateCfg = new ClassPathResource("hibernate.cfg.xml");
-
-        bean.setDataSource(dataSource);
-        bean.setConfigLocation(hibernateCfg);
-        bean.setPackagesToScan(PostgresDockerConfig.class.getPackage().getName());
-        bean.setPhysicalNamingStrategy(new PhysicalNamingStrategyStandardImpl());
-        return bean;
+    FactoryBean<SessionFactory> sessionFactoryImplProvider(DataSource dataSource) {
+        return new SessionFactoryFactoryBean(dataSource);
     }
 
+    @Bean
+    Session sessionFactoryProvider(SessionFactory sessionFactory) {
+        return sessionFactory.openSession();
+    }
 }

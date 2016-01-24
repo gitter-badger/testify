@@ -44,7 +44,7 @@ public class InMemoryHSQL implements NeedProvider<JDBCDataSource> {
 
     @Override
     public Map<String, NeedInstance> init(NeedDescriptor descriptor, JDBCDataSource configuration) {
-        HSQLInstance instnace = new HSQLInstance(URI.create(configuration.getUrl()));
+        HSQLInstance instnace = new HSQLInstance(configuration, URI.create(configuration.getUrl()));
 
         return ImmutableMap.of(configuration.getDatabaseName(), instnace);
     }

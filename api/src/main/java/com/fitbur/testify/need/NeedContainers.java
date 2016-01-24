@@ -16,38 +16,29 @@
 package com.fitbur.testify.need;
 
 import java.lang.annotation.Documented;
-import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.TYPE;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
 
 /**
- * An annotation for specifying a need class that should be loaded for a test
- * class. This is useful for integration and system tests which require an
- * external resource to be loaded (i.e. an in-memory database).
+ * An annotation for specifying a list of modules that should be loaded for a
+ * test class. This is useful for integration and system tests which utilize a
+ * dependency injection framework to load modules (i.e. Spring AppConfig, and
+ * HK2/Guice modules).
  *
  * @author saden
  */
 @Documented
 @Retention(RUNTIME)
-@Target({ANNOTATION_TYPE, TYPE})
-@Repeatable(Needs.class)
-public @interface Need {
+@Target({TYPE})
+public @interface NeedContainers {
 
     /**
-     * Specifies a need implementation class that should be loaded.
+     * Specifies a list of module classes that should be loaded.
      *
-     * @return a need class.
+     * @return an array of module classes.
      */
-    Class<? extends NeedProvider> value();
-
-    /**
-     * The lifecycle scope of the need.
-     *
-     * @return the lifecycle scope of the need.
-     */
-    NeedScope scope() default NeedScope.METHOD;
+    NeedContainer[] value();
 
 }

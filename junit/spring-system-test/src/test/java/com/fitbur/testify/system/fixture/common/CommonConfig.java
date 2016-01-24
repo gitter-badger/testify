@@ -13,29 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.need.docker;
+package com.fitbur.testify.system.fixture.common;
 
-import java.lang.annotation.Documented;
-import static java.lang.annotation.ElementType.TYPE;
-import java.lang.annotation.Retention;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import java.lang.annotation.Target;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * An annotation for specifying a list of docker containers that should be
- * started.
  *
  * @author saden
  */
-@Documented
-@Retention(RUNTIME)
-@Target({TYPE})
-public @interface DockerContainers {
+@Configuration
+@ComponentScan
+public class CommonConfig {
 
-    /**
-     * Specifies a list of docker container annotations.
-     *
-     * @return an array of docker containers
-     */
-    DockerContainer[] value();
 }

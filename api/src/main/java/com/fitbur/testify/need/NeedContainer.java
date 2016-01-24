@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.need.docker;
+package com.fitbur.testify.need;
 
 import java.lang.annotation.Documented;
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.TYPE;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -24,42 +25,45 @@ import java.lang.annotation.Target;
 import java.util.concurrent.TimeUnit;
 
 /**
- * An annotations that specifies a docker container that should be started.
- *
- * <p>
- * Docker remote API needs to access the Docker daemon remotely. You need to
- * enable docker tcp Socket. By default the {@link DockerNeedProvider} sets the
- * docker daemon URL to http://127.0.0.1:2375.
- * </p>
- *
- * @see
- * <a href="https://docs.docker.com/engine/articles/configuring/">Configuring
- * and running Docker on various distributions</a>
- * @see
- * <a href="https://docs.docker.com/engine/reference/commandline/daemon/">Docker
- * Daemon Configuration</a>
+ * An annotation for specifying a need class that should be loaded for a test
+ * class. This is useful for integration and system tests which require an
+ * external resource to be loaded (i.e. an in-memory database).
  *
  * @author saden
  */
 @Documented
 @Retention(RUNTIME)
-@Target({TYPE})
-@Repeatable(DockerContainers.class)
-public @interface DockerContainer {
+@Target({ANNOTATION_TYPE, TYPE})
+@Repeatable(NeedContainers.class)
+public @interface NeedContainer {
 
     /**
-     * The image name.
+     * Specifies a need implementation class that should be loaded.
      *
-     * @return image name
+     * @return a need class.
+     */
+    Class<? extends NeedProvider> provider() default NeedProvider.class;
+
+    /**
+     * The lifecycle scope of the need.
+     *
+     * @return the lifecycle scope of the need.
+     */
+    NeedScope scope() default NeedScope.METHOD;
+
+    /**
+     * The value name.
+     *
+     * @return value name
      */
     String value();
 
     /**
-     * The image tag.
+     * The value version.
      *
-     * @return image tag
+     * @return value version
      */
-    String tag() default "latest";
+    String version() default "latest";
 
     /**
      * The command that will be executed.
@@ -69,9 +73,9 @@ public @interface DockerContainer {
     String cmd() default "";
 
     /**
-     * Pull an image or a repository from a registry.
+     * Pull an value or a repository from a registry.
      *
-     * @return true if the image will be pulled, false otherwise
+     * @return true if the value will be pulled, false otherwise
      */
     boolean pull() default true;
 

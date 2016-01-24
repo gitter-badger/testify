@@ -16,34 +16,34 @@
 package com.fitbur.testify.need.docker;
 
 import com.fitbur.testify.need.NeedInstance;
-import com.github.dockerjava.api.command.InspectContainerResponse.NetworkSettings;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 
 /**
- * A NeedInstance implementation to hold docker container need instance
- * information.
+ * A NeedInstance implementation to hold docker container need getInstance
+ information.
  *
  * @author saden
  */
-public class ContainerInstance implements NeedInstance {
+public class DockerContainerInstance implements NeedInstance<InspectContainerResponse> {
 
-    private final NetworkSettings networkSettings;
+    private final InspectContainerResponse inspectResponse;
 
-    public ContainerInstance(NetworkSettings networkSettings) {
-        this.networkSettings = networkSettings;
+    DockerContainerInstance(InspectContainerResponse inspectResponse) {
+        this.inspectResponse = inspectResponse;
     }
 
     @Override
     public String getHost() {
-        return networkSettings.getIpAddress();
+        return inspectResponse.getNetworkSettings().getIpAddress();
     }
 
     @Override
     public List<Integer> getPorts() {
-        return networkSettings
+        return inspectResponse.getNetworkSettings()
                 .getPorts()
                 .getBindings()
                 .entrySet()
@@ -59,6 +59,8 @@ public class ContainerInstance implements NeedInstance {
 
     @Override
     public List<URI> getURIs() {
+        InspectContainerResponse.NetworkSettings networkSettings = inspectResponse.getNetworkSettings();
+
         return networkSettings
                 .getPorts()
                 .getBindings()
@@ -79,6 +81,8 @@ public class ContainerInstance implements NeedInstance {
 
     @Override
     public Optional<URI> findFirstURI() {
+        InspectContainerResponse.NetworkSettings networkSettings = inspectResponse.getNetworkSettings();
+
         return networkSettings
                 .getPorts()
                 .getBindings()
@@ -95,6 +99,11 @@ public class ContainerInstance implements NeedInstance {
 
                     return URI.create(uri);
                 });
+    }
+
+    @Override
+    public InspectContainerResponse getInstance() {
+        return inspectResponse;
     }
 
 }

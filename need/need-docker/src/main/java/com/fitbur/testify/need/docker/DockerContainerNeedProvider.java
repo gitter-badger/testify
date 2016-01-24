@@ -16,6 +16,7 @@
 package com.fitbur.testify.need.docker;
 
 import com.fitbur.guava.common.collect.ImmutableMap;
+import com.fitbur.testify.need.NeedContainer;
 import com.fitbur.testify.need.NeedDescriptor;
 import com.fitbur.testify.need.NeedInstance;
 import com.fitbur.testify.need.NeedProvider;
@@ -46,7 +47,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author saden
  */
-public class DockerNeedProvider implements NeedProvider<DockerClientConfigBuilder> {
+public class DockerContainerNeedProvider implements NeedProvider<DockerClientConfigBuilder> {
 
     public static final String DEFAULT_DAEMON_URI = "http://127.0.0.1:2375";
 
@@ -66,47 +67,47 @@ public class DockerNeedProvider implements NeedProvider<DockerClientConfigBuilde
             clientConfig = context.build();
             client = DockerClientBuilder.getInstance(clientConfig).build();
 
-            Set<DockerContainer> dockerContainers = descriptor.getAnnotations(DockerContainer.class);
+            Set<NeedContainer> dockerContainers = descriptor.getAnnotations(NeedContainer.class);
             ImmutableMap.Builder<String, NeedInstance> needInstances = ImmutableMap.builder();
 
-            for (DockerContainer dockerContainer : dockerContainers) {
+            for (NeedContainer needContainer : dockerContainers) {
                 CountDownLatch latch = new CountDownLatch(1);
-                if (dockerContainer.pull()) {
-                    //TODO: check image first and only pull if it doesn't exist locally
-                    PullCallback callback = new PullCallback(dockerContainer, latch, LOGGER);
-                    client.pullImageCmd(dockerContainer.value())
-                            .withTag(dockerContainer.tag())
+                if (needContainer.pull()) {
+                    //TODO: check value first and only pull if it doesn't exist locally
+                    PullCallback callback = new PullCallback(needContainer, latch, LOGGER);
+                    client.pullImageCmd(needContainer.value())
+                            .withTag(needContainer.version())
                             .exec(callback);
                 } else {
                     latch.countDown();
                 }
 
                 latch.await();
-                String image = dockerContainer.value() + ":" + dockerContainer.tag();
+                String image = needContainer.value() + ":" + needContainer.version();
 
                 CreateContainerCmd cmd = client.createContainerCmd(image);
                 cmd.withPublishAllPorts(true);
 
-                if (!dockerContainer.cmd().isEmpty()) {
-                    cmd.withCmd(dockerContainer.cmd());
+                if (!needContainer.cmd().isEmpty()) {
+                    cmd.withCmd(needContainer.cmd());
                 }
 
-                if (!dockerContainer.name().isEmpty()) {
-                    cmd.withName(dockerContainer.name());
+                if (!needContainer.name().isEmpty()) {
+                    cmd.withName(needContainer.name());
                 }
 
                 containerResponse = cmd.exec();
                 client.startContainerCmd(containerResponse.getId())
                         .exec();
 
-                if (dockerContainer.await()) {
+                if (needContainer.await()) {
                     RetryPolicy retryPolicy = new RetryPolicy()
-                            .retryOn(DockerContainerException.class)
-                            .withBackoff(dockerContainer.delay(),
-                                    dockerContainer.maxDelay(),
-                                    dockerContainer.unit())
-                            .withMaxRetries(dockerContainer.maxRetries())
-                            .withMaxDuration(dockerContainer.maxDuration(), dockerContainer.unit());
+                            .retryOn(IllegalStateException.class)
+                            .withBackoff(needContainer.delay(),
+                                    needContainer.maxDelay(),
+                                    needContainer.unit())
+                            .withMaxRetries(needContainer.maxRetries())
+                            .withMaxDuration(needContainer.maxDuration(), needContainer.unit());
 
                     InspectContainerResponse inspectResponse
                             = client.inspectContainerCmd(containerResponse.getId())
@@ -123,17 +124,17 @@ public class DockerNeedProvider implements NeedProvider<DockerClientConfigBuilde
                             .map(p -> p.getKey().getPort())
                             .collect(toList());
 
-                    ContainerInstance containerInstance = new ContainerInstance(networkSettings);
+                    DockerContainerInstance containerInstance = new DockerContainerInstance(inspectResponse);
                     needInstances.put(inspectResponse.getId(), containerInstance);
 
                     ports.parallelStream().forEach(p -> Recurrent.run(() -> {
                         LOGGER.info("Waiting for port '{}' to be reachable", p);
                         try (Socket socket = new Socket(address, p)) {
                             if (!socket.isConnected()) {
-                                throw new DockerContainerException();
+                                throw new IllegalStateException();
                             }
                         } catch (IOException e) {
-                            throw new DockerContainerException(e);
+                            throw new IllegalStateException(e);
                         }
                     }, retryPolicy));
 
