@@ -25,13 +25,11 @@ addons:
             - gnupg
             - net-tools
 
-script:
-    mvn verify -B -Pdevelop
+script: ./build.sh
 
 before_install:
     - ./init.sh
     - pip install --user codecov
-#    - sudo netstat -tulpn
 
 after_success:
     - codecov
