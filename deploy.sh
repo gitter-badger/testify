@@ -20,31 +20,29 @@ MVN_SETTINGS="--settings settings.xml"
 PROJECT_VERSION=$(mvn -q org.codehaus.mojo:exec-maven-plugin:1.4.0:exec -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive)
 
 if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-    echo "Deploying '$TRAVIS_BRANCH' Branch"
 
     if [ "$TRAVIS_BRANCH" = "master" ]; then
-        echo "Releasing Testify v$PROJECT_VERSION Artifacts"
+        echo "Releasing Testify $PROJECT_VERSION Artifacts"
 
         mvn -B -Prelease clean deploy $MVN_SETTINGS
 
         if [ $? -eq 0 ]; then
-            echo "Deployment Successful"
+            echo "Release Deployment Successful"
             exit 0
         else
-            echo "Deployment Failed"
+            echo "Release Deployment Failed"
             exit 1
         fi
 
     elif [ "$TRAVIS_BRANCH" = "develop" ]; then
-        echo "Staging Testify v$PROJECT_VERSION Artifacts"
+        echo "Staging Testify $PROJECT_VERSION Artifacts"
         mvn -B -Pstage clean deploy $MVN_SETTINGS
-        mvn -B -Pstage nexus-staging:release $MVN_SETTINGS
 
         if [ $? -eq 0 ]; then
-            echo "Deployment Successful"
+            echo "Staging Deployment Successful"
             exit 0
         else
-            echo "Deployment Failed"
+            echo "Staging Deployment Failed"
             exit 1
         fi
 

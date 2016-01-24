@@ -18,7 +18,7 @@ set -ev
 
 MVN_SETTINGS=" --settings settings.xml"
 PROJECT_VERSION=$(mvn -q org.codehaus.mojo:exec-maven-plugin:1.4.0:exec -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive)
-echo "Building Testify v$PROJECT_VERSION"
+echo "Building Testify $PROJECT_VERSION"
 
 mvn verify -B -Pbuild $MVN_SETTINGS
 
