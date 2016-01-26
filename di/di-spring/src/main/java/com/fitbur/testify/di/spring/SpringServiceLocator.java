@@ -38,6 +38,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import javax.inject.Named;
 import javax.inject.Provider;
+import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import static org.springframework.beans.factory.config.BeanDefinition.ROLE_APPLICATION;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
@@ -305,6 +306,20 @@ public class SpringServiceLocator implements ServiceLocator {
     @Override
     public void addConstant(String name, Object instance) {
         ((DefaultListableBeanFactory) context.getBeanFactory()).registerSingleton(name, instance);
+    }
+
+    @Override
+    public void replaceWithConstant(Set<Class<?>> contracts, String name, Object instance) {
+        DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) context.getBeanFactory();
+
+        for (Class<?> contract : contracts) {
+            String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(beanFactory, contract, true, false);
+            for (String beanName : beanNames) {
+                beanFactory.removeBeanDefinition(beanName);
+            }
+        }
+
+        beanFactory.registerSingleton(name, instance);
     }
 
     @Override

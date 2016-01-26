@@ -15,16 +15,18 @@
  */
 package com.fitbur.testify.need.docker;
 
+import com.fitbur.guava.common.collect.ImmutableSet;
 import com.fitbur.testify.need.NeedInstance;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import static java.util.stream.Collectors.toList;
 
 /**
  * A NeedInstance implementation to hold docker container need getInstance
- information.
+ * information.
  *
  * @author saden
  */
@@ -104,6 +106,11 @@ public class DockerContainerInstance implements NeedInstance<InspectContainerRes
     @Override
     public InspectContainerResponse getInstance() {
         return inspectResponse;
+    }
+
+    @Override
+    public Set<Class<InspectContainerResponse>> getContracts() {
+        return ImmutableSet.of(InspectContainerResponse.class);
     }
 
 }

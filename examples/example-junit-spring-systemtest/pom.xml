@@ -25,7 +25,6 @@
     </parent>
     <artifactId>example-junit-spring-systemtest</artifactId>
 
-
     <dependencies>
         <dependency>
             <groupId>com.fitbur.testify.junit</groupId>
@@ -49,5 +48,4 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-    <name>example-junit-spring-systemtest</name>
 </project>

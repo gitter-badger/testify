@@ -18,6 +18,7 @@ package com.fitbur.testify.need;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * A contract that defines methods for getting information about the running
@@ -69,5 +70,11 @@ public interface NeedInstance<T> {
      * @return the underlying need getInstance
      */
     T getInstance();
+
+    /**
+     * Get get all the contracts associated with the instance.
+     * @return the need contracts
+     */
+    Set<Class<T>> getContracts();
 
 }

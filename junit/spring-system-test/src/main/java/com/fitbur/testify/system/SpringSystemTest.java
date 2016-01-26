@@ -37,7 +37,6 @@ import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.di.ServiceAnnotations;
 import com.fitbur.testify.di.ServiceLocator;
-import com.fitbur.testify.di.spring.SpringLazyBeanFactoryPostProcessor;
 import com.fitbur.testify.di.spring.SpringServiceLocator;
 import com.fitbur.testify.junit.core.JUnitTestNotifier;
 import com.fitbur.testify.need.NeedProvider;
@@ -47,8 +46,7 @@ import com.fitbur.testify.server.ServerContext;
 import com.fitbur.testify.server.ServerInstance;
 import com.fitbur.testify.server.ServerProvider;
 import com.fitbur.testify.server.undertow.UndertowServerProvider;
-import com.fitbur.testify.system.interceptor.AnnotationInterceptor;
-import com.fitbur.testify.system.interceptor.InterceptorContext;
+import com.fitbur.testify.system.interceptor.ServletApplicationInterceptor;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -100,8 +98,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
     private ClientContext clientContext;
     private TestNeeds classTestNeeds;
     private TestNeedContainers classTestNeedContainers;
-    private TestNeeds methodTestNeeds;
-    private TestNeedContainers methodTestNeedContainers;
+    private ServletApplicationInterceptor interceptor;
 
     /**
      * Create a new test runner instance for the class under test.
@@ -237,26 +234,10 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
         TestContext testContext = getTestContext(javaClass);
         testContext.setTestInstance(testInstance);
 
-        serverContext = getServerContext(testContext);
+        serverContext = getServerContext(testContext, method.getName());
         clientContext = getClientContext(testContext, serverContext);
 
         ServiceLocator serviceLocator = serverContext.getLocator();
-
-        methodTestNeeds = new TestNeeds(testContext,
-                method.getName(),
-                NeedScope.METHOD,
-                serviceLocator);
-        methodTestNeeds.init();
-
-        methodTestNeedContainers = new TestNeedContainers(testContext,
-                method.getName(),
-                NeedScope.METHOD,
-                serviceLocator,
-                DockerContainerNeedProvider.class);
-        methodTestNeedContainers.init();
-
-        classTestNeeds.inject(serviceLocator);
-        classTestNeedContainers.inject(serviceLocator);
 
         SystemTestReifier reifier
                 = new SystemTestReifier(testContext, serviceLocator, testInstance);
@@ -288,7 +269,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
         return statement;
     }
 
-    public ServerContext getServerContext(TestContext testContext) {
+    public ServerContext getServerContext(TestContext testContext, String methodName) {
         return testContext.getAnnotation(App.class).map(p -> {
             Class<?> appType = p.value();
             Class<? extends ServerProvider> providerType = p.server();
@@ -301,11 +282,12 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
                 }
 
-                InterceptorContext interceptorContext = new InterceptorContext();
-                AnnotationInterceptor interceptor
-                        = new AnnotationInterceptor(testContext,
-                                interceptorContext,
-                                SpringLazyBeanFactoryPostProcessor.class);
+                interceptor = new ServletApplicationInterceptor(testContext,
+                        methodName,
+                        p.modules(),
+                        serviceAnnotations,
+                        classTestNeeds,
+                        classTestNeedContainers);
 
                 Class<?> proxyAppType = BYTE_BUDDY.subclass(appType)
                         .method(not(isDeclaredBy(Object.class)))
@@ -347,9 +329,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
                 instance.start();
                 Object server = instance.getServer();
 
-                SpringServiceLocator serviceLocator
-                        = new SpringServiceLocator(interceptorContext.getServletAppContext(),
-                                serviceAnnotations);
+                SpringServiceLocator serviceLocator = interceptor.getServiceLocator();
 
                 serviceLocator.addConstant(context.getClass().getSimpleName(), context);
                 serviceLocator.addConstant(instance.getClass().getSimpleName(), instance);
@@ -421,15 +401,12 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
     @Override
     protected void runChild(FrameworkMethod method, RunNotifier notifier) {
-        try {
-            super.runChild(method, notifier);
-        } finally {
-            if (method.getAnnotation(Ignore.class) == null) {
-                clientContext.getInstance().close();
-                serverContext.getInstance().stop();
-                methodTestNeeds.destory();
-                methodTestNeedContainers.destory();
-            }
+        super.runChild(method, notifier);
+        if (method.getAnnotation(Ignore.class) == null) {
+            clientContext.getInstance().close();
+            serverContext.getInstance().stop();
+            interceptor.getMethodTestNeeds().destory();
+            interceptor.getMethodTestNeedContainers().destory();
         }
     }
 

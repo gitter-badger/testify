@@ -26,8 +26,8 @@ import com.fitbur.testify.analyzer.TestClassAnalyzer;
 import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.di.ServiceAnnotations;
-import com.fitbur.testify.di.spring.SpringLazyBeanFactoryPostProcessor;
 import com.fitbur.testify.di.spring.SpringServiceLocator;
+import com.fitbur.testify.di.spring.SpringServicePostProcessor;
 import com.fitbur.testify.junit.core.JUnitTestNotifier;
 import com.fitbur.testify.need.NeedProvider;
 import com.fitbur.testify.need.NeedScope;
@@ -219,7 +219,6 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
         appContext.setId(testClassName);
         appContext.setAllowBeanDefinitionOverriding(true);
         appContext.setAllowCircularReferences(false);
-        appContext.register(SpringLazyBeanFactoryPostProcessor.class);
 
         serviceLocator = new SpringServiceLocator(appContext, serviceAnnotations);
 
@@ -227,18 +226,26 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
                 method.getName(),
                 NeedScope.METHOD,
                 serviceLocator);
-
         methodTestNeeds.init();
-        methodTestNeeds.inject(serviceLocator);
 
         methodTestNeedContainers = new TestNeedContainers(testContext,
                 method.getName(),
                 NeedScope.METHOD,
                 serviceLocator,
                 DockerContainerNeedProvider.class);
-
         methodTestNeedContainers.init();
+
+        classTestNeeds.inject(serviceLocator);
         classTestNeedContainers.inject(serviceLocator);
+
+        SpringServicePostProcessor postProcessor = new SpringServicePostProcessor(
+                serviceLocator,
+                methodTestNeeds,
+                methodTestNeedContainers,
+                classTestNeeds,
+                classTestNeedContainers);
+
+        appContext.addBeanFactoryPostProcessor(postProcessor);
 
         IntegrationTestReifier reifier
                 = new IntegrationTestReifier(testContext, serviceLocator, testInstance);
@@ -272,14 +279,11 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
 
     @Override
     protected void runChild(FrameworkMethod method, RunNotifier notifier) {
-        try {
-            super.runChild(method, notifier);
-        } finally {
-            if (method.getAnnotation(Ignore.class) == null) {
-                serviceLocator.destroy();
-                methodTestNeeds.destory();
-                methodTestNeedContainers.destory();
-            }
+        super.runChild(method, notifier);
+        if (method.getAnnotation(Ignore.class) == null) {
+            serviceLocator.destroy();
+            methodTestNeeds.destory();
+            methodTestNeedContainers.destory();
         }
     }
 

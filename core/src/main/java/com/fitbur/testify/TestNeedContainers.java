@@ -97,11 +97,6 @@ public class TestNeedContainers {
                         NeedContext needContext
                                 = new NeedContext(provider, descriptor, instances, serviceLocator, configuration);
 
-                        if (serviceLocator != null) {
-                            serviceLocator.addConstant(UUID.randomUUID().toString(), needContext);
-                            instances.forEach((k, v) -> serviceLocator.addConstant(k, v));
-                        }
-
                         return needContext;
                     } catch (InstantiationException | IllegalAccessException ex) {
                         checkState(false, "Need provider '%s' could not be instanticated.",
@@ -116,7 +111,12 @@ public class TestNeedContainers {
         needContexts.parallelStream().forEach(p -> {
             p.getProvider().clean(p.getDescriptor(), p.getConfiguration());
             serviceLocator.addConstant(UUID.randomUUID().toString(), p);
-            p.getInstances().forEach((k, v) -> serviceLocator.addConstant(k, v));
+            p.getInstances().forEach((k, v) -> {
+                serviceLocator.addConstant(
+                        UUID.randomUUID().toString(),
+                        v.getInstance());
+                serviceLocator.addConstant(k, v);
+            });
         });
     }
 

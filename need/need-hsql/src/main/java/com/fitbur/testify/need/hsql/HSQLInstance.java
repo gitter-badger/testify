@@ -15,11 +15,13 @@
  */
 package com.fitbur.testify.need.hsql;
 
+import com.fitbur.guava.common.collect.ImmutableSet;
 import com.fitbur.testify.need.NeedInstance;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import static java.util.Optional.of;
+import java.util.Set;
 import static java.util.stream.Collectors.toList;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
@@ -67,6 +69,11 @@ class HSQLInstance implements NeedInstance<DataSource> {
     @Override
     public DataSource getInstance() {
         return dataSource;
+    }
+
+    @Override
+    public Set<Class<DataSource>> getContracts() {
+        return ImmutableSet.of(DataSource.class);
     }
 
 }

@@ -449,10 +449,7 @@
                         <groupId>com.mycila</groupId>
                         <artifactId>license-maven-plugin</artifactId>
                     </plugin>
-                    <plugin>
-                        <groupId>org.pitest</groupId>
-                        <artifactId>pitest-maven</artifactId>
-                    </plugin>
+                    
                     <plugin>
                         <artifactId>maven-javadoc-plugin</artifactId>
                     </plugin>

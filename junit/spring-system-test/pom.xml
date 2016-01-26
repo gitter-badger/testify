@@ -120,9 +120,8 @@
         <dependency>
             <groupId>com.fitbur.testify.need</groupId>
             <artifactId>need-hsql</artifactId>
-            <version>0.0.8-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>test</scope>
-            <type>jar</type>
         </dependency>
     </dependencies>
 

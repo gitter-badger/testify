@@ -20,7 +20,6 @@ import com.fitbur.testify.di.ServiceLocator;
 import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.NeedContext;
 import com.fitbur.testify.need.NeedDescriptor;
-import com.fitbur.testify.need.NeedInstance;
 import com.fitbur.testify.need.NeedProvider;
 import com.fitbur.testify.need.NeedScope;
 import java.lang.annotation.Annotation;
@@ -45,6 +44,8 @@ public class TestNeeds {
     private final NeedScope scope;
     private final ServiceLocator serviceLocator;
     private Set<NeedContext> needContexts;
+    private Map instances;
+    private NeedContext needContext;
 
     public TestNeeds(TestContext testContext, String name, NeedScope scope, ServiceLocator serviceLocator) {
         this.testContext = testContext;
@@ -82,14 +83,12 @@ public class TestNeeds {
                             });
                         }
 
-                        Map<String, NeedInstance> instances = provider.init(descriptor, configuration);
-                        NeedContext needContext
-                                = new NeedContext(provider, descriptor, instances, serviceLocator, configuration);
-
-                        if (serviceLocator != null) {
-                            serviceLocator.addConstant(UUID.randomUUID().toString(), needContext);
-                            instances.forEach((k, v) -> serviceLocator.addConstant(k, v));
-                        }
+                        instances = provider.init(descriptor, configuration);
+                        needContext = new NeedContext(provider,
+                                descriptor,
+                                instances,
+                                serviceLocator,
+                                configuration);
 
                         return needContext;
                     } catch (InstantiationException | IllegalAccessException ex) {
@@ -105,7 +104,13 @@ public class TestNeeds {
         needContexts.parallelStream().forEach(p -> {
             p.getProvider().clean(p.getDescriptor(), p.getConfiguration());
             serviceLocator.addConstant(UUID.randomUUID().toString(), p);
-            p.getInstances().forEach((k, v) -> serviceLocator.addConstant(k, v));
+            p.getInstances().forEach((k, v) -> {
+                serviceLocator.replaceWithConstant(
+                        v.getContracts(),
+                        UUID.randomUUID().toString(),
+                        v.getInstance());
+                serviceLocator.addConstant(k, v);
+            });
         });
     }
 

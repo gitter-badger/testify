@@ -146,6 +146,16 @@ public interface ServiceLocator {
     void addConstant(String name, Object instance);
 
     /**
+     * Replace all beans that implement the given contract with a constant with
+     * the given name and instance.
+     *
+     * @param contracts the contract bean definitions.
+     * @param name the name of the service
+     * @param instance the service instance
+     */
+    void replaceWithConstant(Set<Class<?>> contracts, String name, Object instance);
+
+    /**
      * Remove a service with the given descriptor.
      *
      * @param descriptor the service descriptor

@@ -32,5 +32,7 @@
         <module>example-junit-unittest</module>
         <module>example-junit-spring-integrationtest</module>
         <module>example-junit-spring-systemtest</module>
+        <module>example-junit-spring-integrationtest-need</module>
+        <module>example-junit-spring-systemtest-need</module>
     </modules>
 </project>

@@ -38,5 +38,11 @@
             <version>${spring.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.10</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>

@@ -15,6 +15,9 @@
  */
 package com.fitbur.testify.di.spring;
 
+import com.fitbur.testify.TestNeedContainers;
+import com.fitbur.testify.TestNeeds;
+import com.fitbur.testify.di.ServiceLocator;
 import static java.util.stream.Stream.of;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -25,7 +28,25 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
  *
  * @author saden
  */
-public class SpringLazyBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
+public class SpringServicePostProcessor implements BeanFactoryPostProcessor {
+
+    private final ServiceLocator serviceLocator;
+    private final TestNeeds methodTestNeeds;
+    private final TestNeedContainers methodTestNeedContainers;
+    private final TestNeeds classTestNeeds;
+    private final TestNeedContainers classTestNeedContainers;
+
+    public SpringServicePostProcessor(ServiceLocator serviceLocator,
+            TestNeeds methodTestNeeds,
+            TestNeedContainers methodTestNeedContainers,
+            TestNeeds classTestNeeds,
+            TestNeedContainers classTestNeedContainers) {
+        this.serviceLocator = serviceLocator;
+        this.methodTestNeeds = methodTestNeeds;
+        this.methodTestNeedContainers = methodTestNeedContainers;
+        this.classTestNeeds = classTestNeeds;
+        this.classTestNeedContainers = classTestNeedContainers;
+    }
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -33,6 +54,12 @@ public class SpringLazyBeanFactoryPostProcessor implements BeanFactoryPostProces
                 .parallel()
                 .map(beanFactory::getBeanDefinition)
                 .forEach(p -> p.setLazyInit(true));
+
+        methodTestNeeds.inject(serviceLocator);
+        methodTestNeedContainers.inject(serviceLocator);
+        classTestNeeds.inject(serviceLocator);
+        classTestNeedContainers.inject(serviceLocator);
+
     }
 
 }
