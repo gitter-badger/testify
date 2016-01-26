@@ -77,7 +77,10 @@ public class ServletApplicationInterceptor {
         servletAppContext.setId(testContext.getName());
         servletAppContext.setAllowBeanDefinitionOverriding(true);
         servletAppContext.setAllowCircularReferences(false);
-        servletAppContext.register(modules);
+
+        if (modules != null && modules.length != 0) {
+            servletAppContext.register(modules);
+        }
 
         applicationContext = servletAppContext;
         serviceLocator = new SpringServiceLocator(servletAppContext, serviceAnnotations);
@@ -94,9 +97,6 @@ public class ServletApplicationInterceptor {
                 serviceLocator,
                 DockerContainerNeedProvider.class);
         methodTestNeedContainers.init();
-
-        classTestNeeds.inject(serviceLocator);
-        classTestNeedContainers.inject(serviceLocator);
 
         SpringServicePostProcessor postProcessor = new SpringServicePostProcessor(
                 serviceLocator,

@@ -168,6 +168,7 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
             throw e;
         } catch (IllegalStateException e) {
             LOGGER.error("{}", e.getMessage());
+            testNotifier.addFailure(e);
             testNotifier.pleaseStop();
         } catch (Throwable e) {
             LOGGER.error("{}", e.getMessage());
@@ -234,9 +235,6 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
                 serviceLocator,
                 DockerContainerNeedProvider.class);
         methodTestNeedContainers.init();
-
-        classTestNeeds.inject(serviceLocator);
-        classTestNeedContainers.inject(serviceLocator);
 
         SpringServicePostProcessor postProcessor = new SpringServicePostProcessor(
                 serviceLocator,

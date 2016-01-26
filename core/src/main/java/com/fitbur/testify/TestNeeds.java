@@ -91,7 +91,7 @@ public class TestNeeds {
                                 configuration);
 
                         return needContext;
-                    } catch (InstantiationException | IllegalAccessException ex) {
+                    } catch (InstantiationException | IllegalAccessException e) {
                         checkState(false, "Need provider '%s' could not be instanticated.",
                                 p.value().getSimpleName());
                         return null;

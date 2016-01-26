@@ -16,6 +16,7 @@
 package com.fitbur.testify.example.junit.spring.systemtest.need;
 
 import com.fitbur.testify.App;
+import com.fitbur.testify.Module;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.example.junit.spring.systemtest.need.fixture.TestConfig;
 import com.fitbur.testify.need.NeedContainer;
@@ -32,7 +33,8 @@ import org.junit.runner.RunWith;
  * @author saden
  */
 @RunWith(SpringSystemTest.class)
-@App(value = GreeterApplication.class, modules = TestConfig.class)
+@App(value = GreeterApplication.class)
+@Module(TestConfig.class)
 @NeedContainer(value = "postgres")
 public class GreetingApplicationNeedContainerTest {
 

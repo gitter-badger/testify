@@ -13,18 +13,22 @@ was added, changed, deprecated, removed, fix and security fixes.
 
 ## [Unreleased]
 ### Added
-- Container based Need API
-- Docker Container Need Support
-- A common TestNeedDescriptor implementation to core
+- Added NeedInstance for getting need instance information.
+- Added Container based Need API
+- Added Docker Container Need Support
+- Added a common TestNeedDescriptor implementation to core
+- Added the ability to replace services to ServiceLocator contract.
+- Added ability to manage need lifecycle
+- Added examples for needs and container needs
 
 ### Changed
-- Simplified Need API and added NeedInstance for getting need information.
+- Simplified Need API and
 - Updated HSQL module to use the new need API
 - Cleaned up Build process.
 
 ### Removed
 - Spring NeedDescriptor implementations in favor of TestNeedDescriptor
-- Removed HSQL module test cases and copied them to Spring Integration and Spring System modules.
+- Moved HSQL module test cases Spring Integration and Spring System modules.
 
 ## [0.0.1] - 2015-11-23
 ### Added

@@ -22,6 +22,7 @@ import static com.fitbur.bytebuddy.implementation.MethodDelegation.to;
 import static com.fitbur.bytebuddy.matcher.ElementMatchers.isDeclaredBy;
 import static com.fitbur.bytebuddy.matcher.ElementMatchers.not;
 import static com.fitbur.guava.common.base.Preconditions.checkState;
+import com.fitbur.guava.common.base.Throwables;
 import com.fitbur.testify.App;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
@@ -189,6 +190,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
             throw e;
         } catch (IllegalStateException e) {
             LOGGER.error("{}", e.getMessage());
+            testNotifier.addFailure(e);
             testNotifier.pleaseStop();
         } catch (Throwable e) {
             LOGGER.error("{}", e.getMessage());
@@ -319,6 +321,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
                         } catch (Exception e) {
                             checkState(false, "Call to config method '%s' in test class '%s' failed.",
                                     m.getName(), descriptor.getTestClassName());
+                            throw Throwables.propagate(e);
                         }
 
                         return null;
@@ -337,9 +340,9 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
                 return new ServerContext(provider, descriptor, instance, serviceLocator, context);
             } catch (Exception e) {
-                checkState(false, "Server provider '%s' could not be instanticated.",
-                        providerType.getSimpleName());
-                return null;
+                checkState(false, "Server provider '%s' could not be instanticated due to: %s",
+                        providerType.getSimpleName(), e.getMessage());
+                throw Throwables.propagate(e);
             }
         }).get();
     }
@@ -374,8 +377,8 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
                             m.setAccessible(true);
                             m.invoke(descriptor.getTestInstance(), context);
                         } catch (Exception e) {
-                            checkState(false, "Call to config method '%s' in test class '%s' failed.",
-                                    m.getName(), descriptor.getTestClassName());
+                            checkState(false, "Call to config method '%s' in test class '%s' failed due to: ",
+                                    m.getName(), descriptor.getTestClassName(), e.getMessage());
                         }
 
                         return null;
@@ -392,9 +395,9 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
                 return new ClientContext(provider, descriptor, instance, context);
             } catch (Exception e) {
-                checkState(false, "Server provider '%s' could not be instanticated.",
-                        providerType.getSimpleName());
-                return null;
+                checkState(false, "Client provider '%s' could not be instanticated due to: %s",
+                        providerType.getSimpleName(), e.getMessage());
+                throw Throwables.propagate(e);
             }
         }).get();
     }
