@@ -12,23 +12,6 @@ was added, changed, deprecated, removed, fix and security fixes.
 - Security - Lists security fixes to security vulnerabilities
 
 ## [Unreleased]
-### Added
-- Added NeedInstance for getting need instance information.
-- Added Container based Need API
-- Added Docker Container Need Support
-- Added a common TestNeedDescriptor implementation to core
-- Added the ability to replace services to ServiceLocator contract.
-- Added ability to manage need lifecycle
-- Added examples for needs and container needs
-
-### Changed
-- Simplified Need API and
-- Updated HSQL module to use the new need API
-- Cleaned up Build process.
-
-### Removed
-- Spring NeedDescriptor implementations in favor of TestNeedDescriptor
-- Moved HSQL module test cases Spring Integration and Spring System modules.
 
 ## [0.0.1] - 2015-11-23
 ### Added
@@ -117,3 +100,22 @@ was added, changed, deprecated, removed, fix and security fixes.
 ### Fixed
 - Fixed verification language to improve readability and consistency
 - Verification message when a CUT class has multiple constructors
+
+## [0.0.8] - 2016-01-09
+### Added
+- Added NeedInstance for getting need instance information.
+- Added Container based Need API
+- Added Docker Container Need Support
+- Added a common TestNeedDescriptor implementation to core
+- Added the ability to replace services to ServiceLocator contract.
+- Added ability to manage need lifecycle
+- Added examples for needs and container needs
+
+### Changed
+- Simplified Need API and
+- Updated HSQL module to use the new need API
+- Cleaned up Build process.
+
+### Removed
+- Spring NeedDescriptor implementations in favor of TestNeedDescriptor
+- Moved HSQL module test cases Spring Integration and Spring System modules.
