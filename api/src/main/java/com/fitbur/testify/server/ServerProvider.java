@@ -50,7 +50,7 @@ public interface ServerProvider<T> {
      * </p>
      *
      * @param descriptor the server descriptor
-     * @param context    the server context
+     * @param context the server context
      * @return the server instance.
      */
     ServerInstance init(ServerDescriptor descriptor, T context);
@@ -59,8 +59,8 @@ public interface ServerProvider<T> {
      * Destroy the server with the given descriptor.
      *
      * @param descriptor the server descriptor
-     * @param instance   the server instance
-     * @param context    the server context
+     * @param instance the server instance
+     * @param context the server context
      */
     default void destroy(ServerDescriptor descriptor, ServerInstance instance, T context) {
     }

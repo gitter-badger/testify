@@ -46,7 +46,7 @@ public class JerseyClientProvider implements ClientProvider<ClientBuilder, WebTa
 
     @Override
     public void destroy(ClientDescriptor descriptor, ClientInstance<WebTarget> instance, ClientBuilder context) {
-        instance.closeClient();
+        instance.close();
     }
 
 }

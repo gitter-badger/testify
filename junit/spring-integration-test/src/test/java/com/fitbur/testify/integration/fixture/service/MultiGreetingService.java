@@ -48,5 +48,4 @@ public class MultiGreetingService {
         return world;
     }
 
-
 }

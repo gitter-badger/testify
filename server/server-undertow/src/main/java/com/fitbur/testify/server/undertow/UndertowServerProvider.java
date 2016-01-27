@@ -37,6 +37,7 @@ import javax.servlet.ServletContainerInitializer;
 
 /**
  * An Undertow server provider implementation.
+ *
  * @author saden
  */
 public class UndertowServerProvider implements ServerProvider<DeploymentInfo> {

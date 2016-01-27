@@ -10,6 +10,12 @@ buildNumber.properties
 **/settings.xml
 **/secring.gpg
 **/secrets.tar
-/examples/junit-unittest/nbproject/
+/examples/junit-unittest
 /examples/junit-spring-integrationtest/nbproject/
 /junit/spring-system-test/nbproject/
+/examples/example-junit-spring-system-test/
+/need/need-docker/nbproject/
+/examples/example-junit-spring-need/nbproject/
+/examples/example-junit-spring-integration-need/nbproject/
+/examples/example-junit-spring-integrationtest-need/nbproject/
+/examples/example-junit-spring-systemtest-need/nbproject/

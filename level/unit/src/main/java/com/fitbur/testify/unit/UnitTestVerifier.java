@@ -93,10 +93,10 @@ public class UnitTestVerifier implements TestVerifier {
                     fieldName, testClassName, fieldTypeName);
 
             checkState(!p.hasAnyAnnotation(Real.class, Inject.class),
-                    "Field '%s' in test class '%s' is annotated with @Real or @Inject."
+                    "Field '%s' in test class '%s' is annotated with @Real or @Inject. "
                     + "@Real and @Inject annotations are not supported for unit tests. "
                     + "Please use @Fake instead.",
-                    fieldName, fieldTypeName
+                    fieldName, testClassName
             );
 
         });

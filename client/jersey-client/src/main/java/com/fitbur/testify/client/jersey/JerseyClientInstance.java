@@ -46,7 +46,7 @@ public class JerseyClientInstance implements ClientInstance<WebTarget> {
     }
 
     @Override
-    public void closeClient() {
+    public void close() {
         client.close();
     }
 

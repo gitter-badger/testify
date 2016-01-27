@@ -16,6 +16,7 @@
 package com.fitbur.testify.need;
 
 import java.lang.annotation.Documented;
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.TYPE;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -31,7 +32,7 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Retention(RUNTIME)
-@Target({TYPE})
+@Target({ANNOTATION_TYPE, TYPE})
 @Repeatable(Needs.class)
 public @interface Need {
 
@@ -41,5 +42,12 @@ public @interface Need {
      * @return a need class.
      */
     Class<? extends NeedProvider> value();
+
+    /**
+     * The lifecycle scope of the need.
+     *
+     * @return the lifecycle scope of the need.
+     */
+    NeedScope scope() default NeedScope.METHOD;
 
 }

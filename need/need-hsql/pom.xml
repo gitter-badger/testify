@@ -21,36 +21,25 @@
     <parent>
         <groupId>com.fitbur.testify.need</groupId>
         <artifactId>need</artifactId>
-        <version>0.0.7</version>
+        <version>0.0.8</version>
     </parent>
     <artifactId>need-hsql</artifactId>
     
     <properties>
         <hsqldb.version>2.3.3</hsqldb.version>
-        <hikari.version>2.4.1</hikari.version>
+        <hibernate.version>5.0.1.Final</hibernate.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fitbur.testify.junit</groupId>
-            <artifactId>spring-integration-test</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>${hsqldb.version}</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>5.0.1.Final</version>
+            <version>${hibernate.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -63,17 +52,7 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>${spring.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fitbur.testify</groupId>
-            <artifactId>core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-            <version>${hsqldb.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

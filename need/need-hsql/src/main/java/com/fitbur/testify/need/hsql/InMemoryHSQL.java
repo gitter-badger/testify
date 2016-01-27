@@ -15,13 +15,13 @@
  */
 package com.fitbur.testify.need.hsql;
 
-import static com.fitbur.guava.common.base.Preconditions.checkState;
+import com.fitbur.guava.common.collect.ImmutableMap;
 import com.fitbur.testify.need.NeedDescriptor;
+import com.fitbur.testify.need.NeedInstance;
 import com.fitbur.testify.need.NeedProvider;
 import static java.lang.String.format;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.net.URI;
+import java.util.Map;
 import org.hsqldb.jdbc.JDBCDataSource;
 
 /**
@@ -34,7 +34,8 @@ public class InMemoryHSQL implements NeedProvider<JDBCDataSource> {
     @Override
     public JDBCDataSource configuration(NeedDescriptor descriptor) {
         JDBCDataSource dataSource = new JDBCDataSource();
-        dataSource.setUrl(format("jdbc:hsqldb:mem:%s", descriptor.getTestClassName()));
+        dataSource.setUrl(format("jdbc:hsqldb:mem:%s_%s",
+                descriptor.getTestClassName(), descriptor.getTestMethodName()));
         dataSource.setUser("sa");
         dataSource.setPassword("");
 
@@ -42,35 +43,10 @@ public class InMemoryHSQL implements NeedProvider<JDBCDataSource> {
     }
 
     @Override
-    public void init(NeedDescriptor descriptor, JDBCDataSource dataSource) {
-        try {
-            try (Connection connection = dataSource.getConnection()) {
-                Statement statement = connection.createStatement();
-                statement.execute("TRUNCATE SCHEMA PUBLIC RESTART IDENTITY AND COMMIT NO CHECK");
-            } catch (SQLException e) {
-                throw e;
-            }
+    public Map<String, NeedInstance> init(NeedDescriptor descriptor, JDBCDataSource configuration) {
+        HSQLInstance instnace = new HSQLInstance(configuration, URI.create(configuration.getUrl()));
 
-        } catch (SQLException e) {
-            checkState(false, "Need provider '%s' 'init' failed.\n%s",
-                    this.getClass().getSimpleName(), e.getMessage());
-        }
-    }
-
-    @Override
-    public void destroy(NeedDescriptor descriptor, JDBCDataSource dataSource) {
-        try {
-            try (Connection connection = dataSource.getConnection()) {
-                Statement statement = connection.createStatement();
-                statement.execute("SHUTDOWN");
-            } catch (SQLException e) {
-                throw e;
-            }
-
-        } catch (SQLException e) {
-            checkState(false, "Need provider '%' failed shutdown the database.\n%s",
-                    this.getClass().getSimpleName(), e.getMessage());
-        }
+        return ImmutableMap.of(configuration.getDatabaseName(), instnace);
     }
 
 }

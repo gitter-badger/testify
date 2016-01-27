@@ -16,13 +16,14 @@
 package com.fitbur.testify.need;
 
 import com.fitbur.testify.di.ServiceLocator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import static java.util.Optional.ofNullable;
 
 /**
- * A small context object that contains need contextual information. This
- * context is used in conjunction with {@link NeedProvider} to manage the
+ * A small configuration object that contains need contextual information. This
+ * configuration is used in conjunction with {@link NeedProvider} to manage the
  * life-cycle of a need.
  *
  * @author saden
@@ -31,17 +32,20 @@ public class NeedContext {
 
     private final NeedProvider provider;
     private final NeedDescriptor descriptor;
+    private final Map<String, NeedInstance> instances;
     private final ServiceLocator locator;
-    private final Object context;
+    private final Object configuration;
 
     public NeedContext(NeedProvider provider,
             NeedDescriptor descriptor,
+            Map<String, NeedInstance> instances,
             ServiceLocator locator,
-            Object context) {
+            Object configuration) {
         this.provider = provider;
         this.descriptor = descriptor;
+        this.instances = instances;
         this.locator = locator;
-        this.context = context;
+        this.configuration = configuration;
     }
 
     /**
@@ -63,21 +67,39 @@ public class NeedContext {
     }
 
     /**
+     * Get a map containing need instances.
+     *
+     * @return a map containing a need instances
+     */
+    public Map<String, ? extends NeedInstance> getInstances() {
+        return instances;
+    }
+
+    /**
+     * Find the first need instance.
+     *
+     * @return an optional containing a need instance, empty optional otherwise
+     */
+    public Optional<NeedInstance> findFirstInstance() {
+        return instances.values().stream().findFirst();
+    }
+
+    /**
      * Get an optional service locator associated with the need.
      *
      * @return an optional containing the service locator, an empty otherwise
      */
-    Optional<? extends ServiceLocator> getServiceLocator() {
+    public Optional<? extends ServiceLocator> getServiceLocator() {
         return ofNullable(locator);
     }
 
     /**
-     * Get the need configuration context object.
+     * Get the need configuration configuration object.
      *
-     * @return the need context configuration.
+     * @return the need configuration configuration.
      */
-    public Object getContext() {
-        return context;
+    public Object getConfiguration() {
+        return configuration;
     }
 
     @Override
@@ -85,7 +107,9 @@ public class NeedContext {
         int hash = 5;
         hash = 71 * hash + Objects.hashCode(this.provider);
         hash = 71 * hash + Objects.hashCode(this.descriptor);
-        hash = 71 * hash + Objects.hashCode(this.context);
+        hash = 71 * hash + Objects.hashCode(this.instances);
+        hash = 71 * hash + Objects.hashCode(this.locator);
+        hash = 71 * hash + Objects.hashCode(this.configuration);
         return hash;
     }
 
@@ -107,12 +131,24 @@ public class NeedContext {
         if (!Objects.equals(this.descriptor, other.descriptor)) {
             return false;
         }
-        return Objects.equals(this.context, other.context);
+        if (!Objects.equals(this.instances, other.instances)) {
+            return false;
+        }
+        if (!Objects.equals(this.locator, other.locator)) {
+            return false;
+        }
+        return Objects.equals(this.configuration, other.configuration);
     }
 
     @Override
     public String toString() {
-        return "NeedContext{" + "provider=" + provider + ", descriptor=" + descriptor + ", context=" + context + '}';
+        return "NeedContext{"
+                + "provider=" + provider
+                + ", descriptor=" + descriptor
+                + ", instances=" + instances
+                + ", locator=" + locator
+                + ", context=" + configuration
+                + '}';
     }
 
 }

@@ -22,9 +22,12 @@ import static com.fitbur.bytebuddy.implementation.MethodDelegation.to;
 import static com.fitbur.bytebuddy.matcher.ElementMatchers.isDeclaredBy;
 import static com.fitbur.bytebuddy.matcher.ElementMatchers.not;
 import static com.fitbur.guava.common.base.Preconditions.checkState;
+import com.fitbur.guava.common.base.Throwables;
 import com.fitbur.testify.App;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
+import com.fitbur.testify.TestNeedContainers;
+import com.fitbur.testify.TestNeeds;
 import com.fitbur.testify.analyzer.CutClassAnalyzer;
 import com.fitbur.testify.analyzer.TestClassAnalyzer;
 import com.fitbur.testify.client.ClientContext;
@@ -37,16 +40,14 @@ import com.fitbur.testify.di.ServiceAnnotations;
 import com.fitbur.testify.di.ServiceLocator;
 import com.fitbur.testify.di.spring.SpringServiceLocator;
 import com.fitbur.testify.junit.core.JUnitTestNotifier;
-import com.fitbur.testify.need.Need;
-import com.fitbur.testify.need.NeedContext;
-import com.fitbur.testify.need.NeedDescriptor;
 import com.fitbur.testify.need.NeedProvider;
+import com.fitbur.testify.need.NeedScope;
+import com.fitbur.testify.need.docker.DockerContainerNeedProvider;
 import com.fitbur.testify.server.ServerContext;
 import com.fitbur.testify.server.ServerInstance;
 import com.fitbur.testify.server.ServerProvider;
 import com.fitbur.testify.server.undertow.UndertowServerProvider;
-import com.fitbur.testify.system.interceptor.AnnotationInterceptor;
-import com.fitbur.testify.system.interceptor.InterceptorContext;
+import com.fitbur.testify.system.interceptor.ServletApplicationInterceptor;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -94,9 +95,11 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
     public Map<Class, SpringServiceLocator> applicationContexts = new ConcurrentHashMap<>();
     public Map<Class, List<NeedProvider>> needProvider = new ConcurrentHashMap<>();
     private ServiceAnnotations serviceAnnotations;
-    private Set<NeedContext> needContexts;
     private ServerContext serverContext;
     private ClientContext clientContext;
+    private TestNeeds classTestNeeds;
+    private TestNeedContainers classTestNeedContainers;
+    private ServletApplicationInterceptor interceptor;
 
     /**
      * Create a new test runner instance for the class under test.
@@ -160,6 +163,23 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
         serviceAnnotations.addCustomQualfier(javax.inject.Qualifier.class, Qualifier.class);
 
         try {
+            Object testInstance = createTest();
+            testContext.setTestInstance(testInstance);
+
+            classTestNeeds = new TestNeeds(testContext,
+                    javaClass.getSimpleName(),
+                    NeedScope.CLASS,
+                    null);
+            classTestNeeds.init();
+
+            classTestNeedContainers = new TestNeedContainers(testContext,
+                    javaClass.getSimpleName(),
+                    NeedScope.CLASS,
+                    null,
+                    DockerContainerNeedProvider.class);
+
+            classTestNeedContainers.init();
+
             Statement statement = classBlock(testNotifier);
             statement.evaluate();
         } catch (AssumptionViolatedException e) {
@@ -170,6 +190,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
             throw e;
         } catch (IllegalStateException e) {
             LOGGER.error("{}", e.getMessage());
+            testNotifier.addFailure(e);
             testNotifier.pleaseStop();
         } catch (Throwable e) {
             LOGGER.error("{}", e.getMessage());
@@ -177,6 +198,11 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
         } finally {
             if (SLF4JBridgeHandler.isInstalled()) {
                 SLF4JBridgeHandler.uninstall();
+            }
+
+            if (javaClass.getAnnotation(Ignore.class) == null) {
+                classTestNeeds.destory();
+                classTestNeedContainers.destory();
             }
         }
     }
@@ -190,6 +216,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
         SystemTestVerifier verifier = new SystemTestVerifier(testContext, LOGGER);
         verifier.dependency();
         verifier.configuration();
+
         return super.classBlock(notifier);
     }
 
@@ -209,12 +236,10 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
         TestContext testContext = getTestContext(javaClass);
         testContext.setTestInstance(testInstance);
 
-        this.serverContext = getServerContext(testContext);
-        this.clientContext = getClientContext(testContext, serverContext);
+        serverContext = getServerContext(testContext, method.getName());
+        clientContext = getClientContext(testContext, serverContext);
 
         ServiceLocator serviceLocator = serverContext.getLocator();
-
-        this.needContexts = getNeeds(testContext, serviceLocator);
 
         SystemTestReifier reifier
                 = new SystemTestReifier(testContext, serviceLocator, testInstance);
@@ -246,7 +271,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
         return statement;
     }
 
-    public ServerContext getServerContext(TestContext testContext) {
+    public ServerContext getServerContext(TestContext testContext, String methodName) {
         return testContext.getAnnotation(App.class).map(p -> {
             Class<?> appType = p.value();
             Class<? extends ServerProvider> providerType = p.server();
@@ -259,11 +284,12 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
                 }
 
-                InterceptorContext interceptorContext = new InterceptorContext();
-                AnnotationInterceptor interceptor
-                        = new AnnotationInterceptor(testContext,
-                                interceptorContext,
-                                SpringSystemPostProcessor.class);
+                interceptor = new ServletApplicationInterceptor(testContext,
+                        methodName,
+                        p.modules(),
+                        serviceAnnotations,
+                        classTestNeeds,
+                        classTestNeedContainers);
 
                 Class<?> proxyAppType = BYTE_BUDDY.subclass(appType)
                         .method(not(isDeclaredBy(Object.class)))
@@ -295,6 +321,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
                         } catch (Exception e) {
                             checkState(false, "Call to config method '%s' in test class '%s' failed.",
                                     m.getName(), descriptor.getTestClassName());
+                            throw Throwables.propagate(e);
                         }
 
                         return null;
@@ -305,9 +332,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
                 instance.start();
                 Object server = instance.getServer();
 
-                SpringServiceLocator serviceLocator
-                        = new SpringServiceLocator(interceptorContext.getServletAppContext(),
-                                serviceAnnotations);
+                SpringServiceLocator serviceLocator = interceptor.getServiceLocator();
 
                 serviceLocator.addConstant(context.getClass().getSimpleName(), context);
                 serviceLocator.addConstant(instance.getClass().getSimpleName(), instance);
@@ -315,9 +340,9 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
                 return new ServerContext(provider, descriptor, instance, serviceLocator, context);
             } catch (Exception e) {
-                checkState(false, "Server provider '%s' could not be instanticated.",
-                        providerType.getSimpleName());
-                return null;
+                checkState(false, "Server provider '%s' could not be instanticated due to: %s",
+                        providerType.getSimpleName(), e.getMessage());
+                throw Throwables.propagate(e);
             }
         }).get();
     }
@@ -352,8 +377,8 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
                             m.setAccessible(true);
                             m.invoke(descriptor.getTestInstance(), context);
                         } catch (Exception e) {
-                            checkState(false, "Call to config method '%s' in test class '%s' failed.",
-                                    m.getName(), descriptor.getTestClassName());
+                            checkState(false, "Call to config method '%s' in test class '%s' failed due to: ",
+                                    m.getName(), descriptor.getTestClassName(), e.getMessage());
                         }
 
                         return null;
@@ -370,63 +395,21 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
                 return new ClientContext(provider, descriptor, instance, context);
             } catch (Exception e) {
-                checkState(false, "Server provider '%s' could not be instanticated.",
-                        providerType.getSimpleName());
-                return null;
+                checkState(false, "Client provider '%s' could not be instanticated due to: %s",
+                        providerType.getSimpleName(), e.getMessage());
+                throw Throwables.propagate(e);
             }
         }).get();
-    }
-
-    public Set<NeedContext> getNeeds(TestContext testContext, ServiceLocator serviceLocator) {
-        return testContext.getAnnotations(Need.class).parallelStream().map(p -> {
-            Class<? extends NeedProvider> providerClass = p.value();
-            try {
-                NeedProvider provider = providerClass.newInstance();
-                NeedDescriptor descriptor
-                        = new SpringSystemNeedDescriptor(p, testContext);
-                Object context = provider.configuration(descriptor);
-                Optional<Method> configMethod = testContext.getConfigMethod(context.getClass())
-                        .map(m -> m.getMethod());
-
-                if (configMethod.isPresent()) {
-                    AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-                        Method m = configMethod.get();
-                        try {
-                            m.setAccessible(true);
-                            m.invoke(descriptor.getTestInstance(), context);
-                        } catch (Exception e) {
-                            checkState(false, "Call to config method '%s' in test class '%s' failed.",
-                                    m.getName(), descriptor.getTestClassName());
-                        }
-
-                        return null;
-                    });
-                }
-
-                serviceLocator.addConstant(context.getClass().getSimpleName(), context);
-
-                provider.init(descriptor, context);
-
-                return new NeedContext(provider, descriptor, serviceLocator, context);
-            } catch (InstantiationException | IllegalAccessException ex) {
-                checkState(false, "Need provider '%s' could not be instanticated.",
-                        providerClass.getSimpleName());
-                return null;
-            }
-        }).collect(toSet());
     }
 
     @Override
     protected void runChild(FrameworkMethod method, RunNotifier notifier) {
         super.runChild(method, notifier);
-
         if (method.getAnnotation(Ignore.class) == null) {
-            needContexts.parallelStream().forEach(p -> {
-                p.getProvider().destroy(p.getDescriptor(), p.getContext());
-            });
-
-            clientContext.getInstance().closeClient();
+            clientContext.getInstance().close();
             serverContext.getInstance().stop();
+            interceptor.getMethodTestNeeds().destory();
+            interceptor.getMethodTestNeedContainers().destory();
         }
     }
 

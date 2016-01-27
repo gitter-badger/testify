@@ -15,6 +15,10 @@
  */
 package com.fitbur.testify.need;
 
+import java.lang.annotation.Annotation;
+import java.util.Optional;
+import java.util.Set;
+
 /**
  * A descriptor class passed to {@link NeedProvider} to instantiate a need
  * instance.
@@ -24,14 +28,7 @@ package com.fitbur.testify.need;
 public interface NeedDescriptor {
 
     /**
-     * Get the need annotation itself.
-     *
-     * @return the need annotation.
-     */
-    Need getNeed();
-
-    /**
-     * Get the test instance the need is for.
+     * Get the test instance.
      *
      * @return an instance of the test class
      */
@@ -45,10 +42,34 @@ public interface NeedDescriptor {
     Class<?> getTestClass();
 
     /**
-     * Get the name of the test class the need is for.
+     * Get the name of the test class name.
      *
      * @return the test class name
      */
     String getTestClassName();
 
+    /**
+     * Get the name of the test method.
+     *
+     * @return the test class name
+     */
+    String getTestMethodName();
+
+    /**
+     * Get annotation of the given type.
+     *
+     * @param <T> the annotation type
+     * @param type the annotation class
+     * @return an optional containing annotation, or an empty optional
+     */
+    <T extends Annotation> Optional<T> getAnnotation(Class<T> type);
+
+    /**
+     * Get annotations of the given type.
+     *
+     * @param <T> the annotation type
+     * @param type the annotation class
+     * @return a set of annotations, or an empty set
+     */
+    <T extends Annotation> Set<T> getAnnotations(Class<T> type);
 }

@@ -14,30 +14,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+set -ev
 
-SKIP_TESTS="-DskipTests=true -Dmaven.test.skip=true"
-MAVEN_SETTINGS="--settings settings.xml"
-RELEASE="-Prelease"
+MVN_SETTINGS="--settings settings.xml"
+PROJECT_VERSION=$(mvn -q org.codehaus.mojo:exec-maven-plugin:1.4.0:exec -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive)
 
 if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-    echo "Deploying '$TRAVIS_BRANCH' branch"
     if [ "$TRAVIS_BRANCH" = "master" ]; then
-        PROJECT_VERSION=$(mvn -q org.codehaus.mojo:exec-maven-plugin:1.4.0:exec -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive)
-        echo "Staging v$PROJECT_VERSION release artifacts"
-        mvn clean deploy $MAVEN_SETTINGS $RELEASE $SKIP_TESTS -B
+        echo "Deploying Testify $PROJECT_VERSION Release Artifacts"
 
-        echo "Releasing artifacts"
-        mvn nexus-staging:release $MAVEN_SETTINGS $SKIP_TESTS -B
+        mvn -B -Prelease clean deploy $MVN_SETTINGS
+
+        if [ $? -eq 0 ]; then
+            echo "Release Deployment Successful"
+            exit 0
+        else
+            echo "Release Deployment Failed"
+            exit 1
+        fi
 
     elif [ "$TRAVIS_BRANCH" = "develop" ]; then
-        echo "Snapshoting v$PROJECT_VERSION"
-        echo "Deploying snapshot artifacts"
-        mvn clean deploy $MAVEN_SETTINGS $RELEASE $SKIP_TESTS -B
+        echo "Deploying Testify $PROJECT_VERSION Snapshot Artifacts"
+
+        mvn -B -Pstage clean deploy $MVN_SETTINGS
+
+        if [ $? -eq 0 ]; then
+            echo "Deployment Successful"
+            exit 0
+        else
+            echo "Deployment Failed"
+            exit 1
+        fi
 
     else
-        echo "Branch '$TRAVIS_BRANCH' not a master or develop. Artifacts will not be deployed."
+        echo "Deployment of branch '$TRAVIS_BRANCH' not supported."
     fi
-
 fi
 
 echo "All Done! Keep on Testifying!"
+exit 0

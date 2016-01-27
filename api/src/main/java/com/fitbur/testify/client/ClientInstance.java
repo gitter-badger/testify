@@ -42,6 +42,6 @@ public interface ClientInstance<T> {
     /**
      * Close the client instance.
      */
-    void closeClient();
+    void close();
 
 }
