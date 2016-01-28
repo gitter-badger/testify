@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.example.junit.spring.systemtest.need.fixture;
+package com.fitbur.testify.example.junit.spring.systemtest.fixture;
 
 import com.fitbur.testify.need.NeedInstance;
 import com.github.dockerjava.api.command.InspectContainerResponse;
@@ -21,14 +21,16 @@ import javax.sql.DataSource;
 import org.postgresql.ds.PGPoolingDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 /**
  *
  * @author saden
  */
 @Configuration
-public class TestConfig {
+public class TestDatabaseConfig {
 
+    @Primary
     @Bean
     DataSource dataSourceProvider(NeedInstance<InspectContainerResponse> instance) {
         PGPoolingDataSource source = new PGPoolingDataSource();

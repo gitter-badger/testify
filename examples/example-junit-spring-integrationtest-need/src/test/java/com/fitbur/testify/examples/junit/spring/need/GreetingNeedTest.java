@@ -15,12 +15,17 @@
  */
 package com.fitbur.testify.examples.junit.spring.need;
 
+import com.fitbur.testify.Cut;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.Real;
+import com.fitbur.testify.examples.junit.spring.need.database.entity.GreetingEntity;
 import com.fitbur.testify.integration.SpringIntegrationTest;
 import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.hsql.InMemoryHSQL;
+import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -33,13 +38,25 @@ import org.junit.runner.RunWith;
 @RunWith(SpringIntegrationTest.class)
 public class GreetingNeedTest {
 
-    @Real
+    @Cut
     Greeter cut;
 
+    @Real
+    SessionFactory sessionFactory;
+
     @Test
-    public void testSomeMethod() {
-        String result = cut.greet();
-        assertThat(result).isNotNull();
+    public void callToGreetShouldSaveAndReturnPhrase() {
+        String phrase = "Hello!";
+
+        cut.greet(phrase);
+
+        Session session = sessionFactory.openSession();
+        List<GreetingEntity> greetings = session.createCriteria(GreetingEntity.class).list();
+
+        assertThat(greetings).hasSize(1);
+        GreetingEntity entity = greetings.stream().findFirst().get();
+        assertThat(entity.getId()).isNotNull();
+        assertThat(entity.getPhrase()).isEqualTo(phrase);
     }
 
 }

@@ -42,13 +42,6 @@ public @interface App {
     Class<?> value();
 
     /**
-     * A value that represents a module class that will be loaded.
-     *
-     * @return module classes.
-     */
-    Class<?>[] modules() default {};
-
-    /**
      * The server provider implementation used to deploy the application to. If
      * not specified the default server will be used.
      *

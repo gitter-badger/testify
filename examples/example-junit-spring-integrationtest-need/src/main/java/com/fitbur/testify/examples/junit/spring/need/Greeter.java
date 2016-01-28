@@ -30,27 +30,19 @@ import org.hibernate.Transaction;
 @Named
 public class Greeter {
 
-    private final Greeting greeting;
     private final SessionFactory sessionFactor;
 
     @Inject
-    Greeter(Greeting greeting, SessionFactory sessionFactor) {
-        this.greeting = greeting;
+    Greeter(SessionFactory sessionFactor) {
         this.sessionFactor = sessionFactor;
     }
 
-    public String greet() {
+    public void greet(String phrase) {
         try (Session session = sessionFactor.openSession()) {
             Transaction tx = session.beginTransaction();
-            String phrase = greeting.phrase();
             session.save(new GreetingEntity(null, phrase));
             tx.commit();
-            return phrase;
         }
-    }
-
-    public Greeting getGreeting() {
-        return greeting;
     }
 
     public SessionFactory getSessionFactor() {
