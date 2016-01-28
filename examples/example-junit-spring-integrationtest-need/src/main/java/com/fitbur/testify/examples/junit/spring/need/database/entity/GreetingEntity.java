@@ -32,25 +32,25 @@ import javax.persistence.Table;
 @Table
 public class GreetingEntity {
 
-    private Long greetingId;
+    private Long id;
     private String phrase;
 
     public GreetingEntity() {
     }
 
     public GreetingEntity(Long greetingId, String phrase) {
-        this.greetingId = greetingId;
+        this.id = greetingId;
         this.phrase = phrase;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long getGreetingId() {
-        return greetingId;
+    public Long getId() {
+        return id;
     }
 
-    public void setGreetingId(Long greetingId) {
-        this.greetingId = greetingId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     @Column(length = 128)
@@ -65,7 +65,7 @@ public class GreetingEntity {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 67 * hash + Objects.hashCode(this.greetingId);
+        hash = 67 * hash + Objects.hashCode(this.id);
         hash = 67 * hash + Objects.hashCode(this.phrase);
         return hash;
     }
@@ -85,12 +85,12 @@ public class GreetingEntity {
         if (!Objects.equals(this.phrase, other.phrase)) {
             return false;
         }
-        return Objects.equals(this.greetingId, other.greetingId);
+        return Objects.equals(this.id, other.id);
     }
 
     @Override
     public String toString() {
-        return "GreetingEntity{" + "id=" + greetingId + ", phrase=" + phrase + '}';
+        return "GreetingEntity{" + "id=" + id + ", phrase=" + phrase + '}';
     }
 
 }

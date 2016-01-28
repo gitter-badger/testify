@@ -101,7 +101,7 @@ was added, changed, deprecated, removed, fix and security fixes.
 - Fixed verification language to improve readability and consistency
 - Verification message when a CUT class has multiple constructors
 
-## [0.0.8] - 2016-01-09
+## [0.0.8] - 2016-01-27
 ### Added
 - Added NeedInstance for getting need instance information.
 - Added Container based Need API
@@ -119,3 +119,10 @@ was added, changed, deprecated, removed, fix and security fixes.
 ### Removed
 - Spring NeedDescriptor implementations in favor of TestNeedDescriptor
 - Moved HSQL module test cases Spring Integration and Spring System modules.
+
+## [0.0.9] - 2016-01-28
+### Changed
+- Updated Test Need Examples
+
+### Removed
+- Removed modules from \@App in favor of \@Module

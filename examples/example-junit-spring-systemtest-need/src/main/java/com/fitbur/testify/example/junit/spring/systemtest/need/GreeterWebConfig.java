@@ -15,6 +15,9 @@
  */
 package com.fitbur.testify.example.junit.spring.systemtest.need;
 
+import javax.sql.DataSource;
+import org.apache.derby.jdbc.EmbeddedDataSource;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -29,4 +32,13 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @ComponentScan
 public class GreeterWebConfig {
 
+    @Bean
+    DataSource dataSourceProvider() {
+        //Derby Embedded Database Data Source
+        EmbeddedDataSource dataSource = new EmbeddedDataSource();
+        dataSource.setDatabaseName("memory:target/GreetingApplication");
+        dataSource.setCreateDatabase("create");
+
+        return dataSource;
+    }
 }

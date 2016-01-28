@@ -286,7 +286,6 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
                 interceptor = new ServletApplicationInterceptor(testContext,
                         methodName,
-                        p.modules(),
                         serviceAnnotations,
                         classTestNeeds,
                         classTestNeedContainers);

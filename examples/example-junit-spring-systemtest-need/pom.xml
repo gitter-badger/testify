@@ -21,7 +21,7 @@
     <parent>
         <groupId>com.fitbur.testify.examples</groupId>
         <artifactId>examples</artifactId>
-        <version>0.0.8</version>
+        <version>0.0.9</version>
     </parent>
 
     <artifactId>example-junit-spring-systemtest-need</artifactId>
@@ -34,6 +34,7 @@
         <transaction.version>1.2</transaction.version>
         <reflections.version>0.9.10</reflections.version>
         <hibernate.version>5.0.6.Final</hibernate.version>
+        <derby.version>10.12.1.1</derby.version>
     </properties>
 
     <dependencies>
@@ -103,6 +104,10 @@
             <artifactId>reflections</artifactId>
             <version>${reflections.version}</version>
         </dependency>
-        
+        <dependency>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derby</artifactId>
+            <version>${derby.version}</version>
+        </dependency>
     </dependencies>
 </project>

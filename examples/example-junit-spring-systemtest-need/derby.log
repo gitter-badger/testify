@@ -1,0 +1,13 @@
+----------------------------------------------------------------
+Thu Jan 28 05:56:48 PST 2016:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.12.1.1 - (1704137): instance a816c00e-0152-8885-af99-00001bc857c8 
+on database directory memory:/home/sadentc/workspace/oss/testify/examples/example-junit-spring-systemtest-need/target/GreetingApplication with class loader sun.misc.Launcher$AppClassLoader@6bc7c054 
+Loaded from file:/home/sadentc/.m2/repository/org/apache/derby/derby/10.12.1.1/derby-10.12.1.1.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.8.0_72-b15
+user.dir=/home/sadentc/workspace/oss/testify/examples/example-junit-spring-systemtest-need
+os.name=Linux
+os.arch=amd64
+os.version=3.13.0-24-generic
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''

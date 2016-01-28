@@ -18,6 +18,7 @@ package com.fitbur.testify.system.interceptor;
 import com.fitbur.bytebuddy.implementation.bind.annotation.AllArguments;
 import com.fitbur.bytebuddy.implementation.bind.annotation.RuntimeType;
 import com.fitbur.bytebuddy.implementation.bind.annotation.SuperCall;
+import com.fitbur.testify.Module;
 import com.fitbur.testify.TestContext;
 import com.fitbur.testify.TestNeedContainers;
 import com.fitbur.testify.TestNeeds;
@@ -41,7 +42,6 @@ public class ServletApplicationInterceptor {
 
     private final TestContext testContext;
     private final String methodName;
-    private final Class<?>[] modules;
     private final ServiceAnnotations serviceAnnotations;
     private final TestNeeds classTestNeeds;
     private final TestNeedContainers classTestNeedContainers;
@@ -53,13 +53,11 @@ public class ServletApplicationInterceptor {
 
     public ServletApplicationInterceptor(TestContext testContext,
             String methodName,
-            Class<?>[] modules,
             ServiceAnnotations serviceAnnotations,
             TestNeeds classTestNeeds,
             TestNeedContainers classTestNeedContainers) {
         this.testContext = testContext;
         this.methodName = methodName;
-        this.modules = modules;
         this.serviceAnnotations = serviceAnnotations;
         this.classTestNeedContainers = classTestNeedContainers;
         this.classTestNeeds = classTestNeeds;
@@ -77,6 +75,11 @@ public class ServletApplicationInterceptor {
         servletAppContext.setId(testContext.getName());
         servletAppContext.setAllowBeanDefinitionOverriding(true);
         servletAppContext.setAllowCircularReferences(false);
+
+        Class<?>[] modules = testContext.getAnnotations(Module.class)
+                .stream()
+                .map(Module::value)
+                .toArray(Class[]::new);
 
         if (modules != null && modules.length != 0) {
             servletAppContext.register(modules);

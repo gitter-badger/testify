@@ -28,14 +28,13 @@ import org.springframework.context.annotation.Configuration;
  */
 @ComponentScan
 @Configuration
-@SuppressWarnings("ClassMayBeInterface")
 public class GreetingConfig {
 
     @Bean
     DataSource dataSourceProvider() {
+        //Derby Embedded Database Data Source
         EmbeddedDataSource dataSource = new EmbeddedDataSource();
-        dataSource.setDatabaseName("GreetingApplication");
-        dataSource.setDatabaseName("memory:GreetingApplication");
+        dataSource.setDatabaseName("memory:target/GreetingApplication");
         dataSource.setCreateDatabase("create");
 
         return dataSource;

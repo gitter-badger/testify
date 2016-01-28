@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.examples.junit.spring.need.fixture;
+package com.fitbur.testify.examples.junit.spring.fixture;
 
 import com.fitbur.testify.examples.junit.spring.need.GreetingConfig;
 import com.fitbur.testify.need.NeedInstance;
@@ -22,7 +22,6 @@ import java.net.URI;
 import javax.sql.DataSource;
 import org.postgresql.ds.PGPoolingDataSource;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
@@ -34,7 +33,6 @@ import org.springframework.context.annotation.Primary;
  */
 @Import(GreetingConfig.class)
 @Configuration
-@ComponentScan
 public class GreetingNeedContainerConfig {
 
     @Primary
