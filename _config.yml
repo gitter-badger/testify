@@ -7,8 +7,8 @@ safe: false
 
 ### site serving configuration ###
 exclude: [CNAME, README.md, .gitignore]
-permalink: / ## disables post output
-timezone: null
+permalink: /:title ## disables post output
+timezone: PST
 lsi: false
 markdown: kramdown
 highlighter: pygments
@@ -21,7 +21,7 @@ description: "A landing page for information about Testify framework, an annotat
 source_link: "https://github.com/FitburIO/testify"
 favicon:     "img/favicon.ico"
 touch_icon:  "img/apple-touch-icon.png"
-google_analytics_key: UA-49607422-1 ## put YOUR key here to enable tracking! (blank to disable)
+google_analytics_key: 
 
 
 ### template colors, used site-wide via css ###
