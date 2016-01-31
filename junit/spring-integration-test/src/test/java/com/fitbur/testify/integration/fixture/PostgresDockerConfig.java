@@ -31,7 +31,7 @@ import org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Environment;
-import org.postgresql.ds.PGPoolingDataSource;
+import org.postgresql.ds.PGSimpleDataSource;
 import org.reflections.Reflections;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.SmartFactoryBean;
@@ -51,15 +51,15 @@ public class PostgresDockerConfig {
     @Bean
     DataSource dataSourceProvider(NeedInstance<InspectContainerResponse> instance) {
         URI uri = instance.findFirstURI().get();
-        PGPoolingDataSource source = new PGPoolingDataSource();
-        source.setDataSourceName("A Data Source");
-        source.setServerName(instance.getHost());
-        source.setPortNumber(instance.findFirstPort().get());
-        source.setDatabaseName("postgres");
-        source.setUser("postgres");
-        source.setPassword("mysecretpassword");
+        PGSimpleDataSource dataSource = new PGSimpleDataSource();
+        dataSource.setServerName(instance.getHost());
+        dataSource.setPortNumber(instance.findFirstPort().get());
+        //Default postgres image database name, user and postword
+        dataSource.setDatabaseName("postgres");
+        dataSource.setUser("postgres");
+        dataSource.setPassword("mysecretpassword");
 
-        return source;
+        return dataSource;
 
     }
 

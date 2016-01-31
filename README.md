@@ -6,32 +6,41 @@
 [![License](https://img.shields.io/github/license/FitburIO/testify.svg)](LICENSE)
 
 ## Overview
-Testify is an annotation driven Java testing framework integrated with Mockito
-to provide uniform and seamless way to write unit tests, integration tests, and
-system tests using your preferred DI, application, and test runner framework.
+Testify is an annotation driven Java Testing Framework that provides uniform
+and seamless way to write Unit, Integration, and System tests.
 
 ### Completed Features
-* JUnit
-  * Unit Testing
-  * Spring Integration Testing
-  * Spring System Testing
+* Uniform Annotations for Unit, Integration and System Testing
+* Managed Test Case Configuration and Isolation
+* JSR-330 Dependency Injection Annotations Support
+* JUnit Testing Framework Support
+* Full Integration with Mockito
+* Pluggable Test Need
+* Pluggable Container Test Needs
+* Pluggable Server API
+* Pluggable Client API
+* Spring Integration Testing
+* Spring Web MVC Framework System Testing
+* Undertow Servlet Container Support
+* Jersey Client Support
+* Docker Container Support
 
 ### Planned Features
 * JUnit
-  * HK2 Integration Testing
-  * Jersey 2 System Testing
-  * Spring Boot System Testing
-  * DropWizard System Testing
-  * Guice Integration Testing
+ * HK2 Integration Testing
+ * Jersey 2 System Testing
+ * Spring Boot System Testing
+ * DropWizard System Testing
+ * Guice Integration Testing
 * TestNG
-  * Unit Testing
-  * Spring Integration Testing
-  * HK2 Integration Testing
-  * Guice Integration Testing
-  * Jersey 2 System Testing
-  * Spring System Testing
-  * Spring Boot System Testing
-  * DropWizard System Testing
+ * Unit Testing
+ * Spring Integration Testing
+ * HK2 Integration Testing
+ * Guice Integration Testing
+ * Jersey 2 System Testing
+ * Spring System Testing
+ * Spring Boot System Testing
+ * DropWizard System Testing
 
 ## Versioning
 Testify has an automated release system and uses [_semver_](http://semver.org/)

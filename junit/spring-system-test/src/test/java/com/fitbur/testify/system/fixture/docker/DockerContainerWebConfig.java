@@ -44,14 +44,15 @@ public class DockerContainerWebConfig {
     @Bean
     DataSource dataSourceProvider(NeedInstance<InspectContainerResponse> instance) {
         URI uri = instance.findFirstURI().get();
-        PGSimpleDataSource source = new PGSimpleDataSource();
-        source.setServerName(instance.getHost());
-        source.setPortNumber(instance.findFirstPort().get());
-        source.setDatabaseName("postgres");
-        source.setUser("postgres");
-        source.setPassword("mysecretpassword");
+        PGSimpleDataSource dataSource = new PGSimpleDataSource();
+        dataSource.setServerName(instance.getHost());
+        dataSource.setPortNumber(instance.findFirstPort().get());
+        //Default postgres image database name, user and postword
+        dataSource.setDatabaseName("postgres");
+        dataSource.setUser("postgres");
+        dataSource.setPassword("mysecretpassword");
 
-        return source;
+        return dataSource;
 
     }
 

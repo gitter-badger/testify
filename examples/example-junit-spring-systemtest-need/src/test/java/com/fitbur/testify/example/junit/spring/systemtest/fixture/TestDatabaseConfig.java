@@ -17,8 +17,9 @@ package com.fitbur.testify.example.junit.spring.systemtest.fixture;
 
 import com.fitbur.testify.need.NeedInstance;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import java.net.URI;
 import javax.sql.DataSource;
-import org.postgresql.ds.PGPoolingDataSource;
+import org.postgresql.ds.PGSimpleDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -33,15 +34,15 @@ public class TestDatabaseConfig {
     @Primary
     @Bean
     DataSource dataSourceProvider(NeedInstance<InspectContainerResponse> instance) {
-        PGPoolingDataSource source = new PGPoolingDataSource();
-        source.setDataSourceName("A Data Source");
-        source.setServerName(instance.getHost());
-        source.setPortNumber(instance.findFirstPort().get());
-        source.setDatabaseName("postgres");
-        source.setUser("postgres");
-        source.setPassword("mysecretpassword");
+        URI uri = instance.findFirstURI().get();
+        PGSimpleDataSource dataSource = new PGSimpleDataSource();
+        dataSource.setServerName(instance.getHost());
+        dataSource.setPortNumber(instance.findFirstPort().get());
+        //Default postgres image database name, user and postword
+        dataSource.setDatabaseName("postgres");
+        dataSource.setUser("postgres");
+        dataSource.setPassword("mysecretpassword");
 
-        return source;
-
+        return dataSource;
     }
 }
