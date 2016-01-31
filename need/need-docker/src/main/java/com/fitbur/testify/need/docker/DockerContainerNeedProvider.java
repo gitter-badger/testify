@@ -65,6 +65,7 @@ public class DockerContainerNeedProvider implements NeedProvider<DockerClientCon
     public Map<String, NeedInstance> init(NeedDescriptor descriptor, DockerClientConfigBuilder context) {
         try {
             clientConfig = context.build();
+            LOGGER.info("Connecting to {}", clientConfig.getUri());
             client = DockerClientBuilder.getInstance(clientConfig).build();
 
             Set<NeedContainer> dockerContainers = descriptor.getAnnotations(NeedContainer.class);
@@ -82,7 +83,7 @@ public class DockerContainerNeedProvider implements NeedProvider<DockerClientCon
                     latch.countDown();
                 }
 
-                latch.await();
+                latch.await(needContainer.timeout(), needContainer.unit());
                 String image = needContainer.value() + ":" + needContainer.version();
 
                 CreateContainerCmd cmd = client.createContainerCmd(image);
@@ -97,8 +98,8 @@ public class DockerContainerNeedProvider implements NeedProvider<DockerClientCon
                 }
 
                 containerResponse = cmd.exec();
-                client.startContainerCmd(containerResponse.getId())
-                        .exec();
+                String containerId = containerResponse.getId();
+                client.startContainerCmd(containerId).exec();
 
                 if (needContainer.await()) {
                     RetryPolicy retryPolicy = new RetryPolicy()
@@ -110,7 +111,7 @@ public class DockerContainerNeedProvider implements NeedProvider<DockerClientCon
                             .withMaxDuration(needContainer.maxDuration(), needContainer.unit());
 
                     InspectContainerResponse inspectResponse
-                            = client.inspectContainerCmd(containerResponse.getId())
+                            = client.inspectContainerCmd(containerId)
                             .exec();
 
                     NetworkSettings networkSettings = inspectResponse.getNetworkSettings();
@@ -151,7 +152,9 @@ public class DockerContainerNeedProvider implements NeedProvider<DockerClientCon
     @Override
     public void destroy(NeedDescriptor descriptor, DockerClientConfigBuilder context) {
         String containerId = containerResponse.getId();
+        LOGGER.info("Stopping Container {}", containerId);
         client.stopContainerCmd(containerId).exec();
+        LOGGER.info("Removing Container {}", containerId);
         client.removeContainerCmd(containerId).exec();
     }
 
