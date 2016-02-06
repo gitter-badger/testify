@@ -7,11 +7,13 @@ safe: false
 
 ### site serving configuration ###
 exclude: [CNAME, README.md, .gitignore]
-permalink: /:title ## disables post output
+permalink: /:year ## disables post output
 timezone: PST
 lsi: false
 markdown: kramdown
-highlighter: pygments
+kramdown:
+    input: GFM
+    syntax_highlighter: rouge
 
 
 ### content configuration ###
