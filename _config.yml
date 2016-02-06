@@ -1,7 +1,7 @@
 ---
 
 port: 4080
-host: localhost
+host: 0.0.0.0
 safe: false
 
 
@@ -16,7 +16,7 @@ highlighter: pygments
 
 ### content configuration ###
 title:       "Testify - Java Testing Made Simple"
-keywords:    "fitburio, testify, java, mockito, annotation, jsr330, docker, driven, junit, testng, spring, hk2, jersey, guice"
+keywords:    "FitburIO, Testify, Java, Mockito, Annotations, JSR-330, Docker, JUnit, TestNG, Spring, Spring Boot, HK2, Jersey, JAX-RS, Google Guice"
 description: "A landing page for information about Testify framework, an annotation driven Java Unit, Integration, System Testing Framework."
 source_link: "https://github.com/FitburIO/testify"
 favicon:     "img/favicon.ico"
