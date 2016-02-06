@@ -19,6 +19,8 @@ title:       "Testify - Java Testing Made Simple"
 keywords:    "fitburio, testify, java, mockito, annotation, jsr330, docker, driven, junit, testng, spring, hk2, jersey, guice"
 description: "A landing page for information about Testify framework, an annotation driven Java Unit, Integration, System Testing Framework."
 source_link: "https://github.com/FitburIO/testify"
+favicon:     "img/favicon.ico"
+touch_icon:  "img/apple-touch-icon.png"
 google_analytics_key: 
 
 
