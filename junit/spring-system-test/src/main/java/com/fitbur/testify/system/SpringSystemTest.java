@@ -40,7 +40,6 @@ import com.fitbur.testify.di.ServiceAnnotations;
 import com.fitbur.testify.di.ServiceLocator;
 import com.fitbur.testify.di.spring.SpringServiceLocator;
 import com.fitbur.testify.junit.core.JUnitTestNotifier;
-import com.fitbur.testify.need.NeedProvider;
 import com.fitbur.testify.need.NeedScope;
 import com.fitbur.testify.need.docker.DockerContainerNeedProvider;
 import com.fitbur.testify.server.ServerContext;
@@ -91,9 +90,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
     private final static ByteBuddy BYTE_BUDDY = new ByteBuddy();
     private static final Logger LOGGER = getLogger("testify");
-    protected Map<Class, TestContext> testClassContexts = new ConcurrentHashMap<>();
-    public Map<Class, SpringServiceLocator> applicationContexts = new ConcurrentHashMap<>();
-    public Map<Class, List<NeedProvider>> needProvider = new ConcurrentHashMap<>();
+    private final Map<Class, TestContext> TEST_CONTEXTS = new ConcurrentHashMap<>();
     private ServiceAnnotations serviceAnnotations;
     private ServerContext serverContext;
     private ClientContext clientContext;
@@ -114,7 +111,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
     public TestContext getTestContext(Class<?> javaClass) {
         String name = javaClass.getSimpleName();
-        TestContext testContext = testClassContexts.computeIfAbsent(javaClass, p -> {
+        TestContext testContext = TEST_CONTEXTS.computeIfAbsent(javaClass, p -> {
             try {
                 TestContext context = new TestContext(name, javaClass, LOGGER);
 
@@ -168,14 +165,12 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
             classTestNeeds = new TestNeeds(testContext,
                     javaClass.getSimpleName(),
-                    NeedScope.CLASS,
-                    null);
+                    NeedScope.CLASS);
             classTestNeeds.init();
 
             classTestNeedContainers = new TestNeedContainers(testContext,
                     javaClass.getSimpleName(),
                     NeedScope.CLASS,
-                    null,
                     DockerContainerNeedProvider.class);
 
             classTestNeedContainers.init();
@@ -299,16 +294,17 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
                 Set<Class<?>> handles = new HashSet<>();
                 handles.add(proxyAppType);
+                SpringServletContainerInitializer initializer = new SpringServletContainerInitializer();
 
                 SpringSystemServerDescriptor descriptor
                         = new SpringSystemServerDescriptor(p,
                                 testContext,
-                                SpringServletContainerInitializer.class,
+                                initializer,
                                 handles
                         );
 
-                Object context = provider.configuration(descriptor);
-                Optional<Method> configMethod = testContext.getConfigMethod(context.getClass())
+                Object configuration = provider.configuration(descriptor);
+                Optional<Method> configMethod = testContext.getConfigMethod(configuration.getClass())
                         .map(m -> m.getMethod());
 
                 if (configMethod.isPresent()) {
@@ -316,7 +312,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
                         Method m = configMethod.get();
                         try {
                             m.setAccessible(true);
-                            m.invoke(descriptor.getTestInstance(), context);
+                            m.invoke(descriptor.getTestInstance(), configuration);
                         } catch (Exception e) {
                             checkState(false, "Call to config method '%s' in test class '%s' failed.",
                                     m.getName(), descriptor.getTestClassName());
@@ -327,17 +323,17 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
                     });
                 }
 
-                ServerInstance instance = provider.init(descriptor, context);
+                ServerInstance instance = provider.init(descriptor, configuration);
                 instance.start();
                 Object server = instance.getServer();
 
                 SpringServiceLocator serviceLocator = interceptor.getServiceLocator();
 
-                serviceLocator.addConstant(context.getClass().getSimpleName(), context);
+                serviceLocator.addConstant(configuration.getClass().getSimpleName(), configuration);
                 serviceLocator.addConstant(instance.getClass().getSimpleName(), instance);
                 serviceLocator.addConstant(server.getClass().getSimpleName(), server);
 
-                return new ServerContext(provider, descriptor, instance, serviceLocator, context);
+                return new ServerContext(provider, descriptor, instance, serviceLocator, configuration);
             } catch (Exception e) {
                 checkState(false, "Server provider '%s' could not be instanticated due to: %s",
                         providerType.getSimpleName(), e.getMessage());

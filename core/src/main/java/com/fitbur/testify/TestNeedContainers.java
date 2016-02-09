@@ -43,19 +43,16 @@ public class TestNeedContainers {
     private final TestContext testContext;
     private final String name;
     private final NeedScope scope;
-    private final ServiceLocator serviceLocator;
     private Set<NeedContext> needContexts;
     private final Class<? extends NeedProvider> defaultNeedProvider;
 
     public TestNeedContainers(TestContext testContext,
             String name,
             NeedScope scope,
-            ServiceLocator serviceLocator,
             Class<? extends NeedProvider> defaultNeedProvider) {
         this.testContext = testContext;
         this.name = name;
         this.scope = scope;
-        this.serviceLocator = serviceLocator;
         this.defaultNeedProvider = defaultNeedProvider;
     }
 
@@ -73,7 +70,7 @@ public class TestNeedContainers {
                         }
 
                         NeedProvider provider = providerClass.newInstance();
-                        NeedDescriptor descriptor = new TestNeedDescriptor(testContext, name, serviceLocator);
+                        NeedDescriptor descriptor = new TestNeedDescriptor(testContext, name);
                         Object configuration = provider.configuration(descriptor);
                         Optional<Method> configMethod = testContext.getConfigMethod(configuration.getClass())
                                 .map(m -> m.getMethod());
@@ -95,7 +92,7 @@ public class TestNeedContainers {
 
                         Map<String, NeedInstance> instances = provider.init(descriptor, configuration);
                         NeedContext needContext
-                                = new NeedContext(provider, descriptor, instances, serviceLocator, configuration);
+                                = new NeedContext(provider, descriptor, instances, configuration);
 
                         return needContext;
                     } catch (InstantiationException | IllegalAccessException ex) {

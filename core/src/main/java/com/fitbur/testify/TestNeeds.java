@@ -42,16 +42,14 @@ public class TestNeeds {
     private final TestContext testContext;
     private final String name;
     private final NeedScope scope;
-    private final ServiceLocator serviceLocator;
     private Set<NeedContext> needContexts;
     private Map instances;
     private NeedContext needContext;
 
-    public TestNeeds(TestContext testContext, String name, NeedScope scope, ServiceLocator serviceLocator) {
+    public TestNeeds(TestContext testContext, String name, NeedScope scope) {
         this.testContext = testContext;
         this.name = name;
         this.scope = scope;
-        this.serviceLocator = serviceLocator;
     }
 
     public <T extends Annotation> void init() {
@@ -63,7 +61,7 @@ public class TestNeeds {
                     try {
                         Class<? extends NeedProvider> providerClass = p.value();
                         NeedProvider provider = providerClass.newInstance();
-                        NeedDescriptor descriptor = new TestNeedDescriptor(testContext, name, serviceLocator);
+                        NeedDescriptor descriptor = new TestNeedDescriptor(testContext, name);
                         Object configuration = provider.configuration(descriptor);
                         Optional<Method> configMethod = testContext.getConfigMethod(configuration.getClass())
                                 .map(m -> m.getMethod());
@@ -87,7 +85,6 @@ public class TestNeeds {
                         needContext = new NeedContext(provider,
                                 descriptor,
                                 instances,
-                                serviceLocator,
                                 configuration);
 
                         return needContext;

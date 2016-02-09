@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.system;
+package com.fitbur.testify.junit.system.internal;
 
 import com.fitbur.testify.App;
 import com.fitbur.testify.TestContext;
@@ -26,14 +26,14 @@ import org.springframework.web.SpringServletContainerInitializer;
  *
  * @author saden
  */
-public class SpringSystemServerDescriptor implements ServerDescriptor {
+public class SpringBootServerDescriptor implements ServerDescriptor {
 
     private final App app;
     private final TestContext testContext;
     private final SpringServletContainerInitializer initializer;
     private final Set<Class<?>> handles;
 
-    SpringSystemServerDescriptor(App app,
+    SpringBootServerDescriptor(App app,
             TestContext testContext,
             SpringServletContainerInitializer initializer,
             Set<Class<?>> handles) {

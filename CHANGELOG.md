@@ -12,6 +12,8 @@ was added, changed, deprecated, removed, fix and security fixes.
 - Security - Lists security fixes to security vulnerabilities
 
 ## [Unreleased]
+### Added
+- Added Support for Spring Boot!
 
 ## [0.0.1] - 2015-11-23
 ### Added

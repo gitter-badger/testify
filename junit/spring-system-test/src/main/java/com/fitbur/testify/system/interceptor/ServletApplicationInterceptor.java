@@ -45,11 +45,11 @@ public class ServletApplicationInterceptor {
     private final ServiceAnnotations serviceAnnotations;
     private final TestNeeds classTestNeeds;
     private final TestNeedContainers classTestNeedContainers;
-    private ConfigurableApplicationContext applicationContext;
     private Class[] servletConfigClasses;
     private SpringServiceLocator serviceLocator;
     private TestNeeds methodTestNeeds;
     private TestNeedContainers methodTestNeedContainers;
+    private AnnotationConfigWebApplicationContext context;
 
     public ServletApplicationInterceptor(TestContext testContext,
             String methodName,
@@ -71,10 +71,10 @@ public class ServletApplicationInterceptor {
 
     public WebApplicationContext createServletApplicationContext(@SuperCall Callable<WebApplicationContext> zuper)
             throws Exception {
-        AnnotationConfigWebApplicationContext servletAppContext = (AnnotationConfigWebApplicationContext) zuper.call();
-        servletAppContext.setId(testContext.getName());
-        servletAppContext.setAllowBeanDefinitionOverriding(true);
-        servletAppContext.setAllowCircularReferences(false);
+        this.context = (AnnotationConfigWebApplicationContext) zuper.call();
+        context.setId(testContext.getName());
+        context.setAllowBeanDefinitionOverriding(true);
+        context.setAllowCircularReferences(false);
 
         Class<?>[] modules = testContext.getAnnotations(Module.class)
                 .stream()
@@ -82,22 +82,19 @@ public class ServletApplicationInterceptor {
                 .toArray(Class[]::new);
 
         if (modules != null && modules.length != 0) {
-            servletAppContext.register(modules);
+            context.register(modules);
         }
 
-        applicationContext = servletAppContext;
-        serviceLocator = new SpringServiceLocator(servletAppContext, serviceAnnotations);
+        serviceLocator = new SpringServiceLocator(context, serviceAnnotations);
 
         methodTestNeeds = new TestNeeds(testContext,
                 methodName,
-                NeedScope.METHOD,
-                serviceLocator);
+                NeedScope.METHOD);
         methodTestNeeds.init();
 
         methodTestNeedContainers = new TestNeedContainers(testContext,
                 methodName,
                 NeedScope.METHOD,
-                serviceLocator,
                 DockerContainerNeedProvider.class);
         methodTestNeedContainers.init();
 
@@ -108,9 +105,9 @@ public class ServletApplicationInterceptor {
                 classTestNeeds,
                 classTestNeedContainers);
 
-        servletAppContext.addBeanFactoryPostProcessor(postProcessor);
+        context.addBeanFactoryPostProcessor(postProcessor);
 
-        return servletAppContext;
+        return context;
     }
 
     public Class<?>[] getServletConfigClasses(@SuperCall Callable<Class<?>[]> zuper)
@@ -121,7 +118,7 @@ public class ServletApplicationInterceptor {
     }
 
     public ConfigurableApplicationContext getApplicationContext() {
-        return applicationContext;
+        return context;
     }
 
     public TestNeedContainers getClassTestNeedContainers() {

@@ -65,7 +65,7 @@ public interface ServerDescriptor {
      * The servlet container initializer used to detect and create the servlet.
      *
      * @param <T> the type of the servlet initializer
-     * @return the servlet initializer class.
+     * @return the servlet initializer instance.
      */
-    <T extends ServletContainerInitializer> Class<T> getServletContainerInitializer();
+    <T extends ServletContainerInitializer> T getServletContainerInitializer();
 }

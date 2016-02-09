@@ -15,11 +15,9 @@
  */
 package com.fitbur.testify.need;
 
-import com.fitbur.testify.di.ServiceLocator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import static java.util.Optional.ofNullable;
 
 /**
  * A small configuration object that contains need contextual information. This
@@ -33,18 +31,15 @@ public class NeedContext {
     private final NeedProvider provider;
     private final NeedDescriptor descriptor;
     private final Map<String, NeedInstance> instances;
-    private final ServiceLocator locator;
     private final Object configuration;
 
     public NeedContext(NeedProvider provider,
             NeedDescriptor descriptor,
             Map<String, NeedInstance> instances,
-            ServiceLocator locator,
             Object configuration) {
         this.provider = provider;
         this.descriptor = descriptor;
         this.instances = instances;
-        this.locator = locator;
         this.configuration = configuration;
     }
 
@@ -85,15 +80,6 @@ public class NeedContext {
     }
 
     /**
-     * Get an optional service locator associated with the need.
-     *
-     * @return an optional containing the service locator, an empty otherwise
-     */
-    public Optional<? extends ServiceLocator> getServiceLocator() {
-        return ofNullable(locator);
-    }
-
-    /**
      * Get the need configuration configuration object.
      *
      * @return the need configuration configuration.
@@ -108,7 +94,6 @@ public class NeedContext {
         hash = 71 * hash + Objects.hashCode(this.provider);
         hash = 71 * hash + Objects.hashCode(this.descriptor);
         hash = 71 * hash + Objects.hashCode(this.instances);
-        hash = 71 * hash + Objects.hashCode(this.locator);
         hash = 71 * hash + Objects.hashCode(this.configuration);
         return hash;
     }
@@ -134,9 +119,7 @@ public class NeedContext {
         if (!Objects.equals(this.instances, other.instances)) {
             return false;
         }
-        if (!Objects.equals(this.locator, other.locator)) {
-            return false;
-        }
+
         return Objects.equals(this.configuration, other.configuration);
     }
 
@@ -146,7 +129,6 @@ public class NeedContext {
                 + "provider=" + provider
                 + ", descriptor=" + descriptor
                 + ", instances=" + instances
-                + ", locator=" + locator
                 + ", context=" + configuration
                 + '}';
     }

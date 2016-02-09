@@ -19,3 +19,4 @@ buildNumber.properties
 /examples/example-junit-spring-integration-need/nbproject/
 /examples/example-junit-spring-integrationtest-need/nbproject/
 /examples/example-junit-spring-systemtest-need/nbproject/
+/junit/spring-boot-system-test/nbproject/

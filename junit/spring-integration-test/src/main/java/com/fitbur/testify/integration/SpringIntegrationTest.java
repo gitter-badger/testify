@@ -146,14 +146,12 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
 
             classTestNeeds = new TestNeeds(testContext,
                     javaClass.getSimpleName(),
-                    NeedScope.CLASS,
-                    null);
+                    NeedScope.CLASS);
             classTestNeeds.init();
 
             classTestNeedContainers = new TestNeedContainers(testContext,
                     javaClass.getSimpleName(),
                     NeedScope.CLASS,
-                    null,
                     DockerContainerNeedProvider.class);
 
             classTestNeedContainers.init();
@@ -225,14 +223,12 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
 
         methodTestNeeds = new TestNeeds(testContext,
                 method.getName(),
-                NeedScope.METHOD,
-                serviceLocator);
+                NeedScope.METHOD);
         methodTestNeeds.init();
 
         methodTestNeedContainers = new TestNeedContainers(testContext,
                 method.getName(),
                 NeedScope.METHOD,
-                serviceLocator,
                 DockerContainerNeedProvider.class);
         methodTestNeedContainers.init();
 

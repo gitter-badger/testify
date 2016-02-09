@@ -13,34 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fitbur.testify.system;
+package com.fitbur.testify.junit.system.internal;
 
 import com.fitbur.testify.App;
 import com.fitbur.testify.TestContext;
-import com.fitbur.testify.server.ServerDescriptor;
-import java.util.Set;
-import org.springframework.web.SpringServletContainerInitializer;
+import com.fitbur.testify.client.ClientDescriptor;
+import java.net.URI;
 
 /**
  * A spring system test server descriptor.
  *
  * @author saden
  */
-public class SpringSystemServerDescriptor implements ServerDescriptor {
+public class SpringBootClientDescriptor implements ClientDescriptor {
 
     private final App app;
     private final TestContext testContext;
-    private final SpringServletContainerInitializer initializer;
-    private final Set<Class<?>> handles;
+    private final URI baseURI;
 
-    SpringSystemServerDescriptor(App app,
-            TestContext testContext,
-            SpringServletContainerInitializer initializer,
-            Set<Class<?>> handles) {
+    public SpringBootClientDescriptor(App app, TestContext testContext, URI baseURI) {
         this.app = app;
         this.testContext = testContext;
-        this.initializer = initializer;
-        this.handles = handles;
+        this.baseURI = baseURI;
 
     }
 
@@ -65,13 +59,8 @@ public class SpringSystemServerDescriptor implements ServerDescriptor {
     }
 
     @Override
-    public Set<Class<?>> getHandlesType() {
-        return handles;
-    }
-
-    @Override
-    public SpringServletContainerInitializer getServletContainerInitializer() {
-        return initializer;
+    public URI getBaseURI() {
+        return baseURI;
     }
 
 }

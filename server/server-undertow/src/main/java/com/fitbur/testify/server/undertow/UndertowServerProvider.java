@@ -48,12 +48,12 @@ public class UndertowServerProvider implements ServerProvider<DeploymentInfo> {
             App app = descriptor.getApp();
             Set<Class<?>> handles = descriptor.getHandlesType();
             String name = descriptor.getTestClassName();
-            Class<? extends ServletContainerInitializer> servletType = descriptor.getServletContainerInitializer();
-            ServletContainerInitializer servlet = servletType.newInstance();
-            ImmediateInstanceFactory<ServletContainerInitializer> factory = new ImmediateInstanceFactory<>(servlet);
+            ServletContainerInitializer initializer = descriptor.getServletContainerInitializer();
+            ImmediateInstanceFactory<ServletContainerInitializer> factory = new ImmediateInstanceFactory<>(initializer);
             URI uri = URI.create("http://0.0.0.0:0/");
             ServletContainerInitializerInfo initInfo
-                    = new ServletContainerInitializerInfo(servletType, factory, handles);
+                    = new ServletContainerInitializerInfo(initializer.getClass(),
+                            factory, handles);
 
             ServletInfo servletInfo = Servlets.servlet(name, DefaultServlet.class)
                     .setAsyncSupported(true);

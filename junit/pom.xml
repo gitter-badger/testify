@@ -33,6 +33,7 @@
         <module>unit-test</module>
         <module>spring-integration-test</module>
         <module>spring-system-test</module>
+        <module>spring-boot-system-test</module>
     </modules>
     
     <properties>

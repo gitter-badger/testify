@@ -57,8 +57,14 @@ public class SpringServicePostProcessor implements BeanFactoryPostProcessor {
 
         methodTestNeeds.inject(serviceLocator);
         methodTestNeedContainers.inject(serviceLocator);
-        classTestNeeds.inject(serviceLocator);
-        classTestNeedContainers.inject(serviceLocator);
+
+        if (classTestNeeds != null) {
+            classTestNeeds.inject(serviceLocator);
+        }
+
+        if (classTestNeedContainers != null) {
+            classTestNeedContainers.inject(serviceLocator);
+        }
 
     }
 
