@@ -31,7 +31,6 @@ import com.fitbur.testify.di.ServiceAnnotations;
 import com.fitbur.testify.di.spring.SpringServiceLocator;
 import com.fitbur.testify.di.spring.SpringServicePostProcessor;
 import com.fitbur.testify.need.NeedScope;
-import com.fitbur.testify.need.docker.DockerContainerNeedProvider;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
@@ -49,6 +48,9 @@ import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
+ * Spring Boot application interceptor. This class is responsible for
+ * configuring the Spring Boot application as well as extracting information
+ * useful for test scaffolding.
  *
  * @author saden
  */
@@ -69,7 +71,7 @@ public class SpringBootInterceptor {
 
     @RuntimeType
     @BindingPriority(Integer.MAX_VALUE)
-    public Object _anyMethod(
+    public Object anyMethod(
             @SuperCall Callable<?> zuper,
             @This(optional = true) Object object,
             @AllArguments Object[] args)
@@ -132,8 +134,7 @@ public class SpringBootInterceptor {
 
         TestNeedContainers testContainerNeeds = new TestNeedContainers(testContext,
                 testContext.getName(),
-                NeedScope.METHOD,
-                DockerContainerNeedProvider.class);
+                NeedScope.METHOD);
         testContainerNeeds.init();
         descriptor.setTestContainerNeeds(testContainerNeeds);
 

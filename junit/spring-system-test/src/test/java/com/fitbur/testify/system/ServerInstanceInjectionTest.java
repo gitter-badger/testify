@@ -18,11 +18,10 @@ package com.fitbur.testify.system;
 import com.fitbur.testify.App;
 import com.fitbur.testify.Cut;
 import com.fitbur.testify.Real;
+import com.fitbur.testify.fixture.servlet.GreeterServletApplication;
+import com.fitbur.testify.fixture.web.resource.GreetingResource;
+import com.fitbur.testify.fixture.web.service.GreetingService;
 import com.fitbur.testify.server.ServerInstance;
-import com.fitbur.testify.server.undertow.UndertowServerProvider;
-import com.fitbur.testify.system.fixture.GreeterApplication;
-import com.fitbur.testify.system.fixture.web.resource.GreetingResource;
-import com.fitbur.testify.system.fixture.web.service.GreetingService;
 import javax.inject.Inject;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
@@ -34,7 +33,7 @@ import org.mockito.internal.util.MockUtil;
  * @author saden
  */
 @RunWith(SpringSystemTest.class)
-@App(value = GreeterApplication.class, server = UndertowServerProvider.class)
+@App(GreeterServletApplication.class)
 public class ServerInstanceInjectionTest {
 
     @Cut

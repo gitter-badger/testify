@@ -33,11 +33,23 @@ public interface ClientInstance<T> {
     URI getURI();
 
     /**
-     * Get a client instance with the base URI configured.
+     * Get a configured client instance.
+     * <p>
+     * Note that the instance returned could be the same as the instance
+     * returned by {@link #getClient()}
+     * </p>
      *
+     * @return a configured client instance
+     */
+    T getTarget();
+
+    /**
+     * Get the underlying client instance.
+     *
+     * @param <S> the underlying client
      * @return a client instance
      */
-    T getClient();
+    <S> S getClient();
 
     /**
      * Close the client instance.

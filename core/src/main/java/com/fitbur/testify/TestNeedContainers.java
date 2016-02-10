@@ -16,22 +16,24 @@
 package com.fitbur.testify;
 
 import static com.fitbur.guava.common.base.Preconditions.checkState;
+import com.fitbur.guava.common.collect.Lists;
 import com.fitbur.testify.di.ServiceLocator;
 import com.fitbur.testify.need.NeedContainer;
+import com.fitbur.testify.need.NeedContainerProvider;
 import com.fitbur.testify.need.NeedContext;
 import com.fitbur.testify.need.NeedDescriptor;
 import com.fitbur.testify.need.NeedInstance;
-import com.fitbur.testify.need.NeedProvider;
 import com.fitbur.testify.need.NeedScope;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.UUID;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toCollection;
 
 /**
  * A class for managing container based needs.
@@ -44,40 +46,29 @@ public class TestNeedContainers {
     private final String name;
     private final NeedScope scope;
     private Set<NeedContext> needContexts;
-    private final Class<? extends NeedProvider> defaultNeedProvider;
 
     public TestNeedContainers(TestContext testContext,
             String name,
-            NeedScope scope,
-            Class<? extends NeedProvider> defaultNeedProvider) {
+            NeedScope scope) {
         this.testContext = testContext;
         this.name = name;
         this.scope = scope;
-        this.defaultNeedProvider = defaultNeedProvider;
     }
 
     public <T extends Annotation> void init() {
-        needContexts = testContext
-                .getAnnotations(NeedContainer.class)
-                .parallelStream()
-                .filter(p -> p.scope() == scope)
-                .map(p -> {
-                    try {
-                        Class<? extends NeedProvider> providerClass = p.provider();
+        needContexts = new HashSet<>();
+        ServiceLoader<NeedContainerProvider> serviceLoader = ServiceLoader.load(NeedContainerProvider.class);
+        ArrayList<NeedContainerProvider> providers = Lists.newArrayList(serviceLoader);
 
-                        if (providerClass.equals(NeedProvider.class)) {
-                            providerClass = defaultNeedProvider;
-                        }
+        providers.parallelStream().forEach(provider -> {
+            testContext.getAnnotations(NeedContainer.class).parallelStream().filter(p -> p.scope() == scope).map(p -> {
+                NeedDescriptor descriptor = new TestNeedDescriptor(testContext, name);
+                Object configuration = provider.configuration(descriptor);
 
-                        NeedProvider provider = providerClass.newInstance();
-                        NeedDescriptor descriptor = new TestNeedDescriptor(testContext, name);
-                        Object configuration = provider.configuration(descriptor);
-                        Optional<Method> configMethod = testContext.getConfigMethod(configuration.getClass())
-                                .map(m -> m.getMethod());
-
-                        if (configMethod.isPresent()) {
+                testContext.getConfigMethod(configuration.getClass())
+                        .map(m -> m.getMethod())
+                        .ifPresent(m -> {
                             AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-                                Method m = configMethod.get();
                                 try {
                                     m.setAccessible(true);
                                     m.invoke(descriptor.getTestInstance(), configuration);
@@ -88,20 +79,17 @@ public class TestNeedContainers {
 
                                 return null;
                             });
-                        }
+                        });
 
-                        Map<String, NeedInstance> instances = provider.init(descriptor, configuration);
-                        NeedContext needContext
-                                = new NeedContext(provider, descriptor, instances, configuration);
+                Map<String, NeedInstance> instances = provider.init(descriptor, configuration);
+                NeedContext needContext = new NeedContext(provider, descriptor, instances, configuration);
 
-                        return needContext;
-                    } catch (InstantiationException | IllegalAccessException ex) {
-                        checkState(false, "Container Need provider '%s' could not be instanticated.",
-                                p.provider().getSimpleName());
-                        return null;
-                    }
-                })
-                .collect(toSet());
+                return needContext;
+
+            }).collect(toCollection(() -> needContexts));
+
+        });
+
     }
 
     public void inject(ServiceLocator serviceLocator) {

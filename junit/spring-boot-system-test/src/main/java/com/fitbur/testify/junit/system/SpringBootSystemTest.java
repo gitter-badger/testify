@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Sharmarke Aden.
+ * Copyright 2015 Sharmarke Aden.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import static com.fitbur.bytebuddy.matcher.ElementMatchers.isDeclaredBy;
 import static com.fitbur.bytebuddy.matcher.ElementMatchers.not;
 import com.fitbur.bytebuddy.pool.TypePool;
 import static com.fitbur.guava.common.base.Preconditions.checkState;
+import com.fitbur.guava.common.collect.Lists;
 import com.fitbur.testify.App;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.TestContext;
@@ -35,7 +36,6 @@ import com.fitbur.testify.analyzer.CutClassAnalyzer;
 import com.fitbur.testify.analyzer.TestClassAnalyzer;
 import com.fitbur.testify.client.ClientInstance;
 import com.fitbur.testify.client.ClientProvider;
-import com.fitbur.testify.client.jersey.JerseyClientProvider;
 import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.di.ServiceLocator;
@@ -50,12 +50,13 @@ import com.fitbur.testify.system.SystemTestVerifier;
 import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import static java.util.stream.Collectors.toSet;
 import org.junit.Ignore;
@@ -79,21 +80,24 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext;
 
 /**
+ * A JUnit Spring Boot system test runner. This class is the main entry point
+ * for running a Spring Boot system tests using
+ * {@link org.junit.runner.RunWith}. It provides means of creating your class
+ * under test, faking certain collaborators or using real collaborators in the
+ * Spring application context.
  *
  * @author saden
  */
 public class SpringBootSystemTest extends BlockJUnit4ClassRunner {
 
-    private final static Logger LOGGER = getLogger("testify");
-    private final static ByteBuddy BYTE_BUDDY = new ByteBuddy();
+    static final Logger LOGGER = getLogger("testify");
+    static final ByteBuddy BYTE_BUDDY = new ByteBuddy();
 
-    private final Map<Class, TestContext> TEST_CONTEXTS = new ConcurrentHashMap<>();
-//    private ServerContext serverContext;
-//    private ClientContext clientContext;
-    private final static Map<SpringApplication, TestContext> APPLICATION_TEST_CONTEXTS;
-    private final static Map<AnnotationConfigEmbeddedWebApplicationContext, SpringBootDescriptor> CONTEXT_DESCRIPTORS;
-    private final static Map<SpringApplication, SpringBootDescriptor> APPLICATION_DESCRIPTORS;
-    private final static Map<String, DynamicType.Loaded<?>> REBASED_CLASSES;
+    static final Map<Class, TestContext> TEST_CONTEXTS = new ConcurrentHashMap<>();
+    static final Map<SpringApplication, TestContext> APPLICATION_TEST_CONTEXTS;
+    static final Map<AnnotationConfigEmbeddedWebApplicationContext, SpringBootDescriptor> CONTEXT_DESCRIPTORS;
+    static final Map<SpringApplication, SpringBootDescriptor> APPLICATION_DESCRIPTORS;
+    static final Map<String, DynamicType.Loaded<?>> REBASED_CLASSES;
 
     static {
         REBASED_CLASSES = new ConcurrentHashMap<>();
@@ -101,6 +105,7 @@ public class SpringBootSystemTest extends BlockJUnit4ClassRunner {
         CONTEXT_DESCRIPTORS = new ConcurrentHashMap<>();
         APPLICATION_DESCRIPTORS = new ConcurrentHashMap<>();
     }
+
     private SpringApplication application;
     private ClientInstance clientInstance;
     private SpringBootServerInstance serverInstance;
@@ -190,11 +195,6 @@ public class SpringBootSystemTest extends BlockJUnit4ClassRunner {
 
     @Override
     public void run(RunNotifier notifier) {
-        String className = "org.springframework.boot.SpringApplication";
-        TypePool typePool = TypePool.Default.ofClassPath();
-        TypeDescription typeDescription = typePool.describe(className).resolve();
-        ClassFileLocator locator = ClassFileLocator.ForClassLoader.ofClassPath();
-
         //register slf4j bridge
         if (!SLF4JBridgeHandler.isInstalled()) {
             SLF4JBridgeHandler.removeHandlersForRootLogger();
@@ -305,24 +305,24 @@ public class SpringBootSystemTest extends BlockJUnit4ClassRunner {
                     null,
                     null);
 
-            Class<? extends ClientProvider> providerType = app.client();
-            ClientProvider provider;
-            if (providerType.equals(ClientProvider.class)) {
-                provider = JerseyClientProvider.class.newInstance();
-            } else {
-                provider = providerType.newInstance();
-
-            }
-
             SpringBootClientDescriptor clientDescriptor = new SpringBootClientDescriptor(app, testContext, baseURI);
+            ServiceLoader<ClientProvider> clientProviderLoader = ServiceLoader.load(ClientProvider.class);
+            ArrayList<ClientProvider> clientProviders = Lists.newArrayList(clientProviderLoader);
 
-            Object context = provider.configuration(clientDescriptor);
+            checkState(!clientProviders.isEmpty(),
+                    "ClientInstance provider not found in the classpath");
+            checkState(clientProviders.size() == 1,
+                    "Multiple ClientInstance provider found in the classpath. "
+                    + "Please insure there is only one ClientInstance provider in the classpath.");
+
+            ClientProvider clientProvider = clientProviders.get(0);
+            Object context = clientProvider.configuration(clientDescriptor);
 
             testContext.getConfigMethod(context.getClass()).map(m -> m.getMethod()).ifPresent(m -> {
                 AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
                     try {
                         m.setAccessible(true);
-                        m.invoke(clientDescriptor.getTestInstance(), context);
+                        m.invoke(testInstance, context);
                     } catch (Exception e) {
                         checkState(false, "Call to config method '%s' in test class '%s' failed due to: ",
                                 m.getName(), clientDescriptor.getTestClassName(), e.getMessage());
@@ -333,12 +333,11 @@ public class SpringBootSystemTest extends BlockJUnit4ClassRunner {
             });
 
             serverInstance = new SpringBootServerInstance(descriptor.getServletContainer(), baseURI);
-            clientInstance = provider.init(clientDescriptor, context);
+            clientInstance = clientProvider.init(clientDescriptor, context);
 
             serviceLocator.addConstant(descriptor.getClass().getSimpleName(), descriptor);
             serviceLocator.addConstant(serverInstance.getClass().getSimpleName(), serverInstance);
             serviceLocator.addConstant(clientInstance.getClass().getSimpleName(), clientInstance);
-            serviceLocator.addConstant(UUID.randomUUID().toString(), clientInstance.getClient());
 
         } catch (Exception e) {
             throw new IllegalStateException(e);

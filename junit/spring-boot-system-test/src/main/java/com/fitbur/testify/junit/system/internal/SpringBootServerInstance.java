@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Sharmarke Aden.
+ * Copyright 2015 Sharmarke Aden.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.net.URI;
 import org.springframework.boot.context.embedded.EmbeddedServletContainer;
 
 /**
+ * Spring Boot service instance.
  *
  * @author saden
  */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Sharmarke Aden.
+ * Copyright 2015 Sharmarke Aden.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package com.fitbur.testify.junit.system;
 import com.fitbur.testify.App;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.client.ClientInstance;
-import com.fitbur.testify.junit.fixture.GreeterApplication;
-import com.fitbur.testify.junit.fixture.web.service.GreetingService;
+import com.fitbur.testify.junit.fixture.servlet.GreeterServletApplication;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -32,25 +31,15 @@ import org.junit.runner.RunWith;
  * @author saden
  */
 @RunWith(SpringBootSystemTest.class)
-@App(GreeterApplication.class)
+@App(GreeterServletApplication.class)
 public class GreetingResourceClientInstanceClientTest {
-
-    @Real
-    GreetingService cut;
 
     @Real
     ClientInstance<WebTarget> instance;
 
     @Test
-    public void verifyInjections() {
-        assertThat(cut).isNotNull();
-    }
-
-    @Test
-    public void verifyInjections2() {
-        assertThat(cut).isNotNull();
-
-        Response result = instance.getClient().path("/").request().get();
+    public void givenClientInstanceGetGreetingResourceShouldReturn() {
+        Response result = instance.getTarget().path("/").request().get();
         assertThat(result).isNotNull();
         assertThat(result.getStatus()).isEqualTo(OK.getStatusCode());
         assertThat(result.readEntity(String.class)).isEqualTo("Hello");

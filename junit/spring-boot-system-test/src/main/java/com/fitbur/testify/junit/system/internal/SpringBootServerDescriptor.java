@@ -22,7 +22,7 @@ import java.util.Set;
 import org.springframework.web.SpringServletContainerInitializer;
 
 /**
- * A spring system test server descriptor.
+ * A Spring Boot system test server descriptor.
  *
  * @author saden
  */

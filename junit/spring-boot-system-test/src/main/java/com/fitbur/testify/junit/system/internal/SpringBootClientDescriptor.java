@@ -21,7 +21,7 @@ import com.fitbur.testify.client.ClientDescriptor;
 import java.net.URI;
 
 /**
- * A spring system test server descriptor.
+ * A Spring Boot system test client descriptor.
  *
  * @author saden
  */

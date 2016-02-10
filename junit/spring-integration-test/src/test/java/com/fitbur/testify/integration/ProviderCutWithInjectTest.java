@@ -17,9 +17,9 @@ package com.fitbur.testify.integration;
 
 import com.fitbur.testify.Cut;
 import com.fitbur.testify.Module;
-import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
-import com.fitbur.testify.integration.fixture.service.GreetingProviderService;
-import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
+import com.fitbur.testify.fixture.SpringIntegrationConfig;
+import com.fitbur.testify.fixture.service.GreetingProviderService;
+import com.fitbur.testify.fixture.service.collaborator.Hello;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import static org.assertj.core.api.Assertions.assertThat;
