@@ -15,8 +15,6 @@
  */
 package com.fitbur.testify;
 
-import com.fitbur.testify.client.ClientProvider;
-import com.fitbur.testify.server.ServerProvider;
 import java.lang.annotation.Documented;
 import static java.lang.annotation.ElementType.TYPE;
 import java.lang.annotation.Retention;
@@ -40,22 +38,5 @@ public @interface App {
      * @return the application class.
      */
     Class<?> value();
-
-    /**
-     * The server provider implementation used to deploy the application to. If
-     * not specified the default server will be used.
-     *
-     * @return a server provider implementation class.
-     */
-    Class<? extends ServerProvider> server() default ServerProvider.class;
-
-    /**
-     * The client provider implementation used to communicate with server the
-     * application is deployed to. If not specified the default client provider
-     * will be used.
-     *
-     * @return a server provider implementation class.
-     */
-    Class<? extends ClientProvider> client() default ClientProvider.class;
 
 }

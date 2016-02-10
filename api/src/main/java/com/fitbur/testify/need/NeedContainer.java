@@ -38,13 +38,6 @@ import java.util.concurrent.TimeUnit;
 public @interface NeedContainer {
 
     /**
-     * Specifies a need implementation class that should be loaded.
-     *
-     * @return a need class.
-     */
-    Class<? extends NeedProvider> provider() default NeedProvider.class;
-
-    /**
      * The lifecycle scope of the need.
      *
      * @return the lifecycle scope of the need.
@@ -95,14 +88,16 @@ public @interface NeedContainer {
     boolean await() default true;
 
     /**
-     * Sets the delay between retries.
+     * Sets the delay between retries. Note that the time unit is in
+     * {@link #unit()}.
      *
      * @return delay
      */
     long delay() default 1000;
 
     /**
-     * Max delay for exponentially backoff.
+     * Max delay for exponentially backoff. Note that the time unit is in
+     * {@link #unit()}.
      *
      * @return max delay
      */
@@ -116,11 +111,20 @@ public @interface NeedContainer {
     int maxRetries() default 3;
 
     /**
-     * Maximum retry duration before giving up.
+     * Maximum retry duration before giving up. Note that the time unit is in
+     * {@link #unit()}.
      *
      * @return max retries.
      */
     long maxDuration() default 8000;
+
+    /**
+     * Maximum duration to wait for an image to be pulled before giving up. Note
+     * that the time unit is in {@link #unit()}.
+     *
+     * @return timeout duration.
+     */
+    long timeout() default 300000;
 
     /**
      * Time unit for delay, max delay, and duration.

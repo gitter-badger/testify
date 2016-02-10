@@ -18,10 +18,10 @@ package com.fitbur.testify.system;
 import com.fitbur.testify.App;
 import com.fitbur.testify.Config;
 import com.fitbur.testify.Real;
+import com.fitbur.testify.fixture.common.UserEntity;
+import com.fitbur.testify.fixture.docker.DockerContainerApplication;
 import com.fitbur.testify.need.NeedContainer;
 import com.fitbur.testify.need.NeedScope;
-import com.fitbur.testify.system.fixture.DockerContainerApplication;
-import com.fitbur.testify.system.fixture.common.UserEntity;
 import com.github.dockerjava.core.DockerClientConfig;
 import java.io.Serializable;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(SpringSystemTest.class)
 @App(DockerContainerApplication.class)
-@NeedContainer(value = "postgres", scope = NeedScope.CLASS)
+@NeedContainer(value = "postgres", version = "9.4", scope = NeedScope.CLASS)
 public class DockerClassNeedProviderTest {
 
     @Real

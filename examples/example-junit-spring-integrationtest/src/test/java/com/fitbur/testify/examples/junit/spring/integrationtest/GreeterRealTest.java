@@ -21,7 +21,6 @@ import com.fitbur.testify.Real;
 import com.fitbur.testify.examples.junit.spring.integrationtest.greeting.Hello;
 import com.fitbur.testify.integration.SpringIntegrationTest;
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,13 +33,6 @@ public class GreeterRealTest {
 
     @Real
     Hello greeting;
-
-    @Before
-    public void verifyInjection() {
-        assertThat(cut).isNotNull();
-        assertThat(greeting).isNotNull();
-        assertThat(cut.getGreeting()).isSameAs(greeting);
-    }
 
     @Test
     public void callToGreetShouldReturnHello() {

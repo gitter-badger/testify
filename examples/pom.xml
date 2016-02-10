@@ -21,7 +21,7 @@
     <parent>
         <groupId>com.fitbur.testify</groupId>
         <artifactId>parent</artifactId>
-        <version>0.0.9</version>
+        <version>0.1.0</version>
     </parent>
     <groupId>com.fitbur.testify.examples</groupId>
     <artifactId>examples</artifactId>
@@ -34,5 +34,6 @@
         <module>example-junit-spring-systemtest</module>
         <module>example-junit-spring-integrationtest-need</module>
         <module>example-junit-spring-systemtest-need</module>
+        <module>example-junit-springboot-systemtest</module>
     </modules>
 </project>

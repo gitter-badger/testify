@@ -21,7 +21,7 @@
     <parent>
         <groupId>com.fitbur.testify.examples</groupId>
         <artifactId>examples</artifactId>
-        <version>0.0.9</version>
+        <version>0.1.0</version>
     </parent>
     <artifactId>example-junit-spring-integrationtest-need</artifactId>
 
@@ -31,6 +31,23 @@
         <transaction.version>1.2</transaction.version>
         <reflections>0.9.10</reflections>
     </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemProperties>
+                        <!-- Set Derby Log File Location -->
+                        <property>
+                            <name>derby.stream.error.file</name>
+                            <value>target/derby.log</value>
+                        </property>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     
     <dependencies>
         <dependency>

@@ -21,7 +21,7 @@
     <parent>
         <groupId>com.fitbur.testify.junit</groupId>
         <artifactId>junit</artifactId>
-        <version>0.0.9</version>
+        <version>0.1.0</version>
     </parent>
 
     <artifactId>spring-system-test</artifactId>
@@ -91,7 +91,6 @@
         <dependency>
             <groupId>com.fitbur.external</groupId>
             <artifactId>external-bytebuddy</artifactId>
-            <version>${external.bytebuddy.version}</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>

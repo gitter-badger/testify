@@ -28,4 +28,15 @@
             <goal>verify</goal>
         </goals>
     </action>
+    <action>
+            <actionName>CUSTOM-clean install -Pbuild</actionName>
+            <displayName>clean install -Pbuild</displayName>
+            <goals>
+                <goal>clean</goal>
+                <goal>install</goal>
+            </goals>
+            <activatedProfiles>
+                <activatedProfile>build</activatedProfile>
+            </activatedProfiles>
+        </action>
 </actions>

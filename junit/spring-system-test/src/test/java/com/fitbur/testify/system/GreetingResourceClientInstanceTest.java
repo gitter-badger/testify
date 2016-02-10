@@ -18,7 +18,7 @@ package com.fitbur.testify.system;
 import com.fitbur.testify.App;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.client.ClientInstance;
-import com.fitbur.testify.system.fixture.GreeterApplication;
+import com.fitbur.testify.fixture.servlet.GreeterServletApplication;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(SpringSystemTest.class)
-@App(value = GreeterApplication.class)
+@App(GreeterServletApplication.class)
 public class GreetingResourceClientInstanceTest {
 
     @Real
@@ -35,7 +35,7 @@ public class GreetingResourceClientInstanceTest {
 
     @Test
     public void verifyInjections() {
-        Response result = target.getClient().path("/").request().get();
+        Response result = target.getTarget().path("/").request().get();
         assertThat(result).isNotNull();
         assertThat(result.getStatus()).isEqualTo(OK.getStatusCode());
         assertThat(result.readEntity(String.class)).isEqualTo("Hello");

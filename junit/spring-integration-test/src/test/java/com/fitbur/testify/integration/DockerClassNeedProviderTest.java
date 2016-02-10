@@ -18,8 +18,8 @@ package com.fitbur.testify.integration;
 import com.fitbur.testify.Config;
 import com.fitbur.testify.Module;
 import com.fitbur.testify.Real;
-import com.fitbur.testify.integration.fixture.PostgresDockerConfig;
-import com.fitbur.testify.integration.fixture.entity.UserEntity;
+import com.fitbur.testify.fixture.PostgresDockerConfig;
+import com.fitbur.testify.fixture.entity.UserEntity;
 import com.fitbur.testify.need.NeedContainer;
 import com.fitbur.testify.need.NeedScope;
 import com.github.dockerjava.core.DockerClientConfig;
@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
  */
 @Module(PostgresDockerConfig.class)
 @RunWith(SpringIntegrationTest.class)
-@NeedContainer(value = "postgres", scope = NeedScope.CLASS)
+@NeedContainer(value = "postgres", version = "9.4", scope = NeedScope.CLASS)
 public class DockerClassNeedProviderTest {
 
     @Real

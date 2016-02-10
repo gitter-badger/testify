@@ -31,7 +31,6 @@ import com.fitbur.testify.di.spring.SpringServicePostProcessor;
 import com.fitbur.testify.junit.core.JUnitTestNotifier;
 import com.fitbur.testify.need.NeedProvider;
 import com.fitbur.testify.need.NeedScope;
-import com.fitbur.testify.need.docker.DockerContainerNeedProvider;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,10 +59,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
- * A JUnit spring integration test runner. This class is the main entry point
- * for running a unit test using {@link org.junit.runner.RunWith} and provides
- * means of creating your class under test and substituting mock instances or
- * real instances of its collaborators in a spring application context.
+ * A JUnit Spring integration test runner. This class is the main entry point
+ * for running Spring integration test using {@link org.junit.runner.RunWith}.
+ * It provides means of creating your class under test, faking certain
+ * collaborators or using real collaborators in the Spring application context.
  *
  * @author saden
  */
@@ -146,15 +145,12 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
 
             classTestNeeds = new TestNeeds(testContext,
                     javaClass.getSimpleName(),
-                    NeedScope.CLASS,
-                    null);
+                    NeedScope.CLASS);
             classTestNeeds.init();
 
             classTestNeedContainers = new TestNeedContainers(testContext,
                     javaClass.getSimpleName(),
-                    NeedScope.CLASS,
-                    null,
-                    DockerContainerNeedProvider.class);
+                    NeedScope.CLASS);
 
             classTestNeedContainers.init();
 
@@ -225,15 +221,12 @@ public class SpringIntegrationTest extends BlockJUnit4ClassRunner {
 
         methodTestNeeds = new TestNeeds(testContext,
                 method.getName(),
-                NeedScope.METHOD,
-                serviceLocator);
+                NeedScope.METHOD);
         methodTestNeeds.init();
 
         methodTestNeedContainers = new TestNeedContainers(testContext,
                 method.getName(),
-                NeedScope.METHOD,
-                serviceLocator,
-                DockerContainerNeedProvider.class);
+                NeedScope.METHOD);
         methodTestNeedContainers.init();
 
         SpringServicePostProcessor postProcessor = new SpringServicePostProcessor(

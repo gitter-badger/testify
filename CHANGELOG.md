@@ -125,4 +125,16 @@ was added, changed, deprecated, removed, fix and security fixes.
 - Updated Test Need Examples
 
 ### Removed
-- Removed modules from \@App in favor of \@Module
+- Removed modules from @App in favor of @Module
+
+## [0.1.0] - 2016-02-10
+### Added
+- Added Support for Spring Boot!
+
+### Changed
+- Servers and Clients providers are now through JDK ServiceLoader service discovery process.
+- Container Need provider are now through JDK ServiceLoader service discovery process.
+- Refactored and cleaned up examples
+
+### Removed
+- Removed server and client provider attributes from @App annotation.

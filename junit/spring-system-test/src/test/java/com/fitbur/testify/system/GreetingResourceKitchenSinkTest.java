@@ -19,13 +19,11 @@ import com.fitbur.testify.App;
 import com.fitbur.testify.Cut;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.client.ClientInstance;
-import com.fitbur.testify.client.jersey.JerseyClientProvider;
+import com.fitbur.testify.fixture.servlet.GreeterServletApplication;
+import com.fitbur.testify.fixture.web.resource.GreetingResource;
+import com.fitbur.testify.fixture.web.service.GreetingService;
+import com.fitbur.testify.server.ServerContext;
 import com.fitbur.testify.server.ServerInstance;
-import com.fitbur.testify.server.ServerProvider;
-import com.fitbur.testify.system.fixture.GreeterApplication;
-import com.fitbur.testify.system.fixture.web.resource.GreetingResource;
-import com.fitbur.testify.system.fixture.web.service.GreetingService;
-import io.undertow.Undertow;
 import javax.ws.rs.client.WebTarget;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
@@ -33,11 +31,7 @@ import org.junit.runner.RunWith;
 import org.mockito.internal.util.MockUtil;
 
 @RunWith(SpringSystemTest.class)
-@App(
-        value = GreeterApplication.class,
-        client = JerseyClientProvider.class,
-        server = ServerProvider.class
-)
+@App(GreeterServletApplication.class)
 public class GreetingResourceKitchenSinkTest {
 
     @Cut
@@ -50,13 +44,10 @@ public class GreetingResourceKitchenSinkTest {
     ClientInstance<WebTarget> clientInstance;
 
     @Real
-    WebTarget webTarget;
-
-    @Real
     ServerInstance serverInstance;
 
     @Real
-    Undertow undertow;
+    ServerContext serverContext;
 
     @Test
     public void verifyInjections() {
@@ -67,9 +58,8 @@ public class GreetingResourceKitchenSinkTest {
                 .isSameAs(cut.getGreetingService());
         assertThat(new MockUtil().isMock(greetingService)).isFalse();
         assertThat(clientInstance).isNotNull();
-        assertThat(webTarget).isNotNull();
         assertThat(serverInstance).isNotNull();
-        assertThat(undertow).isNotNull();
+        assertThat(serverContext).isNotNull();
     }
 
 }

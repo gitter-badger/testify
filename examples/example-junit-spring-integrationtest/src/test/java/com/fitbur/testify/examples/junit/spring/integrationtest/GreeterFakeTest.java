@@ -21,12 +21,10 @@ import com.fitbur.testify.Module;
 import com.fitbur.testify.examples.junit.spring.integrationtest.greeting.Hello;
 import com.fitbur.testify.integration.SpringIntegrationTest;
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @Module(GreetingConfig.class)
 @RunWith(SpringIntegrationTest.class)
@@ -37,13 +35,6 @@ public class GreeterFakeTest {
 
     @Fake
     Hello greeting;
-
-    @Before
-    public void verifyInjection() {
-        assertThat(cut).isNotNull();
-        assertThat(greeting).isNotNull();
-        assertThat(cut.getGreeting()).isSameAs(greeting);
-    }
 
     @Test
     public void callToGreetShouldReturnHello() {
@@ -57,6 +48,5 @@ public class GreeterFakeTest {
         //Assert
         assertThat(result).isEqualTo(phrase);
         verify(greeting).phrase();
-        verifyNoMoreInteractions(greeting);
     }
 }

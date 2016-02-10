@@ -50,28 +50,23 @@ public class PullCallback implements ResultCallback<PullResponseItem> {
     @Override
     public void onNext(PullResponseItem object) {
         String id = "N/A";
-        long progress = 0;
 
         if (object.getId() != null) {
             id = object.getId();
         }
 
         ResponseItem.ProgressDetail details = object.getProgressDetail();
+        String status = object.getStatus();
 
         if (details != null && (details.getCurrent() != 0 && details.getTotal() != 0)) {
             double current = details.getCurrent();
             double total = details.getTotal();
             double percent = (current / total) * 100;
 
-            System.out.print(
-                    format("%1$s %2$s (%3$.2f%%)\r",
-                            object.getStatus(), id, percent)
-            );
+            System.out.print(format("%1$s %2$s (%3$.2f%%)\r", status, id, percent));
 
-        } else {
-            System.out.print(
-                    format("%1$s %2$s\r", object.getStatus(), id)
-            );
+        } else if (status != null && !status.contains("Already exists")) {
+            System.out.print(format("%1$s %2$s\r", status, id));
         }
     }
 
