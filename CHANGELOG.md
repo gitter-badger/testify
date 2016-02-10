@@ -12,6 +12,16 @@ was added, changed, deprecated, removed, fix and security fixes.
 - Security - Lists security fixes to security vulnerabilities
 
 ## [Unreleased]
+### Added
+- Added Support for Spring Boot!
+
+### Changed
+- Servers and Clients providers are now through JDK ServiceLoader service discovery process.
+- Container Need provider are now through JDK ServiceLoader service discovery process.
+- Refactored and cleaned up examples
+
+### Removed
+- Removed server and client provider attributes from @App annotation.
 
 ## [0.0.1] - 2015-11-23
 ### Added

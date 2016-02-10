@@ -22,11 +22,9 @@ import com.fitbur.testify.examples.junit.spring.fixture.GreetingNeedContainerCon
 import com.fitbur.testify.examples.junit.spring.need.database.entity.GreetingEntity;
 import com.fitbur.testify.integration.SpringIntegrationTest;
 import com.fitbur.testify.need.NeedContainer;
-import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,7 +33,7 @@ import org.junit.runner.RunWith;
  * @author saden
  */
 @Module(GreetingNeedContainerConfig.class)
-@NeedContainer("postgres")
+@NeedContainer(value = "postgres", version = "9.4")
 @RunWith(SpringIntegrationTest.class)
 public class GreetingNeedContainerTest {
 
@@ -45,25 +43,21 @@ public class GreetingNeedContainerTest {
     @Real
     SessionFactory sessionFactory;
 
-    @Before
-    public void verifyInjection() {
-        assertThat(cut).isNotNull();
-        assertThat(sessionFactory).isNotNull();
-    }
-
     @Test
-    public void callToGreetShouldSaveAndReturnPhrase() {
-        String phrase = "Hello!";
+    public void givenHelloGreetShouldSaveHello() {
+        //Arrange
+        String phrase = "Hello";
 
+        //Act
         cut.greet(phrase);
 
-        Session session = sessionFactory.openSession();
-        List<GreetingEntity> greetings = session.createCriteria(GreetingEntity.class).list();
-
-        assertThat(greetings).hasSize(1);
-        GreetingEntity entity = greetings.stream().findFirst().get();
-        assertThat(entity.getId()).isNotNull();
-        assertThat(entity.getPhrase()).isEqualTo(phrase);
+        //Assert
+        try (Session session = sessionFactory.openSession()) {
+            GreetingEntity entity = (GreetingEntity) session.createCriteria(GreetingEntity.class)
+                    .uniqueResult();
+            assertThat(entity.getId()).isNotNull();
+            assertThat(entity.getPhrase()).isEqualTo(phrase);
+        }
     }
 
 }

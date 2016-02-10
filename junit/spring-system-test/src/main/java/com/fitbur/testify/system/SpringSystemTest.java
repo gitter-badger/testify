@@ -23,6 +23,7 @@ import static com.fitbur.bytebuddy.matcher.ElementMatchers.isDeclaredBy;
 import static com.fitbur.bytebuddy.matcher.ElementMatchers.not;
 import static com.fitbur.guava.common.base.Preconditions.checkState;
 import com.fitbur.guava.common.base.Throwables;
+import com.fitbur.guava.common.collect.Lists;
 import com.fitbur.testify.App;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.TestContext;
@@ -33,28 +34,26 @@ import com.fitbur.testify.analyzer.TestClassAnalyzer;
 import com.fitbur.testify.client.ClientContext;
 import com.fitbur.testify.client.ClientInstance;
 import com.fitbur.testify.client.ClientProvider;
-import com.fitbur.testify.client.jersey.JerseyClientProvider;
 import com.fitbur.testify.descriptor.CutDescriptor;
 import com.fitbur.testify.descriptor.FieldDescriptor;
 import com.fitbur.testify.di.ServiceAnnotations;
 import com.fitbur.testify.di.ServiceLocator;
 import com.fitbur.testify.di.spring.SpringServiceLocator;
 import com.fitbur.testify.junit.core.JUnitTestNotifier;
-import com.fitbur.testify.need.NeedProvider;
 import com.fitbur.testify.need.NeedScope;
-import com.fitbur.testify.need.docker.DockerContainerNeedProvider;
 import com.fitbur.testify.server.ServerContext;
 import com.fitbur.testify.server.ServerInstance;
 import com.fitbur.testify.server.ServerProvider;
-import com.fitbur.testify.server.undertow.UndertowServerProvider;
-import com.fitbur.testify.system.interceptor.ServletApplicationInterceptor;
-import java.lang.reflect.Method;
+import com.fitbur.testify.system.internal.SpringSystemClientDescriptor;
+import com.fitbur.testify.system.internal.SpringSystemServerDescriptor;
+import com.fitbur.testify.system.internal.SpringSystemServletInterceptor;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import static java.util.stream.Collectors.toSet;
@@ -80,26 +79,24 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.SpringServletContainerInitializer;
 
 /**
- * A JUnit spring integration test runner. This class is the main entry point
- * for running a unit test using {@link org.junit.runner.RunWith} and provides
- * means of creating your class under test and substituting mock instances or
- * real instances of its collaborators in a spring application context.
+ * A JUnit Spring system test runner. This class is the main entry point for
+ * running a Spring system tests using {@link org.junit.runner.RunWith}. It
+ * provides means of creating your class under test, faking certain
+ * collaborators or using real collaborators in the Spring application context.
  *
  * @author saden
  */
 public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
-    private final static ByteBuddy BYTE_BUDDY = new ByteBuddy();
-    private static final Logger LOGGER = getLogger("testify");
-    protected Map<Class, TestContext> testClassContexts = new ConcurrentHashMap<>();
-    public Map<Class, SpringServiceLocator> applicationContexts = new ConcurrentHashMap<>();
-    public Map<Class, List<NeedProvider>> needProvider = new ConcurrentHashMap<>();
+    static final ByteBuddy BYTE_BUDDY = new ByteBuddy();
+    static final Logger LOGGER = getLogger("testify");
+    static final Map<Class, TestContext> TEST_CONTEXTS = new ConcurrentHashMap<>();
     private ServiceAnnotations serviceAnnotations;
     private ServerContext serverContext;
     private ClientContext clientContext;
     private TestNeeds classTestNeeds;
     private TestNeedContainers classTestNeedContainers;
-    private ServletApplicationInterceptor interceptor;
+    private SpringSystemServletInterceptor interceptor;
 
     /**
      * Create a new test runner instance for the class under test.
@@ -114,7 +111,7 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
     public TestContext getTestContext(Class<?> javaClass) {
         String name = javaClass.getSimpleName();
-        TestContext testContext = testClassContexts.computeIfAbsent(javaClass, p -> {
+        TestContext testContext = TEST_CONTEXTS.computeIfAbsent(javaClass, p -> {
             try {
                 TestContext context = new TestContext(name, javaClass, LOGGER);
 
@@ -168,15 +165,12 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
 
             classTestNeeds = new TestNeeds(testContext,
                     javaClass.getSimpleName(),
-                    NeedScope.CLASS,
-                    null);
+                    NeedScope.CLASS);
             classTestNeeds.init();
 
             classTestNeedContainers = new TestNeedContainers(testContext,
                     javaClass.getSimpleName(),
-                    NeedScope.CLASS,
-                    null,
-                    DockerContainerNeedProvider.class);
+                    NeedScope.CLASS);
 
             classTestNeedContainers.init();
 
@@ -274,130 +268,115 @@ public class SpringSystemTest extends BlockJUnit4ClassRunner {
     public ServerContext getServerContext(TestContext testContext, String methodName) {
         return testContext.getAnnotation(App.class).map(p -> {
             Class<?> appType = p.value();
-            Class<? extends ServerProvider> providerType = p.server();
-            try {
-                ServerProvider provider;
-                if (providerType.equals(ServerProvider.class)) {
-                    provider = UndertowServerProvider.class.newInstance();
-                } else {
-                    provider = providerType.newInstance();
+            ServiceLoader<ServerProvider> serviceLoader = ServiceLoader.load(ServerProvider.class);
+            ArrayList<ServerProvider> serverProviders = Lists.newArrayList(serviceLoader);
 
-                }
+            checkState(!serverProviders.isEmpty(),
+                    "ClientInstance provider not found in the classpath");
+            checkState(serverProviders.size() == 1,
+                    "Multiple ClientInstance provider found in the classpath. "
+                    + "Please insure there is only one ClientInstance provider in the classpath.");
+            ServerProvider provider = serverProviders.get(0);
 
-                interceptor = new ServletApplicationInterceptor(testContext,
-                        methodName,
-                        serviceAnnotations,
-                        classTestNeeds,
-                        classTestNeedContainers);
+            interceptor = new SpringSystemServletInterceptor(testContext,
+                    methodName,
+                    serviceAnnotations,
+                    classTestNeeds,
+                    classTestNeedContainers);
 
-                Class<?> proxyAppType = BYTE_BUDDY.subclass(appType)
-                        .method(not(isDeclaredBy(Object.class)))
-                        .intercept(to(interceptor).filter(not(isDeclaredBy(Object.class))))
-                        .make()
-                        .load(getClass().getClassLoader(), ClassLoadingStrategy.Default.WRAPPER)
-                        .getLoaded();
+            Class<?> proxyAppType = BYTE_BUDDY.subclass(appType)
+                    .method(not(isDeclaredBy(Object.class)))
+                    .intercept(to(interceptor).filter(not(isDeclaredBy(Object.class))))
+                    .make()
+                    .load(getClass().getClassLoader(), ClassLoadingStrategy.Default.WRAPPER)
+                    .getLoaded();
 
-                Set<Class<?>> handles = new HashSet<>();
-                handles.add(proxyAppType);
+            Set<Class<?>> handles = new HashSet<>();
+            handles.add(proxyAppType);
+            SpringServletContainerInitializer initializer = new SpringServletContainerInitializer();
 
-                SpringSystemServerDescriptor descriptor
-                        = new SpringSystemServerDescriptor(p,
-                                testContext,
-                                SpringServletContainerInitializer.class,
-                                handles
-                        );
+            SpringSystemServerDescriptor descriptor
+                    = new SpringSystemServerDescriptor(p,
+                            testContext,
+                            initializer,
+                            handles
+                    );
 
-                Object context = provider.configuration(descriptor);
-                Optional<Method> configMethod = testContext.getConfigMethod(context.getClass())
-                        .map(m -> m.getMethod());
+            Object configuration = provider.configuration(descriptor);
+            testContext.getConfigMethod(configuration.getClass())
+                    .map(m -> m.getMethod())
+                    .ifPresent(m -> {
+                        AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                            try {
+                                m.setAccessible(true);
+                                m.invoke(descriptor.getTestInstance(), configuration);
+                            } catch (Exception e) {
+                                checkState(false, "Call to config method '%s' in test class '%s' failed.",
+                                        m.getName(), descriptor.getTestClassName());
+                                throw Throwables.propagate(e);
+                            }
 
-                if (configMethod.isPresent()) {
-                    AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-                        Method m = configMethod.get();
-                        try {
-                            m.setAccessible(true);
-                            m.invoke(descriptor.getTestInstance(), context);
-                        } catch (Exception e) {
-                            checkState(false, "Call to config method '%s' in test class '%s' failed.",
-                                    m.getName(), descriptor.getTestClassName());
-                            throw Throwables.propagate(e);
-                        }
-
-                        return null;
+                            return null;
+                        });
                     });
-                }
 
-                ServerInstance instance = provider.init(descriptor, context);
-                instance.start();
-                Object server = instance.getServer();
+            ServerInstance instance = provider.init(descriptor, configuration);
+            instance.start();
+            SpringServiceLocator serviceLocator = interceptor.getServiceLocator();
+            ServerContext context = new ServerContext(provider, descriptor, instance, serviceLocator, configuration);
 
-                SpringServiceLocator serviceLocator = interceptor.getServiceLocator();
+            serviceLocator.addConstant(context.getClass().getSimpleName(), context);
+            serviceLocator.addConstant(instance.getClass().getSimpleName(), instance);
 
-                serviceLocator.addConstant(context.getClass().getSimpleName(), context);
-                serviceLocator.addConstant(instance.getClass().getSimpleName(), instance);
-                serviceLocator.addConstant(server.getClass().getSimpleName(), server);
+            return context;
 
-                return new ServerContext(provider, descriptor, instance, serviceLocator, context);
-            } catch (Exception e) {
-                checkState(false, "Server provider '%s' could not be instanticated due to: %s",
-                        providerType.getSimpleName(), e.getMessage());
-                throw Throwables.propagate(e);
-            }
         }).get();
     }
 
     public ClientContext getClientContext(TestContext testContext, ServerContext serverContext) {
-        return testContext.getAnnotation(App.class).map(p -> {
-            Class<?> appType = p.value();
-            Class<? extends ClientProvider> providerType = p.client();
-            try {
-                ClientProvider provider;
-                if (providerType.equals(ClientProvider.class)) {
-                    provider = JerseyClientProvider.class.newInstance();
-                } else {
-                    provider = providerType.newInstance();
+        return testContext.getAnnotation(App.class).map(app -> {
+            SpringSystemClientDescriptor descriptor
+                    = new SpringSystemClientDescriptor(app,
+                            testContext,
+                            serverContext.getInstance().getURI()
+                    );
 
-                }
+            ServiceLoader<ClientProvider> clientProviderLoader = ServiceLoader.load(ClientProvider.class);
+            ArrayList<ClientProvider> clientProviders = Lists.newArrayList(clientProviderLoader);
 
-                SpringSystemClientDescriptor descriptor
-                        = new SpringSystemClientDescriptor(p,
-                                testContext,
-                                serverContext.getInstance().getURI()
-                        );
+            checkState(!clientProviders.isEmpty(),
+                    "ClientInstance provider not found in the classpath");
+            checkState(clientProviders.size() == 1,
+                    "Multiple ClientInstance provider found in the classpath. "
+                    + "Please insure there is only one ClientInstance provider in the classpath.");
 
-                Object context = provider.configuration(descriptor);
-                Optional<Method> configMethod = testContext.getConfigMethod(context.getClass())
-                        .map(m -> m.getMethod());
+            ClientProvider clientProvider = clientProviders.get(0);
+            Object configuration = clientProvider.configuration(descriptor);
 
-                if (configMethod.isPresent()) {
-                    AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-                        Method m = configMethod.get();
-                        try {
-                            m.setAccessible(true);
-                            m.invoke(descriptor.getTestInstance(), context);
-                        } catch (Exception e) {
-                            checkState(false, "Call to config method '%s' in test class '%s' failed due to: ",
-                                    m.getName(), descriptor.getTestClassName(), e.getMessage());
-                        }
+            testContext.getConfigMethod(configuration.getClass()).map(m -> m.getMethod()).ifPresent(m -> {
+                AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                    try {
+                        m.setAccessible(true);
+                        m.invoke(testContext.getTestInstance(), configuration);
+                    } catch (Exception e) {
+                        checkState(false,
+                                "Call to config method '%s' in test class '%s' failed due to: ",
+                                m.getName(), descriptor.getTestClassName(), e.getMessage());
+                    }
 
-                        return null;
-                    });
-                }
+                    return null;
+                });
+            });
 
-                ClientInstance instance = provider.init(descriptor, context);
-                ServiceLocator serviceLocator = serverContext.getLocator();
-                Object client = instance.getClient();
+            ClientInstance instance = clientProvider.init(descriptor, configuration);
+            ServiceLocator serviceLocator = serverContext.getLocator();
+            ClientContext context = new ClientContext(clientProvider, descriptor, instance, configuration);
 
-                serviceLocator.addConstant(context.getClass().getSimpleName(), context);
-                serviceLocator.addConstant(instance.getClass().getSimpleName(), instance);
-                serviceLocator.addConstant(client.getClass().getSimpleName(), client);
+            serviceLocator.addConstant(context.getClass().getSimpleName(), context);
+            serviceLocator.addConstant(instance.getClass().getSimpleName(), instance);
 
-                return new ClientContext(provider, descriptor, instance, context);
-            } catch (Exception e) {
-                checkState(false, "Client provider '%s' could not be instanticated due to: %s",
-                        providerType.getSimpleName(), e.getMessage());
-                throw Throwables.propagate(e);
-            }
+            return context;
+
         }).get();
     }
 

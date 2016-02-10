@@ -16,8 +16,8 @@
 package com.fitbur.testify.integration;
 
 import com.fitbur.testify.Module;
-import com.fitbur.testify.integration.fixture.SpringIntegrationConfig;
-import com.fitbur.testify.integration.fixture.service.collaborator.Greeting;
+import com.fitbur.testify.fixture.SpringIntegrationConfig;
+import com.fitbur.testify.fixture.service.collaborator.Greeting;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

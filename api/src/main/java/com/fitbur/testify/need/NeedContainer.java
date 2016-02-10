@@ -38,13 +38,6 @@ import java.util.concurrent.TimeUnit;
 public @interface NeedContainer {
 
     /**
-     * Specifies a need implementation class that should be loaded.
-     *
-     * @return a need class.
-     */
-    Class<? extends NeedProvider> provider() default NeedProvider.class;
-
-    /**
      * The lifecycle scope of the need.
      *
      * @return the lifecycle scope of the need.

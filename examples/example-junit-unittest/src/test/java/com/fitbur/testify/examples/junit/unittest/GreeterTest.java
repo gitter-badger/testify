@@ -19,7 +19,6 @@ import com.fitbur.testify.Cut;
 import com.fitbur.testify.Fake;
 import com.fitbur.testify.junit.UnitTest;
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.mockito.BDDMockito.given;
@@ -34,13 +33,6 @@ public class GreeterTest {
 
     @Fake
     Greeting greeting;
-
-    @Before
-    public void verifyInjection() {
-        assertThat(cut).isNotNull();
-        assertThat(greeting).isNotNull();
-        assertThat(cut.getGreeting()).isSameAs(greeting);
-    }
 
     @Test
     public void callToGreetShouldReturnHello() {

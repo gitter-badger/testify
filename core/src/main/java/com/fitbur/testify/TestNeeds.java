@@ -23,11 +23,9 @@ import com.fitbur.testify.need.NeedDescriptor;
 import com.fitbur.testify.need.NeedProvider;
 import com.fitbur.testify.need.NeedScope;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import static java.util.stream.Collectors.toSet;
@@ -42,16 +40,14 @@ public class TestNeeds {
     private final TestContext testContext;
     private final String name;
     private final NeedScope scope;
-    private final ServiceLocator serviceLocator;
     private Set<NeedContext> needContexts;
     private Map instances;
     private NeedContext needContext;
 
-    public TestNeeds(TestContext testContext, String name, NeedScope scope, ServiceLocator serviceLocator) {
+    public TestNeeds(TestContext testContext, String name, NeedScope scope) {
         this.testContext = testContext;
         this.name = name;
         this.scope = scope;
-        this.serviceLocator = serviceLocator;
     }
 
     public <T extends Annotation> void init() {
@@ -63,31 +59,28 @@ public class TestNeeds {
                     try {
                         Class<? extends NeedProvider> providerClass = p.value();
                         NeedProvider provider = providerClass.newInstance();
-                        NeedDescriptor descriptor = new TestNeedDescriptor(testContext, name, serviceLocator);
+                        NeedDescriptor descriptor = new TestNeedDescriptor(testContext, name);
                         Object configuration = provider.configuration(descriptor);
-                        Optional<Method> configMethod = testContext.getConfigMethod(configuration.getClass())
-                                .map(m -> m.getMethod());
+                        testContext.getConfigMethod(configuration.getClass())
+                                .map(m -> m.getMethod())
+                                .ifPresent(m -> {
+                                    AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                                        try {
+                                            m.setAccessible(true);
+                                            m.invoke(descriptor.getTestInstance(), configuration);
+                                        } catch (Exception e) {
+                                            checkState(false, "Call to config method '%s' in test class '%s' failed.",
+                                                    m.getName(), descriptor.getTestClassName());
+                                        }
 
-                        if (configMethod.isPresent()) {
-                            AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-                                Method m = configMethod.get();
-                                try {
-                                    m.setAccessible(true);
-                                    m.invoke(descriptor.getTestInstance(), configuration);
-                                } catch (Exception e) {
-                                    checkState(false, "Call to config method '%s' in test class '%s' failed.",
-                                            m.getName(), descriptor.getTestClassName());
-                                }
-
-                                return null;
-                            });
-                        }
+                                        return null;
+                                    });
+                                });
 
                         instances = provider.init(descriptor, configuration);
                         needContext = new NeedContext(provider,
                                 descriptor,
                                 instances,
-                                serviceLocator,
                                 configuration);
 
                         return needContext;

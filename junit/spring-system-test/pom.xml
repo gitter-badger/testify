@@ -91,7 +91,6 @@
         <dependency>
             <groupId>com.fitbur.external</groupId>
             <artifactId>external-bytebuddy</artifactId>
-            <version>${external.bytebuddy.version}</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>

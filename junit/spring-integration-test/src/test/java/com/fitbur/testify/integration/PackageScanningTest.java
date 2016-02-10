@@ -18,8 +18,8 @@ package com.fitbur.testify.integration;
 import com.fitbur.testify.Cut;
 import com.fitbur.testify.Real;
 import com.fitbur.testify.Scan;
-import com.fitbur.testify.integration.fixture.service.GreetingService;
-import com.fitbur.testify.integration.fixture.service.collaborator.Hello;
+import com.fitbur.testify.fixture.service.GreetingService;
+import com.fitbur.testify.fixture.service.collaborator.Hello;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
  * @author saden
  */
 @RunWith(SpringIntegrationTest.class)
-@Scan("com.fitbur.testify.integration.fixture")
+@Scan("com.fitbur.testify.fixture")
 public class PackageScanningTest {
 
     @Cut

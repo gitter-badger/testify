@@ -41,13 +41,18 @@ public class JerseyClientInstance implements ClientInstance<WebTarget> {
     }
 
     @Override
-    public WebTarget getClient() {
+    public WebTarget getTarget() {
         return client.target(baseURI);
     }
 
     @Override
     public void close() {
         client.close();
+    }
+
+    @Override
+    public Client getClient() {
+        return client;
     }
 
 }

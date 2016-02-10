@@ -15,7 +15,6 @@
  */
 package com.fitbur.testify;
 
-import com.fitbur.testify.di.ServiceLocator;
 import com.fitbur.testify.need.NeedDescriptor;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
@@ -32,16 +31,13 @@ import static java.util.stream.Stream.of;
 public class TestNeedDescriptor implements NeedDescriptor {
 
     private final TestContext testContext;
-    private final ServiceLocator serviceLocator;
     private final String methodName;
 
     public TestNeedDescriptor(
             TestContext testContext,
-            String methodName,
-            ServiceLocator serviceLocator) {
+            String methodName) {
         this.testContext = testContext;
         this.methodName = methodName;
-        this.serviceLocator = serviceLocator;
     }
 
     @Override

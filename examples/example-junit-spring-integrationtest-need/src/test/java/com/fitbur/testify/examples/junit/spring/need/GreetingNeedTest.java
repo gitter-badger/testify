@@ -22,7 +22,6 @@ import com.fitbur.testify.examples.junit.spring.need.database.entity.GreetingEnt
 import com.fitbur.testify.integration.SpringIntegrationTest;
 import com.fitbur.testify.need.Need;
 import com.fitbur.testify.need.hsql.InMemoryHSQL;
-import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -45,18 +44,20 @@ public class GreetingNeedTest {
     SessionFactory sessionFactory;
 
     @Test
-    public void callToGreetShouldSaveAndReturnPhrase() {
-        String phrase = "Hello!";
+    public void givenHelloGreetShouldSaveHello() {
+        //Arrange
+        String phrase = "Hello";
 
+        //Act
         cut.greet(phrase);
 
-        Session session = sessionFactory.openSession();
-        List<GreetingEntity> greetings = session.createCriteria(GreetingEntity.class).list();
-
-        assertThat(greetings).hasSize(1);
-        GreetingEntity entity = greetings.stream().findFirst().get();
-        assertThat(entity.getId()).isNotNull();
-        assertThat(entity.getPhrase()).isEqualTo(phrase);
+        //Assert
+        try (Session session = sessionFactory.openSession()) {
+            GreetingEntity entity = (GreetingEntity) session.createCriteria(GreetingEntity.class)
+                    .uniqueResult();
+            assertThat(entity.getId()).isNotNull();
+            assertThat(entity.getPhrase()).isEqualTo(phrase);
+        }
     }
 
 }
