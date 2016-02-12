@@ -1,4 +1,6 @@
 # Testify
+
+[![Join the chat at https://gitter.im/FitburIO/testify](https://badges.gitter.im/FitburIO/testify.svg)](https://gitter.im/FitburIO/testify?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/FitburIO/testify.svg?branch=develop)](https://travis-ci.org/FitburIO/testify)
 [![CodecovIO](https://codecov.io/github/FitburIO/testify/coverage.svg?branch=develop)](https://codecov.io/github/FitburIO/testify?branch=develop)
 [![Latest Release](https://img.shields.io/github/release/FitburIO/testify.svg)](https://github.com/FitburIO/testify/releases/latest)
